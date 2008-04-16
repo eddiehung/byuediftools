@@ -1,0 +1,7 @@
+Files dir_A/counters128.cutset.ptmr and dir_B/counters128.cutset.ptmr differ
+Files dir_A/counters128.tmr.edf and dir_B/counters128.tmr.edf differ
+Files dir_A/counters128.tmr.jedif and dir_B/counters128.tmr.jedif differ
+Files dir_A/one_counter.ptmr and dir_B/one_counter.ptmr differ
+Files dir_A/testCountMult.cutset.ptmr and dir_B/testCountMult.cutset.ptmr differ
+Files dir_A/testCountMult.tmr.edf and dir_B/testCountMult.tmr.edf differ
+Files dir_A/testCountMult.tmr.jedif and dir_B/testCountMult.tmr.jedif differ

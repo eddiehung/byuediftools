@@ -1,0 +1,91 @@
+\section{EdifTMR}
+The EdifTMR tools combines all the tools in the JEdifTMR toolflow into
+one easy step. If you already know exactly what setting you wish use
+to perform TMR, this tool will be faster.
+
+\begin{verbatim}
+>java byucc.edif.tools.tmr.jedif.EdifTMR
+TMR - v1.0 
+Runs through the JEdif TMR toolflow in one step
+Copyright (c) 2005-2007 Brigham Young University, All rights reserved.
+
+[-h|--help]
+[-v|--version]
+
+<input_file> 
+[(-o|--output) <output_file>]
+
+[(-d|--dir) dir1,dir2,...,dirN ]
+[(-f|--file) file1,file2,...,fileN ]
+
+[--remove_hl]
+[--hl_constant <{0|1}>]
+[--hl_port_name <hl_port_name>]
+[--pack_registers <{i|o|b|n}>]
+[--remove_fmaps]
+
+[--full_tmr]
+[--tmr_inports]
+[--tmr_outports]
+[--no_tmr_p port1,port2,...,portN ]
+[--tmr_c cell_type1,cell_type2,...,cell_typeN ]
+[--tmr_clk clock_domain1,clock_domain2,...,clock_domainN ]
+[--tmr_i cell_instance1,cell_instance2,...,cell_instanceN ]
+[--no_tmr_c cell_type1,cell_type2,...,cell_typeN ]
+[--no_tmr_clk clock_domain1,clock_domain2,...,clock_domainN ]
+[--no_tmr_i cell_instance1,cell_instance2,...,cell_instanceN ]
+[--no_tmr_feedback]
+[--no_tmr_input_to_feedback]
+[--no_tmr_feedback_output]
+[--no_tmr_feed_forward]
+[--no_iob_feedback]
+
+[--scc_sort_type <{1|2|3}>]
+[--do_scc_decomposition]
+
+[--input_addition_type <{1|2|3}>]
+[--output_addition_type <{1|2|3}>]
+[--merge_factor <merge_factor>]
+[--optimization_factor <optimization_factor>]
+[--factor_type <{DUF|UEF|ASUF}>]
+[--factor_value <factor_value>]
+
+[--use_bad_cut_conn]
+[--highest_fanout_cutset]
+[--highest_ff_fanout_cutset]
+
+
+[--tmr_suffix suffix1,suffix2,...,suffixN ]
+[--tmr_cell_name <tmr_cell_name>]
+[--tmr_domain_report <tmr_domain_report>]
+
+
+[--technology <{virtex|virtex2|virtex4}>]
+[(-p|--part) <part>]
+
+[--log <logfile>]
+[--debug[:<debug_log>]]
+[(-V|--verbose) <{1|2|3|4|5}>]
+[--append_log]
+
+\end{verbatim}
+\subsection{Options}
+
+This options for this tool include almost all of the options for the
+various tools in the toolflow. The output option for the intermediate
+files within the tool flow are not applicable, as this tool neither
+creates nor uses intermediate files.
+
+\subsubsection{File Input/Output}
+
+The input to this tool can be either an edif file or jedif file,
+depending on the extension. If the file extension is \texttt{.jedif}
+it will be treated as a jedif file. All other extensions are treated
+as edif files.
+
+The \texttt{--file} and \texttt{--dir} options are ignored when the
+input is a jedif file
+
+This tool can produce either a jedif file or an edif file. The default
+is edf. To generate a jedif file, make sure the output filename ends
+with \texttt{.jedif}.

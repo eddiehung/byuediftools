@@ -1,0 +1,104 @@
+
+\section{JEdifTMR}
+JEdif TMR takes the data from the analysis steps and creates a 
+triplicated cell
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMR -h
+JEdifTMR - v0.3.2
+Triplicates .jedif netlist according to previous triplication policy.
+Copyright (c) 2005-2007 Brigham Young University, All rights reserved.
+
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  <input_file>
+  [--ptmr <ptmr_file>]
+
+  [(-o|--output) <output_file>]
+  [--edif]
+
+  [--tmr_suffix suffix1,suffix2,...,suffixN ]
+  [--tmr_cell_name <tmr_cell_name>]
+  [--tmr_domain_report <tmr_domain_report>]
+
+  [--tmr_ports_file <tmr_ports_file>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
+
+
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be
+Triplicated. This is the only required parameter.
+
+\subsubsection{\texttt{--ptmr <ptmr\_file>}}
+Name of the tmr data file. 
+
+Default: \texttt{<inputfile>.ptmr} in the current working directory.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the output file. See the \texttt{--edif}
+option
+
+Default: \texttt{<inputfile>.<type>} in the current working directory.
+(Extension depends on output type. Can be overridden by including
+an extension on the command line)
+
+\subsubsection{\texttt{--edif}}
+Specifies whether to output an edf file or a jedif file.
+
+Default: generate a jedif file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+\subsection{TMR Options}
+\subsubsection{\texttt{--tmr\_suffix}}
+This option allows the user to specify the suffixes that the tool adds to each
+of the replicated design elements (nets, cell instances, etc.). The user must
+specify all three suffixes (in a comma-separated list) to be used for each of
+the three TMR domains. In addition, each of the domains must be unique to avoid
+naming conflicts. One of suffixes may be left blank to signify that no suffix
+should be added to the elements of that domain.
+
+As an example, if the user specified the following list of suffixes:
+
+\texttt{--tmrSuffix \_0,\_1,\_2}
+
+a net in the original design called \texttt{reset} would be triplicated as:
+
+\texttt{reset\_0, reset\_1, and reset\_2}.
+
+The default suffixes (if the \texttt{--tmrSuffix} option is not used) are 
+\texttt{\_TMR\_0, \_TMR\_1, and \_TMR\_2}.
+
+\subsubsection{\texttt{--tmr\_cell\_name}}
+ Specifies the name of the TMR'd cell
+
+
+\subsubsection{\texttt{--domain\_report <domainReport>}}
+The name of the domain report file. The domain report lists the domain (0, 1, 
+or 2) of each cell instance in the resulting EDIF file. This report is used as 
+input to the LANL RadDRC half-latch removal tool. 
+
+Default: \texttt{BLTmr\_domain\_report.txt}.
+
+\subsubsection{\texttt{--tmr\_ports\_file <tmr\_ports\_file>}}
+The name of the tmr\_ports file. It consists of a list of ports to
+triplicate followed by three names for the new ports, in this format:
+
+\texttt{clk:clk0,clk1,clk2}
+\texttt{rst0:rst0,rst1,rst2}
+
+Default: none
+
+
+\input{option_Logfile}
+

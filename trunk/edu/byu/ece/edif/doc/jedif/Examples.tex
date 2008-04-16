@@ -1,0 +1,229 @@
+\section{Common Usage of JEdifTMRAnyalysis}
+This section describes a few sample scenarios and explains which combination of
+command line options should be used for each.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR}
+\label{subsec:fulltmr}
+This example shows how to perform ``full'' TMR (triplication of all components) 
+on a design. For larger designs, this may result in a TMR'd version of the 
+design that does not fit in the desired chip. If this is the case, some form of 
+``partial'' TMR should be used.
+
+In this example, the design to be triplicated is specified in the file 
+\texttt{myDesign.edf} and the triplicated design will be written to 
+\texttt{myDesign\_tmr.edf}. Both input ports and output ports are triplicated. 
+The part used in this case is the Virtex II XC2V1000-FG456.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif \
+  -o myDesign.ptmr -iob_output myDesign.iob\
+  --tmr_inports --tmr_outports --full_tmr --technology Virtex2 --part xc2v1000fg456
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR---Clock not triplicated}
+Some systems do not support triplicated clock lines. This example shows how to 
+triplicate everything but the clock line.
+
+This example is almost identical to the example in section 
+\ref{subsec:fulltmr}. The \texttt{--no\_tmr\_p} option specifies that the 
+top-level port named \texttt{Clk} (case-sensitive) should not be triplicated. 
+The \texttt{--no\_tmr\_c} option indicates that all cells of the global clock 
+buffer type \texttt{BUFG} should also not be triplicated. This prevents the 
+clock line after the buffer from being triplicated and the entire circuit will 
+use the same single clock.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif \
+  --tmr_inports --tmr_outports --full_tmr --no_tmr_p Clk --no_tmr_c BUFG \
+  --technology  Virtex2 --part xc2v1000fg456
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR---No I/O triplication}
+Many FPGA applications are port-limited. This example shows how to prevent all 
+inputs and outputs from being triplicated. In this example, the user must leave 
+out the \texttt{--tmr\_inports} and \texttt{--tmr\_outports} parameters so that 
+top level ports are not included in triplication. This example also leaves out 
+the \texttt{--technology} and \texttt{--part} options, using the default values 
+for each (Virtex XCV1000-FG680).
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif --full_tmr
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---No I/O triplication}
+This example shows a standard usage of the BLTmr tool for partial TMR\@. In this 
+case, the design is too large to fit in the targeted device when fully 
+triplicated. The BLTmr tool will triplicate as much logic as possible and 
+estimate when the target chip will be fully utilized.
+
+%This design also requires some external EDIF files that are referenced in 
+%\texttt{myLargeDesign.edf} as ``black boxes.'' These external files, which are 
+%located in the \texttt{externalSrcDir} directory, will be incorporated into the 
+%triplicated design. Thus, the external files will not be needed with the 
+%\texttt{myLargeDesign\_BLTmr.edf} output file.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---SCC Decomposition, custom estimation factors}
+In this case, the user wishes to include parts of strongly-connected components 
+(SCCs) for triplication. This example also shows how to override the default
+merge and optimization factors.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+  -d ./externalSrcDir --doSCCDecomposition --mergeFactor 0.4 --optimizationFactor 0.85
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Fill 50\% of target device}
+In some cases, the user may wish to use the triplicated design on the same chip 
+as another design. In this example the user knows that a separate design will 
+require half of the target chip. To fill as much of the left-over 50\% as 
+possible, the user specifies a \texttt{--factor\_type} of \texttt{DUF} and a 
+\texttt{factor\_value} of \texttt{0.5}. This will stop triplication of the 
+input design when half of the target chip is utilized, according to the 
+estimate made with the merge optimization factors.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+  --factor_type DUF --factor_value 0.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Push utilization past 100\%}
+Due to the way mapping tools are implemented, the user may be able to fit more 
+logic onto the target chip than estimated by the utilization tracker. The 
+Xilinx \texttt{map} program, for example, does not map unrelated logic into the 
+same slice until slice utilization reaches 99\%. This means that much more 
+logic can be added after this point, though the place and route step will 
+become increasingly more difficult for the tools to perform.
+
+With this in mind, to achieve the maximum capacity on the target chip, it may 
+be necessary to specify a desired utilization factor greater than 1.0 (more 
+than 100\% estimated utilization). The following example uses a device 
+utilization factor of 1.5, which will stop triplication when an estimated 150\% 
+of the target part is utilized.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif \
+  --factor_type DUF --factor_value 1.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Use 75\% of available space on target device}
+The available space utilization factor can be used to specify the amount of
+space on the target device left after the unmitigated circuit is mapped. To
+fill the chip up to 75\% of the left-over space, the user specifies a 
+\texttt{--factor\_type} of \texttt{ASUF} and a \texttt{factor\_value} of 
+\texttt{0.75}. If the original design size is estimated at using 40\% of the
+target chip, this will stop triplication when 70\% ($40 + (100-40)*0.75$) of
+the target chip is utilized.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+   --factor_type DUF --factor_value 0.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Using Configuration Files}
+\label{using config}
+Configuration files can greatly simplify the use of any of the
+ BLTmr tools.  The following examples show how to create and use
+ configuration files. (See section \ref{config options},
+ ``Configuration File Options'' for more information.)
+
+\subsubsection{Create a Configuration File}
+The following will write the current command-line arguments to the file
+\texttt{myConfig.conf}:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.edf -o myDesign_BLTmr.edf -f \ 
+subcell.edf,/usr/share/edifFiles/subcell2.edf, -d /usr/share/edif/common/ \ 
+--tmr_inports --tmr_outports --tmr_c DLL,fdc,clk_buf --tmr_i clk,fifo_output \ 
+--no_tmr_p clk_port,data_in --no_tmr_c bufg --no_tmr_i mux2,and24 \ 
+--notmrFeedForward --inputAdditionType 1 --outputAdditionType 2 --mergeFactor \ 
+0.85 --optimizationFactor 0.90 --technology Virtex2 --part XCV1000FG680 --log myLogFile.log \
+--writeConfig:myConfig.conf
+\end{verbatim}
+
+The previous command creates the following output, stored in 
+\texttt{myConfig.conf}:
+
+\begin{verbatim}
+#myConfig.conf, created by byucc.edif.tools.jsap.NMRCommandParser
+#Sat Jul 22 19:51:14 MDT 2006
+hlUsePort=hl_port
+availableSpaceUtilizationFactor=0.85
+tmr_c=DLL,fdc,clk_buf
+summary=true
+optimizationFactor=0.9
+log=myLogFile.log
+notmrFeedForward=true
+output=myDesign_BLTmr.edf
+hlConst=0
+input=myDesign.edf
+outputAdditionType=2
+mergeFactor=0.85
+removeHL=true
+dir=/usr/share/edif/common/
+writeConfig=myConfig.conf
+part=XCV1000FG680
+no_tmr_p=clk_port,data_in
+technology=Virtex2
+domainReport=myDomainReport.txt
+inputAdditionType=1
+no_tmr_i=mux2,and24
+file=subcell.edf,/usr/share/edifFiles/subcell2.edf
+no_tmr_c=bufg
+tmr_i=clk,fifo_output
+tmr_outports=true
+tmr_inports=true
+\end{verbatim}
+
+Configuration files are defined by the \texttt{java.util.Properties} class. 
+However, the format is simple enough that configuration files can easily be 
+created by hand or by other programs. As seen above, the format is simply 
+\texttt{key=value}. A hash mark (pound sign) (\texttt{\#}) at the beginning of 
+a line marks that line as a comment. BLTmr options are given just as they would 
+be on the command-line, with the exception that command-line options with no 
+arguments (e.g. \texttt{--tmr\_inports}, \texttt{--summary}, 
+\texttt{--doSCCDecomposition}, etc.) are specified as either \texttt{true} or 
+\texttt{false}, as seen above.
+
+\subsubsection{Use a Configuration File}
+
+The following example shows how to load \texttt{myConfig.conf} as a configuration
+file:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis --useConfig myConfig.conf
+\end{verbatim}
+
+\subsubsection{Combining Configuration Files and Command-line Arguments}
+Configuration files provide default values of BLTmr options. Any options 
+specified on the command-line will take precedence. (See section 
+\ref{useConfig}, ``\texttt{--useConfig}'' for detailed precedence information.)
+The following example uses the same options specified by myConfig.conf, but
+changes the input and output files:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myOtherDesign.edf -o myOtherDesign_BLTmr.edf \
+ --useConfig myConfig.conf
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
