@@ -43,8 +43,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import de.uni_frankfurt.grimm.vhdl.InstanceHierarchy;
-
 import byucc.jhdl.apps.Viewers.Event.JHDLHostWidgetInterface;
 import byucc.jhdl.apps.Viewers.cvt.cvtFrame;
 import byucc.jhdl.base.Cell;
@@ -54,6 +52,7 @@ import byucc.jhdl.base.HelperLibrary;
 import byucc.jhdl.base.NodeList;
 import byucc.jhdl.base.Wire;
 import byucc.jhdl.base.WireList;
+import edu.byu.ece.edif.arch.xilinx.InstanceHierarchy;
 import edu.byu.ece.edif.arch.xilinx.XilinxGenLib;
 import edu.byu.ece.edif.arch.xilinx.XilinxLibrary;
 import edu.byu.ece.edif.core.BasicEdifBusNamingPolicy;

@@ -22,8 +22,9 @@
  */
 package edu.byu.ece.edif.arch.xilinx.test;
 
-import de.uni_frankfurt.grimm.vhdl.EdifXPowerCompare;
-import de.uni_frankfurt.grimm.vhdl.EdifXPowerParser;
+import edu.byu.ece.edif.arch.xilinx.EdifXPowerCompare;
+import edu.byu.ece.edif.arch.xilinx.EdifXPowerParser;
+
 
 /**
  * @author nhr2

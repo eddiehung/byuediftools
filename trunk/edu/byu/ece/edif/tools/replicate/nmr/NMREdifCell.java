@@ -31,8 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import de.uni_frankfurt.grimm.vhdl.InstanceHierarchy;
-
+import edu.byu.ece.edif.arch.xilinx.InstanceHierarchy;
 import edu.byu.ece.edif.core.BasicEdifBusNamingPolicy;
 import edu.byu.ece.edif.core.BasicEdifBusNetNamingPolicy;
 import edu.byu.ece.edif.core.EdifBusNamingPolicy;
