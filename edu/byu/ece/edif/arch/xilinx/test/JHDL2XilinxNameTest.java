@@ -22,12 +22,12 @@
  */
 package edu.byu.ece.edif.arch.xilinx.test;
 
-import de.uni_frankfurt.grimm.vhdl.Edif2XilinxName;
-import de.uni_frankfurt.grimm.vhdl.EdifXPowerParser;
-import de.uni_frankfurt.grimm.vhdl.JHDL2XilinxNameMap;
 import byucc.jhdl.base.Cell;
 import byucc.jhdl.base.HWSystem;
 import byucc.jhdl.base.Wire;
+import edu.byu.ece.edif.arch.xilinx.Edif2XilinxName;
+import edu.byu.ece.edif.arch.xilinx.EdifXPowerParser;
+import edu.byu.ece.edif.arch.xilinx.JHDL2XilinxNameMap;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.util.export.jhdl.Edi2JHDL;
 import edu.byu.ece.edif.util.export.jhdl.JHDLWrapper;
