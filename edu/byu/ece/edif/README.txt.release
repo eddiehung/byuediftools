@@ -1,0 +1,20 @@
+EDIF Release 0.1
+
+
+Make sure you run the configure script first, specify the location
+of the JHDL.jar with the --with-jhdl= option, and make sure the
+configure script located the jar correctly.
+
+makefile commands in ./byucc/edif:
+
+         make docsall
+              Creates javadocs in ./doc/codeDoc
+              
+         make all
+              Makes all source files in each directory
+
+         make deepclean
+              Deletes all class files in each directory
+                   
+         make
+              Makes all source files in the current directory

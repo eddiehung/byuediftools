@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.60 98/01/27
+
+-->
+</head>
+<body bgcolor="white">
+
+<!-- One sentence summary -->
+Provides a data structure for representing and manipulating EDIF 2.0.0
+files.
+
+<!-- Put more details on the package here -->
+
+<h2>Related Links</h2>
+<ul>
+<li> <a href="http://en.wikipedia.org/wiki/EDIF">Wikipedia Article on EDIF</a></li>
+<li> <a href="http://web.archive.org/web/20060101191742/http://www.edif.org/">Official EDIF Website</a> (From the web archive) </li>
+<li> <a href="http://www.elgris.com/content/edif_overview.html">EDIF Overview</a> from Elgris Technologies, Inc.</li>
+<li> <a
+href="http://web.archive.org/web/20070818201244/http://www-ee.eng.hawaii.edu/~msmith/ASICs/HTML/Book2/CH09/CH09.4.htm">
+EDIF Overview in <em>Application-Specific Integrated Circuits</em></a> (also from the Internet archive) </li>
+<li><a href="http://www.rulabinsky.com/cavd/text/chapd.html">Computer Aids for VLSI Design - Appendix D: Electronic Design Interchange Format by Steven M. Rubin</a></li>
+</ul>
+
+<h2>Package To-Do's</h2>
+
+<ul>
+<li> When adding a reference setting the library for a cell, what about
+  the cell being added to that library?
+<li> Setting references for all Edif objects (ie, setting the EdifNet an
+  EdifPortRef is associated with, and then adding that EdifPortRef to
+  the EdifNet)
+<li> Renaming: currently working on this.
+<li> We may want to add a "byucc.edif.util" directory. This could
+contain classes such as NameSpaceResolver, Nameable, NamedObject,
+Property stuff, etc.
+<li> When adding a voter cell to the edif library (when necessary),
+  should a separate library be created, and added to the same
+  EdifDesign?
+<li> Come up with an auto-testing strategy (see {@link byucc.edif.AutoTest})
+</ul>
+
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>

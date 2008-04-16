@@ -1,0 +1,83 @@
+
+AC_INIT(config.mk.in)
+
+# check for java
+AC_PATH_PROG(JAVA, java, no)
+if test $JAVA = no ; then
+   AC_MSG_ERROR([could not find java - make sure it is in your PATH])
+fi
+
+AC_SUBST(JAVA)
+
+# check for javac
+AC_PATH_PROG(JAVAC, javac, no)
+if test $JAVAC = no ; then
+   AC_MSG_ERROR([could not find javac - make sure it is in your PATH])
+fi
+
+AC_SUBST(JAVAC)
+
+# check for jikes
+AC_PATH_PROG(JIKES, jikes, no)
+#if test $JIKES = no ; then
+#   AC_MSG_ERROR([could not find jikes - make sure it is in your PATH if you would like to use it])
+#fi
+
+AC_SUBST(JIKES)
+
+# check for javadoc
+AC_PATH_PROG(JAVADOC, javadoc, no)
+if test $JAVADOC = no ; then
+AC_MSG_WARN([could not find javadoc - if you wish to run 'make docs' and generate the javadoc for the edif package, please put javadoc in your PATH])
+#   AC_MSG_ERROR([could not find jikes - make sure it is in your PATH])
+fi
+
+AC_SUBST(JAVADOC)
+
+# check for cvs
+AC_PATH_PROG(CVS, cvs, no)
+
+
+#check for javaCC/jjtree
+AC_ARG_WITH(javacc, [  --with-javacc=PATH      specify the path to javacc (/usr/local/javacc) ], JAVACC_PATH=$withval, JAVACC_PATH=no)
+
+if test $JAVACC_PATH = no ; then
+
+   AC_PATH_PROG(JAVACC, javacc, no)
+   AC_PATH_PROG(JJTREE, jjtree, no)
+
+else
+   AC_MSG_CHECKING([for javaCC path])
+   JAVACC=$JAVACC_PATH/bin/javacc
+   AC_MSG_RESULT([$JAVACC])
+   AC_MSG_CHECKING([for jjtree path])
+   JJTREE=$JAVACC_PATH/bin/jjtree
+   AC_MSG_RESULT([$JJTREE])
+fi
+
+AC_SUBST(JAVACC)
+AC_SUBST(JJTREE)
+
+AC_MSG_CHECKING([for the CLASSPATH separator])
+case "`uname -s`" in
+     CYGWIN_NT-*) CLASSPATHSEPARATOR=";";;
+     CYGWIN_98-*) CLASSPATHSEPARATOR=";";;
+     *) CLASSPATHSEPARATOR=":";;
+esac
+AC_MSG_RESULT(['$CLASSPATHSEPARATOR'])
+
+AC_SUBST(CLASSPATHSEPARATOR)
+
+
+# JHDL jar
+AC_MSG_CHECKING([for JHDL jar])
+AC_ARG_WITH(jhdl, [  --with-jhdl=JARFILE     specify the path to your JHDL.jar file ], JHDL_JAR=$withval, JHDL_JAR=no)
+AC_MSG_RESULT([$JHDL_JAR])
+if test $JHDL_JAR = no ; then
+   AC_MSG_WARN([could not find JHDL.jar - if you wish to include it for the build, specify its location using the --with-jhdl=JARFILE option])
+fi
+AC_CHECK_FILE($JHDL_JAR, , JHDL_JAR=no)
+AC_SUBST(JHDL_JAR)
+
+
+AC_OUTPUT([config.mk])

@@ -1,0 +1,35 @@
+###########################################################################
+#
+# Configuration Makefile
+# (can be changed on an installation to installation basis)
+#
+
+JAVA = @JAVA@
+JAVAC = @JAVAC@
+ifndef JAVAC
+#  JAVAC = javac
+  JAVAC = @JIKES@
+endif
+JAVAC_FLAGS = -g
+JAVADOC = @JAVADOC@
+JAVADOC_FLAGS = -author -private -version
+JDOCFLAGS = -author -private -version -breakiterator
+CVS = @CVS@
+JAB = jab
+BIG_HEAP = -mx100M
+JAB=$(JAVA) jab
+WGET = @WGET@
+TAR = @TAR@
+JAR = @JAR@
+GUNZIP = @GUNZIP@
+
+
+# Java CLASSPATH separator
+# For Unix, this would be :
+# For Cygwin, this would be ;
+CLASSPATHSEPARATOR = @CLASSPATHSEPARATOR@
+
+JHDL_JAR=@JHDL_JAR@
+
+JAVACC=@JAVACC@
+JJTREE=@JJTREE@

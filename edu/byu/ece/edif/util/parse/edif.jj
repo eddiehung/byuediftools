@@ -1,0 +1,3825 @@
+/*
+ * Copyright (c) 2008 Brigham Young University
+ *
+ * This file is part of the BYU EDIF Tools.
+ * 
+ * BYU EDIF Tools is free software: you may redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * BYU EDIF Tools is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * A copy of the GNU General Public License is included with the BYU
+ * EDIF Tools. It can be found at /edu/byu/edif/doc/gpl2.txt. You may
+ * also get a copy of the license at <http://www.gnu.org/licenses/>.
+ *
+ */
+options {
+    LOOKAHEAD = 2;
+    IGNORE_CASE = true;
+    STATIC = false;
+}
+
+
+PARSER_BEGIN(EdifParserCore)
+
+package byucc.edif.javacc;
+import byucc.edif.*;
+import java.util.*;
+
+/**
+ * edif.jj This file (edif.jj) defines the grammar for the EDIF 2.0 file format.
+ * This file is translated into a java file (EdifParserCore.java) by the javacc
+ * parser generator tool. This parser is configured in case sensitive mode as
+ * EDIF is a case sensitive grammar. Options that we should provide to parser:
+ * <ul>
+ * <li> generate interfaces only (don't look at contents of EdifCell objects)
+ * <ul>
+ * <li> Used for BuildWrapper and other interface tools
+ * </ul>
+ * <li> ignore rename objects (significantly reduce memory requirements)
+ * </ul>
+ * <p>
+ * TODO:
+ * <ul>
+ * <li> Save user comments: comment()
+ * <ul>
+ * <li> Create a EDIF comment object
+ * <li> parse it and allow it to be modified
+ * </ul>
+ * <li> implement and test name caching (using getName and treeMap of names)
+ * <li> Turn off construction for checking only?
+ * </ul>
+ * 
+ * @version $Id$
+ *
+ **/
+public class EdifParserCore {
+
+
+    /** This name caching mechanism is currently NOT impelemented */
+
+    /**
+     * This is a mapping from a String object to another String object.
+     * The purpose of this map is to make sure only one String object 
+     * is used for identically created strings.
+     **/
+    private TreeMap names = new TreeMap();
+
+    /**
+     * This method is used to reduce the memory comsumption by creating a
+     * String collection for all the named objects. If a name already exists,
+     * this method will return the reference to that name String, otherwise,
+     * it will add this name String to the collection.
+     */
+    public String getName(String name) {
+	String existingName = (String)names.get(name);
+	if (existingName != null)
+	    return existingName;
+	names.put(name,name);
+	return name;
+    }
+
+    private EdifEnvironment edif_environment;
+
+    /**
+     * Represents and "array" or "member" element during parsing.
+     * this is essentially an object with an EdifNameable
+     * and an array of integers.
+     **/
+    class ArrayElement {
+	public ArrayElement(int size) {
+	    _elements = new int[size];
+	}
+	public ArrayElement(ArrayElement elm, int size) {
+	    this(size);
+	    for (int i = 0; i < size && i < elm.getSize(); i++)
+		_elements[i] = elm.getElement(i);
+	}
+	EdifNameable _name;
+	int _elements[];
+	public void setName(EdifNameable name) {
+	    _name = name;
+	}
+	public void setName(String name) throws ParseException {
+	    try {
+		_name = new NamedObject(name);
+	    } catch (InvalidEdifNameException e) {
+		throw new ParseException(e.toString());
+	    }
+	}
+	public void setElement(int i, int val) {
+	    _elements[i]=val;
+	}
+	public void setFirstElement(int val) {
+	    _elements[0] = val;
+	}
+	public int getElement(int i) {
+	    return _elements[i];
+	}
+	public int getFirstElement() {
+	    return _elements[0];
+	}
+	public int getSize() {
+	    return _elements.length;
+	}
+	public EdifNameable getName() { return _name; }
+    }
+    /** 
+     * A preallocated array with one element. This is used
+     * to speed up the use of ArrayElement objects that 
+     * are only a single diminsion (no new construction needed).
+     **/
+    private ArrayElement singleArray = new ArrayElement(1);
+
+    /** This is a preallocated List with one for use within
+     * the parser to avoid construction on simple lists. */
+    private List singleItemList = new ArrayList(1);
+
+    /**
+     * Adds comments from source edif to data structure when true.
+     * Ignores comments otherwise.
+     **/
+    public static boolean keepComments = false;
+
+    /**
+     * Determines if cells will be tagged as a primitive. If true,
+     * Cells defined with a view name that matchces the 
+     * primitiveViewName will be tagged as a primitive cell.
+     * If false, no primitive tagging will occur.
+     */
+    public static boolean tagPrimitives = true;
+
+    /**
+     * The name to use when checking views as primitives.
+     */
+    public static String primitiveViewName = "prim";
+
+    // dummy constructor
+    public EdifParserCore() {}
+
+
+    /**
+     * Return the current EdifEnvironment object translated from the edif file
+     */
+    public EdifEnvironment getEdifEnvironment() {
+	return edif_environment;
+    }
+
+}
+
+PARSER_END(EdifParserCore)
+
+
+/* WHITE SPACE */
+
+    SKIP :
+{
+    " "
+        | "\t"
+        | "\n"
+        | "\r"
+        | "\f"
+}
+
+/* RESERVED WORDS AND LITERALS */
+
+TOKEN :
+{
+    < ANGLE: "ANGLE" >
+                 | < BEHAVIOR: "BEHAVIOR" >
+                 | < CALCULATED: "CALCULATED" >
+                 | < CAPACITANCE: "CAPACITANCE" >
+                 | < CENTERCENTER: "CENTERCENTER" >
+                 | < CENTERLEFT: "CENTERLEFT" >
+                 | < CENTERRIGHT: "CENTERRIGHT" >
+                 | < CHARGE: "CHARGE" >
+                 | < CONDUCTANCE: "CONDUCTANCE" >
+                 | < CURRENT: "CURRENT" >
+                 | < DISTANCE: "DISTANCE" >
+                 | < DOCUMENT: "DOCUMENT" >
+                 | < ENERGY: "ENERGY" >
+                 | < EXTEND: "EXTEND" >
+                 | < FLUX: "FLUX" >
+                 | < FREQUENCY: "FREQUENCY" >
+                 | < GENERIC: "GENERIC" >
+                 | < GRAPHIC: "GRAPHIC" >
+                 | < INDUCTANCE: "INDUCTANCE" >
+                 | < INOUT: "INOUT" >
+                 | < INPUT: "INPUT" >
+                 | < LOGICMODEL: "LOGICMODEL" >
+                 | < LOWERCENTER: "LOWERCENTER" >
+                 | < LOWERLEFT: "LOWERLEFT" >
+                 | < LOWERRIGHT: "LOWERRIGHT" >
+                 | < MASKLAYOUT: "MASKLAYOUT" >
+                 | < MASS: "MASS" >
+                 | < MEASURED: "MEASURED" >
+                 | < MX: "MX" >
+                 | < MXR90: "MXR90" >
+                 | < MY: "MY" >
+                 | < MYR90: "MYR90" >
+                 | < NETLIST: "NETLIST" >
+                 | < OUTPUT: "OUTPUT" >
+                 | < PCBLAYOUT: "PCBLAYOUT" >
+                 | < POWER: "POWER" >
+                 | < R0: "R0" >
+                 | < R180: "R180" >
+                 | < R270: "R270" >
+                 | < R90: "R90" >
+                 | < REQUIRED: "REQUIRED" >
+                 | < RESISTANCE: "RESISTANCE" >
+                 | < RIPPER: "RIPPER" >
+                 | < ROUND: "ROUND" >
+                 | < SCHEMATIC: "SCHEMATIC" >
+                 | < STRANGER: "STRANGER" >
+                 | < SYMBOLIC: "SYMBOLIC" >
+                 | < TEMPERATURE: "TEMPERATURE" >
+                 | < TIE: "TIE" >
+                 | < TIME: "TIME" >
+                 | < TRUNCATE: "TRUNCATE" >
+                 | < UPPERCENTER: "UPPERCENTER" >
+                 | < UPPERLEFT: "UPPERLEFT" >
+                 | < UPPERRIGHT: "UPPERRIGHT" >
+                 | < VOLTAGE: "VOLTAGE" >
+                 | < ACLOAD: "acLoad" >
+                 | < AFTER: "after" >
+                 | < ANNOTATE: "annotate" >
+                 | < APPLY: "apply" >
+                 | < ARC: "arc" >
+                 | < ARRAY: "array" >
+                 | < ARRAYMACRO: "arrayMacro" >
+                 | < ARRAYRELATEDINFO: "arrayRelatedInfo" >
+                 | < ARRAYSITE: "arraySite" >
+                 | < ATLEAST: "atLeast" >
+                 | < ATMOST: "atMost" >
+                 | < AUTHOR: "author" >
+                 | < BASEARRAY: "baseArray" >
+                 | < BECOMES: "becomes" >
+                 | < BETWEEN: "between" >
+                 | < BOOLEAN: "boolean" >
+                 | < BOOLEANDISPLAY: "booleanDisplay" >
+                 | < BOOLEANMAP: "booleanMap" >
+                 | < BORDERPATTERN: "borderPattern" >
+                 | < BORDERWIDTH: "borderWidth" >
+                 | < BOUNDINGBOX: "boundingBox" >
+                 | < CELL: "cell" >
+                 | < CELLREF: "cellRef" >
+                 | < CELLTYPE: "cellType" >
+                 | < CHANGE: "change" >
+                 | < CIRCLE: "circle" >
+                 | < COLOR: "color" >
+                 | < COMMENT: "comment" >
+                 | < COMMENTGRAPHICS: "commentGraphics" >
+                 | < COMPOUND: "compound" >
+                 | < CONNECTLOCATION: "connectLocation" >
+                 | < CONTENTS: "contents" >
+                 | < CORNERTYPE: "cornerType" >
+                 | < CRITICALITY: "criticality" >
+                 | < CURRENTMAP: "currentMap" >
+                 | < CURVE: "curve" >
+                 | < CYCLE: "cycle" >
+                 | < DATAORIGIN: "dataOrigin" >
+                 | < DCFANINLOAD: "dcFaninLoad" >
+                 | < DCFANOUTLOAD: "dcFanoutLoad" >
+                 | < DCMAXFANIN: "dcMaxFanin" >
+                 | < DCMAXFANOUT: "dcMaxFanout" >
+                 | < DELAY: "delay" >
+                 | < DELTA: "delta" >
+                 | < DERIVATION: "derivation" >
+                 | < DESIGN: "design" >
+                 | < DESIGNATOR: "designator" >
+                 | < DIFFERENCE: "difference" >
+                 | < DIRECTION: "direction" >
+                 | < DISPLAY: "display" >
+                 | < DOMINATES: "dominates" >
+                 | < DOT: "dot" >
+                 | < DURATION: "duration" >
+                 | < E: "e" >
+                 | < EDIF: "edif" >
+                 | < EDIFLEVEL: "edifLevel" >
+                 | < EDIFVERSION: "edifVersion" >
+                 | < ENCLOSUREDISTANCE: "enclosureDistance" >
+                 | < ENDTYPE: "endType" >
+                 | < ENTRY: "entry" >
+                 | < EVENT: "event" >
+                 | < EXACTLY: "exactly" >
+                 | < EXTERNAL: "external" >
+                 | < FABRICATE: "fabricate" >
+                 | < FALSE: "false" >
+                 | < FIGURE: "figure" >
+                 | < FIGUREAREA: "figureArea" >
+                 | < FIGUREGROUP: "figureGroup" >
+                 | < FIGUREGROUPOBJECT: "figureGroupObject" >
+                 | < FIGUREGROUPOVERRIDE: "figureGroupOverride" >
+                 | < FIGUREGROUPREF: "figureGroupRef" >
+                 | < FIGUREPERIMETER: "figurePerimeter" >
+                 | < FIGUREWIDTH: "figureWidth" >
+                 | < FILLPATTERN: "fillPattern" >
+                 | < FOLLOW: "follow" >
+                 | < FORBIDDENEVENT: "forbiddenEvent" >
+                 | < GLOBALPORTREF: "globalPortref" >
+                 | < GREATERTHAN: "greaterThan" >
+                 | < GRIDMAP: "gridMap" >
+                 | < IGNORE: "ignore" >
+                 | < INCLUDEFIGUREGROUP: "includeFigureGroup" >
+                 | < INITIAL: "initial" >
+                 | < INSTANCE: "instance" >
+                 | < INSTANCEBACKANNOTATE: "instanceBackAnnotate" >
+                 | < INSTANCEGROUP: "instanceGroup" >
+                 | < INSTANCEMAP: "instanceMap" >
+                 | < INSTANCEREF: "instanceRef" >
+                 | < INTEGER: "integer" >
+                 | < INTEGERDISPLAY: "integerDisplay" >
+                 | < INTERFACE: "interface" >
+                 | < INTERFIGUREGROUPSPACING: "interFigureGroupSpacing" >
+                 | < INTERSECTION: "intersection" >
+                 | < INTRAFIGUREGROUPSPACING: "intraFigureGroupSpacing" >
+                 | < INVERSE: "inverse" >
+                 | < ISOLATED: "isolated" >
+                 | < JOINED: "joined" >
+                 | < JUSTIFY: "justify" >
+                 | < KEYWORDDISPLAY: "keywordDisplay" >
+                 | < KEYWORDLEVEL: "keywordLevel" >
+                 | < KEYWORDMAP: "keywordMap" >
+                 | < LESSTHAN: "lessThan" >
+                 | < LIBRARY: "library" >
+                 | < LIBRARYREF: "libraryRef" >
+                 | < LISTOFNETS: "listofNets" >
+                 | < LISTOFPORTS: "listOfPorts" >
+                 | < LOADDELAY: "loadDelay" >
+                 | < LOGICASSIGN: "logicAssign" >
+                 | < LOGICINPUT: "logicInput" >
+                 | < LOGICLIST: "logicList" >
+                 | < LOGICMAPINPUT: "logicMapinput" >
+                 | < LOGICMAPOUTPUT: "logicMapOutput" >
+                 | < LOGICONEOF: "logicOneOf" >
+                 | < LOGICOUTPUT: "logicOutput" >
+                 | < LOGICPORT: "logicPort" >
+                 | < LOGICREF: "logicRef" >
+                 | < LOGICVALUE: "logicValue" >
+                 | < LOGICWAVEFORM: "logicWaveform" >
+                 | < MAINTAIN: "maintain" >
+                 | < MATCH: "match" >
+                 | < MEMBER: "member" >
+                 | < MINOMAX: "miNoMax" >
+                 | < MINOMAXDISPLAY: "miNoMaxDisplay" >
+                 | < MNM: "mnm" >
+                 | < MULTIPLEVALUESET: "multipleValueSet" >
+                 | < MUSTJOIN: "mustJoin" >
+                 | < NAME: "name" >
+                 | < NET: "net" >
+                 | < NETBACKANNOTATE: "netBackAnnotate" >
+                 | < NETBUNDLE: "netBundle" >
+                 | < NETDELAY: "netDelay" >
+                 | < NETGROUP: "netGroup" >
+                 | < NETMAP: "netMap" >
+                 | < NETREF: "netRef" >
+                 | < NOCHANGE: "noChange" >
+                 | < NONPERMUTABLE: "nonPermutable" >
+                 | < NOTALLOWED: "notAllowed" >
+                 | < NOTCHSPACING: "notchSpacing" >
+                 | < NUMBER: "number" >
+                 | < NUMBERDEFINITION: "numberDefinition" >
+                 | < NUMBERDISPLAY: "numberDisplay" >
+                 | < OFFPAGECONNECTOR: "offPageConnector" >
+                 | < OFFSETEVENT: "offsetEvent" >
+                 | < OPENSHAPE: "openShape" >
+                 | < ORIENTATION: "orientation" >
+                 | < ORIGIN: "origin" >
+                 | < OVERHANGDISTANCE: "overhangDistance" >
+                 | < OVERLAPDISTANCE: "overlapDistance" >
+                 | < OVERSIZE: "oversize" >
+                 | < OWNER: "owner" >
+                 | < PAGE: "page" >
+                 | < PAGESIZE: "pageSize" >
+                 | < PARAMETER: "parameter" >
+                 | < PARAMETERASSIGN: "parameterAssign" >
+                 | < PARAMETERDISPLAY: "parameterDisplay" >
+                 | < PATH: "path" >
+                 | < PATHDELAY: "pathDelay" >
+                 | < PATHWIDTH: "pathWidth" >
+                 | < PERMUTABLE: "permutable" >
+                 | < PHYSICALDESIGNRULE: "physicalDesignRule" >
+                 | < PLUG: "plug" >
+                 | < POINT: "point" >
+                 | < POINTDISPLAY: "pointDisplay" >
+                 | < POINTLIST: "pointList" >
+                 | < POLYGON: "polygon" >
+                 | < PORT: "port" >
+                 | < PORTBACKANNOTATE: "portBackAnnotate" >
+                 | < PORTBUNDLE: "portBundle" >
+                 | < PORTDELAY: "portDelay" >
+                 | < PORTGROUP: "portGroup" >
+                 | < PORTIMPLEMENTATION: "portImplementation" >
+                 | < PORTINSTANCE: "portInstance" >
+                 | < PORTLIST: "portList" >
+                 | < PORTLISTALIAS: "portListAlias" >
+                 | < PORTMAP: "portMap" >
+                 | < PORTREF: "portRef" | "portref" >
+                 | < PROGRAM: "program" >
+                 | < PROPERTY: "property" >
+                 | < PROPERTYDISPLAY: "propertyDisplay" >
+                 | < PROTECTIONFRAME: "protectionFrame" >
+                 | < PT: "pt" >
+                 | < RANGEVECTOR: "rangeVector" >
+                 | < RECTANGLE: "rectangle" >
+                 | < RECTANGLESIZE: "rectangleSize" >
+                 | < RENAME: "rename" >
+                 | < RESOLVES: "resolves" >
+                 | < SCALE: "scale" >
+                 | < SCALEX: "scalex" >
+                 | < SCALEY: "scaley" >
+                 | < SECTION: "section" >
+                 | < SHAPE: "shape" >
+                 | < SIMULATE: "simulate" >
+                 | < SIMULATIONINFO: "simulationInfo" >
+                 | < SINGLEVALUESET: "singleValueSet" >
+                 | < SITE: "site" >
+                 | < SOCKET: "socket" >
+                 | < SOCKETSET: "socketSet" >
+                 | < STATUS: "status" >
+                 | < STEADY: "steady" >
+                 | < STRING: "string" >
+                 | < STRINGDISPLAY: "stringDisplay" >
+                 | < STRONG: "strong" >
+                 | < SYMBOL: "symbol" >
+                 | < SYMMETRY: "symmetry" >
+                 | < TABLE: "table" >
+                 | < TABLEDEFAULT: "tableDefault" >
+                 | < TECHNOLOGY: "technology" >
+                 | < TEXTHEIGHT: "textheight" >
+                 | < TIMEINTERVAL: "timeinterval" >
+                 | < TIMESTAMP: "timeStamp" >
+                 | < TIMING: "timing" >
+                 | < TRANSFORM: "transform" >
+                 | < TRANSITION: "transition" >
+                 | < TRIGGER: "trigger" >
+                 | < TRUE: "true" >
+                 | < UNCONSTRAINED: "unconstrained" >
+                 | < UNDEFINED: "undefined" >
+                 | < UNION: "union" >
+                 | < UNIT: "unit" >
+                 | < UNUSED: "unused" >
+                 | < USERDATA: "userData" >
+                 | < VERSION: "version" >
+                 | < VIEW: "view" >
+                 | < VIEWLIST: "viewList" >
+                 | < VIEWMAP: "viewMap" >
+                 | < VIEWREF: "viewRef" >
+                 | < VIEWTYPE: "viewType" >
+                 | < VISIBLE: "visible" >
+                 | < VOLTAGEMAP: "voltageMap" >
+                 | < WAVEVALUE: "waveValue" >
+                 | < WEAK: "weak" >
+                 | < WEAKJOINED: "weakJoined" >
+                 | < WHEN: "when" >
+                 | < WRITTEN: "written" >
+
+/* level 1 reserved words */
+                 | < ABS: "abs" >
+                 | < AND: "and" >
+                 | < CEILING: "ceiling" >
+                 | < CONCAT: "concat" >
+                 | < CONSTANT: "constant" >
+                 | < CONSTRAINT: "constraint" >
+                 | < DIVIDE: "divide" >
+                 | < EQUAL: "equal" >
+                 | < FIX: "fix" >
+                 | < FLOOR: "floor" >
+                 | < INCREASING: "increasing" >
+                 | < MAX: "max" >
+                 | < MIN: "min" >
+                 | < MOD: "mod" >
+                 | < NEGATE: "negate" >
+                 | < NOT: "not" >
+                 | < OR: "or" >
+                 | < POINTSUBTRACT: "pointSubtract" >
+                 | < POINTSUM: "pointSum" >
+                 | < PRODUCT: "product" >
+                 | < STRICTLYINCREASING: "strictlyIncreasing" >
+                 | < SUBTRACT: "subtract" >
+                 | < SUM: "sum" >
+                 | < VARIABLE: "variable" >
+                 | < XCOORD: "xCoord" >
+                 | < XOR: "xor" >
+                 | < YCOORD: "yCoord" >
+
+         }
+
+/* LITERALS */
+
+TOKEN :
+{
+    < INTEGER_TOK: (["-","+"])? ["0"-"9"] (["0"-"9"])* >
+  | < STRING_TOK: "\"" (~["\""])* "\"" >
+}
+
+/* IDENFIERS */
+
+TOKEN :
+{
+    < IDENTIFIER: (<LETTER>|"&") (<LETTER>|<DIGIT>|"_")* >
+  | < #LETTER: [ "A"-"Z", "a"-"z"] >
+  | < #DIGIT:  ["0"-"9"] >
+}
+
+/* SEPARATORS */
+
+TOKEN :
+{
+    < LBR: "(" >
+  | < RBR: ")" >
+}
+
+
+
+/*****************************************
+ * THE JAVA LANGUAGE GRAMMAR STARTS HERE *
+ *****************************************/
+
+/*
+ * Program structuring syntax follows.
+ */
+
+/**********************************************************************************
+ * The following constructs are used by the Edif infrastructure
+ *********************************************************************************/
+
+/*
+
+* terminal
+I ignored
+P previously defined
+T To implement in future
+
+edif
+ edifFileName
+  nameDef
+   ident *
+   name
+    ident *
+    display I
+   rename
+    ident *
+    name P
+    stringToken *
+    stringDisplay I
+ edifLevel
+  integerToken *
+ keywordMap I
+  keywordLevel I
+ status
+  written
+   timeStamp T
+   author T
+   program T
+   dataOrigin I
+   property
+    propertyNameDef
+     nameDef P
+    typedValue
+     myBoolean
+      booleanValue *
+      booleanDisplay I
+      myBoolean P
+     integer
+      integerValue *
+      inteverDisplay I
+      integer P
+     miNoMax I
+     number
+      numberValue *
+      numberDisplay I
+      number P
+     point P
+     string
+      stringValue *
+      stringDisplay I
+      string P
+    owner I
+    unit I
+    property P
+    comment T
+   comment P
+   userData
+    ident P
+    ident P
+    form I
+    string P
+    owner P
+    property P
+  comment P
+  userData P
+ external
+  libraryDefinition
+   libraryNameDef
+    libraryNameDef P
+   edifLevel P
+   techhology T
+   status P
+   cell
+    cellNameDef
+     nameDef P
+    cellType *
+    status P
+    view
+     viewNameDef
+      nameDef P
+     viewType *I
+     myInterface
+      port
+       portNameDef
+        nameDef P
+	array
+	 nameDef P
+	 integerValue *
+       direction *
+       unused I
+       designator I
+       dcFaninLoad I
+       dcFanoutLoad I
+       dcMaxFanin I
+       acLoad I
+       portDelay I
+       property P
+       comment P
+       userData P
+      portBundle I
+      symbol I
+      protectionFrame I
+      arrayRelatedInfo I
+      weakJoined I
+      permutable I
+      timing I
+      simulate I
+      designator I
+      constant I
+      constraint I
+      variable I
+      property P
+      comment P
+      userData P
+     status P
+     contents
+      instance
+       instanceNameDef
+        nameDef P
+	array P
+       viewRef
+        viewNameRef
+	 viewNameRef P
+	cellRef
+	 cellNameRef
+	  nameRef P
+	 libraryRef
+	  libraryNameRef
+	   nameRef
+       viewList
+        viewRef P
+	viewList P
+       transform I 
+       parameterAssign I 
+       portInstance I 
+       designator I 
+       timing I 
+       property P
+       comment P 
+       userData P 
+      offPageConnector I
+      figure I
+      section I
+      net
+       netNameDef
+        nameDef *
+	array P
+       joined
+        portRef
+	 portNameRef
+	  nameRef *
+	  member
+	   nameRef
+	   integerValue *
+	 portRef P
+	 instanceRef
+	  instanceNameRef
+	   nameRef
+	   member P
+	  instanceRef P
+	  viewRef P
+	 viewRef P
+	portList
+	 portNameRef P
+	 portRef P
+	globalPortRef
+	 portNameRef P
+       criticality I
+       netDelay  I
+       figure  I
+       net P
+       instance
+        instanceNameDef
+	 nameDef P
+	 array P
+	viewRef P
+	viewList P
+	transform I
+	parameterAssign I
+	portInstance I
+	designator I 
+	timing I 
+	property I
+	comment P 
+	userData P 
+       commentGraphics I
+       property P
+       comment P
+       userData P
+      netBundle I
+      page I
+      commentGraphics I
+      portImplementation I
+      timing I
+      simulate I
+      when I
+      follow I
+      logicPort I
+      boundingBox I
+      constant I
+      constraint I
+      variable I
+      comment P
+      userData P
+     comment P
+     property P 
+     userData P
+    viewMap I
+    property P
+    comment P
+    userData P
+   comment P
+   userData P
+ library
+  libraryDefinition P
+ design
+  designNameDef
+   nameDef
+  cellRef P
+  status P
+  property P
+  comment P
+  userData P
+ comment P
+ userData P
+
+*/
+
+/** 
+ * Top production for parsing an EDIF file. Returns a complete
+ * EdifEnvironment. 
+ **/
+EdifEnvironment edif() :
+{
+    EdifComment comment;
+    EdifEnvironment env;
+    EdifDesign design;
+    EdifLibrary lib;
+}
+{
+    <LBR> <EDIF> env = edifFileName() {edif_environment = env;}
+    edifVersion()
+    edifLevel()
+    keywordMap() 
+    ( status()  
+      | lib = external(env)
+      | lib = library(env)
+      | design = design() { env.setTopDesign(design); }
+      | comment = comment() 
+        /* {  if (keepComments) env.addComment(comment); } */
+      | userData()
+    )* 
+    <RBR>
+    {
+       //env.getLibraryManager().validateOrder();
+       return env;
+    }
+}
+
+/** Parse the "name" of the current edif environment. This method
+ * will create the new EdifEnvironment object and set its name
+ * appropriately.
+ **/
+EdifEnvironment edifFileName() :
+{
+    EdifNameable name;
+    EdifEnvironment env;
+}
+{		
+    name = nameDef()
+    {
+	env = new EdifEnvironment(name);
+	return env;
+    }
+}
+
+/**
+ * Check to make sure that the edif Version 2.0.0 is used. Throw
+ * an exception in all other cases.
+ */
+void edifVersion() :
+{
+    int val1, val2, val3;
+}
+{
+    <LBR> <EDIFVERSION> 
+    val1 = integerToken()
+    val2 = integerToken()
+    val3 = integerToken()
+    <RBR>
+    {
+	if (val1 != 2 && val2 != 0 && val3 != 0)
+	   throw new ParseException("Unsupported EDIF Version "+val1+
+				    "."+val2+"."+val3+
+				    ". Only EDIF Version 2.0.0 is supported");
+    }
+}
+
+/**
+ * Check to make sure that the edif level = 0. If not, throw
+ * an exception.
+ */
+void edifLevel() :     
+{
+    int edifLevel;
+}
+{
+    <LBR> <EDIFLEVEL> edifLevel = integerToken() <RBR>
+    {
+	if (edifLevel != 0)
+	   throw new ParseException("Unsupported EDIF level " +edifLevel+
+				    ". Only EDIF Level 0 is supported");
+    }
+}
+
+/**
+* Handles external libraries
+**/
+EdifLibrary external(EdifEnvironment env) :
+{
+    EdifLibrary lib;
+}
+{
+    <LBR> <EXTERNAL> 
+       lib = libraryDefinition(env, true)
+    <RBR>
+   { return lib; }
+}
+
+/**
+* Handles regular libraries.
+**/
+EdifLibrary library(EdifEnvironment env) :
+{
+    EdifLibrary lib;
+}
+{
+    <LBR> <LIBRARY>
+       lib = libraryDefinition(env, false)
+    <RBR>
+   { return lib; }
+}
+
+/**
+* Handles a complete library definition.
+**/
+EdifLibrary libraryDefinition(EdifEnvironment env, boolean extern) :
+{
+    EdifLibrary lib;
+    EdifCell cell;
+}
+{
+     lib = libraryNameDef(env, extern) 
+     edifLevel()
+     technology()
+     ( status() 
+       | cell = cell(lib)
+       | comment()
+       | userData()
+     )*
+    { return lib; }
+}
+
+/**
+* Parses a library definition and creates a new EdifLibrary object.
+* The parameter to this method is a boolean indicating whether the
+* library created should be external or not.
+**/
+EdifLibrary libraryNameDef(EdifEnvironment env, boolean extern) :
+{
+    EdifNameable name;
+    EdifLibrary newLib;
+}
+{
+    name = nameDef()
+    {
+    	try {
+        	newLib = new EdifLibrary(env.getLibraryManager(), name, extern);
+		} catch (EdifNameConflictException e) {
+			throw new ParseException("Duplicate library: " + name);
+		}
+	return newLib;
+    }
+}
+
+/**
+ * Parses a cell definition and create a new 
+ * EdifCell object for the defined cell. 
+ **/
+EdifCell cell(EdifLibrary lib) :
+{
+    // currCellInstanceMap = new HashMap();
+    Property p;
+    EdifCell cell;
+}
+{
+    <LBR> <CELL> 
+    cell = cellNameDef(lib) 
+    cellType()
+    
+    ( status()
+      | view(cell)
+      | viewMap()
+      | p = property() { cell.addProperty(p); }
+      | comment() 
+      | userData()
+    )* 
+    <RBR>
+    { return cell; }
+}
+
+/** This method parses the name of a cell and creates a new
+ * cell object for current_cell.
+ **/
+EdifCell cellNameDef(EdifLibrary lib) :
+{
+    EdifNameable name;
+    EdifCell cell;
+}
+{
+    name = nameDef() 
+    {
+    try {
+		cell = new EdifCell(lib, name);
+	} catch(EdifNameConflictException e) {
+		throw new ParseException("Duplicate cell definition: " + name);
+	}
+	return cell;
+    }
+}
+
+void cellType() :
+{}
+{
+    <LBR> <CELLTYPE> ( <GENERIC> | <TIE> | <RIPPER> ) <RBR>
+}
+
+void view(EdifCell cell) :
+{
+    EdifNameable name;
+    EdifCellInterface iface;
+    Property property;
+}
+{
+    <LBR> <VIEW> 
+    name = viewNameDef()
+	{
+	    // The cell will be tagged as a primitive when the
+	    // tagPrimitives flag is true and when the view name
+	    // matches the primitiveViewName.
+	    if (tagPrimitives) {
+		if (name.getName().compareToIgnoreCase(primitiveViewName) == 0)
+                    cell.setPrimitive();
+	    }
+	}
+    viewType()
+    iface = myInterface(cell) { cell.setInterface(iface); }
+    ( status() 
+      | contents(cell) 
+      | comment() 
+      | property = property() { cell.addProperty(property); }
+      | userData()
+    )*
+    <RBR>
+}
+
+EdifNameable viewNameDef() :
+{
+    EdifNameable name;
+}
+{
+    name = nameDef() 
+    { return name; }
+}
+
+// TODO: check this
+void viewType() :
+{}
+{
+    <LBR> <VIEWTYPE> ( <BEHAVIOR> | <DOCUMENT> | <GRAPHIC> | <LOGICMODEL> | 
+                       <MASKLAYOUT> | <NETLIST> | <PCBLAYOUT> | <SCHEMATIC> | <STRANGER> | 
+                       <SYMBOLIC> ) <RBR>
+}
+
+EdifCellInterface myInterface(EdifCell cell) :
+{
+    EdifCellInterface iface = new EdifCellInterface(cell);
+}
+{
+    <LBR> <INTERFACE>
+    ( 
+    	port(iface)
+        // Do we need to implement any of those below?
+    	| portBundle()
+        | symbol() 
+        | protectionFrame()
+        | arrayRelatedInfo() 
+        | parameter() 
+        | joined(null,null) 
+        | mustJoin() 
+        | weakJoined() 
+        | permutable() 
+        | timing() 
+        | simulate() 
+        | designator() 
+        | constant() 
+        | constraint() 
+        | variable() 
+        | property() 
+        | comment() 
+        | userData() 
+     )* 
+    <RBR>
+   { return iface; }
+}
+
+/**
+ * Creates a port object and adds it to the cell interface. 
+ **/
+EdifPort port(EdifCellInterface iface) :
+{
+    Property p;
+    Object port_name;
+    int direction = -1;
+    PropertyList properties = null;
+}
+{
+    <LBR> <PORT> 
+    port_name = portNameDef()
+    ( direction = direction() 
+      | unused() 
+      | designator() 
+      | dcFaninLoad() 
+      | dcFanoutLoad() 
+      | dcMaxFanin() 
+      | acLoad() 
+      | portDelay() 
+      | p = property() 
+        { if(properties == null)
+	     properties = new PropertyList();
+	  properties.addProperty(p); 
+        }
+      | comment() 
+      | userData()
+    )* 
+    <RBR>
+    {
+	if (direction == -1)
+           throw new ParseException("Direction of port not specified");
+	EdifPort newPort = null;
+	if (port_name instanceof EdifNameable) {
+            // single bit port
+        try {
+	    	newPort = iface.addPort( (EdifNameable) port_name, 1, direction);
+	    } catch(EdifNameConflictException e) {
+	    	throw new ParseException("Duplicate port name: " + port_name + " in cell " + iface.getEdifCell());
+	    }
+	} else { 
+	    ArrayElement ae = (ArrayElement) port_name;
+	    if (ae.getSize() != 1)
+                throw new ParseException("Multi-dimensional ports not supported");
+	    try {
+	    	newPort = iface.addPort( ae.getName(), ae.getFirstElement(), direction);
+        } catch(EdifNameConflictException e1) {
+        	throw new ParseException("Duplicate port name: " + port_name + " in cell " + iface.getEdifCell());
+      	}
+    }
+	if (properties != null)
+           newPort.addPropertyList(properties);
+	return newPort;
+    }	
+}
+
+Object portNameDef() :
+{
+    EdifNameable name;
+    ArrayElement array;
+}
+{
+    name = nameDef() { return name; }
+    | array = array() { return array; }
+}
+
+/**
+ * Parses the direction construct. Sets current_port_direction
+ * to the appropriate direction value.
+ **/
+int direction() :
+{
+    int retval;
+}
+{
+    <LBR> <DIRECTION>
+    ( 
+        <INOUT> { retval = EdifPort.INOUT; }
+        | <INPUT> { retval = EdifPort.IN; }
+        | <OUTPUT> { retval = EdifPort.OUT; }
+    )
+    <RBR>
+   { return retval; }
+}
+
+void contents(EdifCell cell) :
+{
+    EdifNet net;
+    EdifCellInstance inst;
+}
+{
+    <LBR> <CONTENTS>
+    ( inst = instance(cell) 
+       {
+		try {       
+        	cell.addSubCell( inst );
+		} catch(EdifNameConflictException e) {
+		throw new ParseException("Duplicate cell instance name: " + inst.getEdifNameable());
+		}
+       }
+    | offPageConnector() 
+    | figure() 
+    | section() 
+    | net = net(cell)
+    {
+    	try {
+	    	cell.addNet(net);
+	    } catch(EdifNameConflictException e) {
+	    	throw new ParseException("Duplicate net name: " + net.getEdifNameable());
+	    }
+	}
+    | netBundle() | page() | commentGraphics() | portImplementation() 
+    | timing() | simulate() | when() | follow() | logicPort() | boundingBox() 
+    | constant() | constraint() | variable() | comment() | userData() )*
+   <RBR>
+
+}
+
+EdifCellInstance instance(EdifCell parentCell) :
+{
+  Object objectName;
+  EdifNameable name = null;
+  Property p;
+  EdifCellInstance inst;
+  EdifCell referenceCell;
+}
+{
+    <LBR> <INSTANCE> 
+    objectName = instanceNameDef()
+	{
+	    if (objectName instanceof ArrayElement)
+	       throw new ParseException("Array names for instances not supported");
+	    name = (EdifNameable) objectName;
+
+	}
+    (   
+        referenceCell = viewRef(parentCell)
+	| viewList()
+         {
+	     throw new ParseException("Lists of reference cells not supported");
+         }
+    )
+    {
+        inst = new EdifCellInstance(name,
+			parentCell,
+			referenceCell);
+      }
+    ( transform() 
+      | parameterAssign() 
+      | portInstance() 
+      | designator() 
+      | timing() 
+      | p = property() { inst.addProperty(p); }
+      | comment() 
+      | userData() 
+    )*
+    <RBR> 
+   { return inst; }
+}
+
+Object instanceNameDef() :
+{
+    EdifNameable name;
+    ArrayElement ae;
+}
+{
+    name = nameDef() {
+	return name;
+    }
+    | ae = array() {
+	return ae;
+    }
+}
+
+EdifCell viewRef(EdifCell parent) :
+{
+    EdifCell refCell = null;
+}
+{
+    <LBR> <VIEWREF> 
+    viewNameRef()
+    [ refCell = cellRef(parent) ]
+    <RBR>
+    { return refCell; }
+}
+
+void viewNameRef() :
+{}
+{
+    nameRef()
+}
+
+EdifCell cellRef(EdifCell parent) :
+{
+    String cellRefName;
+    String libraryRefName = null;
+}
+{
+    <LBR> <CELLREF> 
+    cellRefName = cellNameRef() 
+    [ 
+      libraryRefName = libraryRef() 
+    ]
+    <RBR> 
+    {
+	EdifLibrary refLib = null;
+	if (libraryRefName != null){
+	    // The library for the reference specified
+	    EdifLibraryManager elm = edif_environment.getLibraryManager();
+	    refLib = elm.getLibrary(libraryRefName);
+	    if(refLib == null) {
+		Collection c = elm.getLibraries();
+		if (c == null || c.size() == 0) {
+		    throw new ParseException("Reference to library: " + libraryRefName +
+					     " when no libraries have been added");
+		} else {
+		    String libs = "[libs=";
+		    for (Iterator i = c.iterator();i.hasNext();)
+			libs = libs + ((EdifLibrary) i.next()).getName()+ " ";
+		    libs = libs + "]";
+		    throw new ParseException("Reference library: " + libraryRefName +
+					     " cannot be found when examining " +
+					     cellRefName +" "+libs);
+		}
+	    }
+	}
+	else {
+	    // The library for the reference is not specified. Use the default library.
+	    if (parent == null)
+	       throw new ParseException("No library specified for the cell reference without a parent");
+	    EdifLibrary parentLibrary = parent.getLibrary();
+	    refLib = parentLibrary;
+	    if (parentLibrary == null) {
+	       throw new ParseException("Cell " + parent.getName() + 
+					" does not have a library");
+	    }
+	}
+
+	EdifCell tmpCell = (EdifCell)refLib.getCell(cellRefName);
+	if (tmpCell==null) {
+	    String message = "Reference cell: "+cellRefName+
+		" cannot be found";
+	    if ( refLib != null) message += " in library "+libraryRefName;
+	    throw new ParseException(message);
+	}
+	return tmpCell;
+    }
+}
+
+String cellNameRef() :
+{
+    String name;
+}
+{
+    name = nameRef()
+    { return name; }
+}
+
+String libraryRef() :
+{
+    String libName;
+}
+{
+    <LBR> <LIBRARYREF> libName =libraryNameRef() <RBR>
+    { return libName; }
+}
+
+String libraryNameRef() :
+{
+    String libName;
+}
+{
+    libName = nameRef()
+    { return libName; }
+}
+
+
+EdifDesign design() :
+{
+    Property p;
+    EdifCell refCell;
+    EdifDesign design;
+}
+{
+    <LBR>
+    <DESIGN> 
+    design = designNameDef() 
+    refCell = cellRef(null) // no parent
+    {
+	EdifCellInstance eci = 
+	    // create a top-level EdifCellInstance with no parent
+	   new EdifCellInstance(design.getEdifNameable(),
+			     null,
+			     refCell);
+	design.setTopCellInstance(eci);
+    } 
+    ( status() 
+      | p = property() { design.addProperty(p); }
+      | comment() 
+      | userData() 
+    )*
+    <RBR>
+    { return design; }
+}
+
+EdifDesign designNameDef() :
+{
+    EdifNameable name;
+    EdifDesign design;
+}
+{
+    name = nameDef() 
+    {
+	design = new EdifDesign(name);
+	return design;
+    }
+}
+
+EdifNet net(EdifCell cell) :
+{
+    Property p;
+    EdifNet net;
+    Object objectName;
+    EdifNameable name = null;
+}
+{
+    <LBR> <NET> objectName = netNameDef()
+    {
+	if (objectName instanceof ArrayElement)
+	    throw new ParseException("Array nets not supported");
+	name = (EdifNameable) objectName;
+	net = new EdifNet(name);
+    }
+    joined(cell, net)
+    ( criticality()
+      | netDelay() 
+      | figure() 
+      | net(cell) 
+      | instance(cell) 
+      | commentGraphics() 
+      | p = property() { net.addProperty(p); }
+      | comment() 
+      | userData()
+    )* <RBR>
+
+   {return net;}
+}
+
+Object netNameDef() :
+{
+    EdifNameable name;
+    ArrayElement array;
+}
+{
+    name = nameDef() { return name; } 
+    | array = array() { return array; }
+}
+
+void joined(EdifCell cell, EdifNet net) :
+{}
+{
+    <LBR> <JOINED> 
+    ( portRef(cell, net) | portList() | globalPortRef() )* 
+    <RBR>
+}
+
+void portRef(EdifCell cell, EdifNet net) :
+{
+    Object objectName;
+    String refPortName;
+    String instanceName = null;
+    int member_number = -1;
+}
+{
+    <LBR>
+    <PORTREF>
+    objectName = portNameRef() 
+    {
+	if (objectName instanceof String) {
+	    refPortName = (String) objectName;
+	} else {
+	    ArrayElement ae = (ArrayElement) objectName;
+	    refPortName = ae.getName().toString();
+	    member_number = ae.getFirstElement();
+	}
+    }
+    [   portRef(null,null) 
+        {
+	    throw new ParseException("Nested portRefs not supported");
+	}
+      | instanceName = instanceRef() 
+      | viewRef(null) 
+        {
+	    throw new ParseException("View ref nested in port ref not supported");
+	}
+    ]
+    <RBR>  {
+
+	EdifPort port;
+	EdifCellInstance instanceCell = null;
+	
+	// Check and see if this EdifPortRef is referring to a top-level
+	// cell vs. an EdifCellInstance
+	if( instanceName == null ) {
+	    
+	    // This EdifPortRef refers to a top-level port
+	    
+	    port = cell.getPort( refPortName );
+	    if ( port == null ){
+		String message = "Top-level reference port " + refPortName +
+		    " in cell " + cell.getName() + " cannot be found!";
+		message += " Ports in this cell include:";
+		for (Iterator i = cell.getPortList().iterator(); i.hasNext(); ) {
+		    EdifPort p = (EdifPort) i.next();
+		    message += p.toString();
+		}
+		throw new ParseException(message);
+	    }
+	    if ( member_number != -1 ) {
+		if (member_number<0 || member_number >port.getWidth()){
+		    throw new ParseException("Reference to bus member: " + 
+					     member_number + " is not valid!");
+		}
+	    }
+	}
+	else{
+	    // refers to an internal instance
+	    instanceCell = cell.getInstance(instanceName);
+	    
+	    if (instanceCell==null){
+		throw new ParseException("Reference to subcell: " + 
+					 instanceName +
+					 " of: " +
+					 cell.getName() +
+					 " cannot be found!");
+	    }
+	    
+	    port = instanceCell.getCellType().getPort( refPortName );
+	    if (port ==null){
+		String message = "Reference port " + refPortName + " of: " +
+					 instanceCell.getName() + " of type " + 
+		    instanceCell.getCellType() + " cannot be found!";
+		message += "Ports in this cell include:";
+		for (Iterator i = instanceCell.getCellType().getPortList().iterator(); i.hasNext(); ) {
+		    EdifPort p = (EdifPort) i.next();
+		    message += p.toString();
+		}
+		throw new ParseException(message);
+	    }
+	    
+	    if ( member_number != -1 ) {
+		if (member_number<0 || member_number >port.getWidth()){
+		    throw new ParseException("Reference to bus member: " + 
+					     member_number + " is not valid!");
+		}
+	    }
+	}
+	EdifPortRef edif_portRef = new EdifPortRef(net,port,
+						   instanceCell,
+						   member_number);
+	
+	net.addPortConnection(edif_portRef);
+    }
+}
+
+void portList() :
+{}
+{
+    <LBR> <PORTLIST> ( portNameRef() | portRef(null,null) )* <RBR>
+}
+
+void globalPortRef() :
+{}
+{
+    <LBR> <GLOBALPORTREF> portNameRef() <RBR>
+}
+
+Object portNameRef() :
+{
+    String refPortName;
+    ArrayElement member;
+}
+{
+    refPortName = nameRef() { return refPortName; } 
+    | member = member() {return member; }
+}
+
+String instanceRef() :
+{
+    String instanceName;
+}
+{
+    <LBR> <INSTANCEREF> 
+    instanceName = instanceNameRef()
+    {
+    }
+    [ instanceRef() {
+	throw new ParseException("Nested instanceref not supported");
+       }
+      | viewRef(null) {
+	throw new ParseException("View ref nested in instanceref not supported");
+      }
+    ]
+    <RBR>
+   { return instanceName; }
+}
+
+String instanceNameRef() :
+{
+    String name;
+}
+{
+    name = nameRef() { return name; }
+    | member() { 
+	throw new ParseException("member instanceref names not supported");
+    }
+}
+
+// see array()
+ArrayElement member() :
+{
+    String name;
+    int intValue;
+    ArrayElement element = singleArray;
+}
+{
+    <LBR> <MEMBER> 
+    name = nameRef() 
+    intValue = integerValue() {
+	element.setName(name);
+	element.setFirstElement(intValue);
+    }
+    ( intValue = integerValue() 
+      {
+	  int size = element.getSize();
+	  element = new ArrayElement(element, size+1);
+	  element.setElement(size, intValue);
+      }
+    )* 
+    <RBR>
+   { return element; }
+}
+
+/**************************************************
+ Atomic productions (in order of use)
+ **************************************************/
+
+/**
+ * This method parses a "EdifName" String and returns
+ * a valid EdifNameable object.
+ *
+ **/
+EdifNameable nameDef() :
+{
+    String name;
+    EdifNameable eName;
+}
+{
+    name = ident() 
+	{ 
+	    try {
+		return new NamedObject(name);
+	    } catch (InvalidEdifNameException e) {
+		throw new ParseException(e.toString());
+	    }
+	} 
+    | name = name() 
+	{ 
+	    try {
+		return new NamedObject(name);
+	    } catch (InvalidEdifNameException e) {
+		throw new ParseException(e.toString());
+	    }
+	}
+    | eName = rename() {
+	return eName;
+    }
+}
+
+String name() :
+{
+    String name;
+}
+{
+    <LBR> <NAME> 
+    name = ident() 
+    ( display() )*
+    <RBR>
+    {
+	return name;
+    }
+}
+
+/**
+ * This method parses the "old name" or original name that may or
+ * may not be a valid EDIF name. A new EdifNameable object
+ * is created to represent this name.
+ **/
+EdifNameable rename() :
+{
+	String currName;
+	String currOldName;
+}
+{
+    <LBR> <RENAME> 
+    (   currName = ident()
+      | currName = name() ) 
+    ( currOldName = stringToken()
+      | currOldName = stringDisplay()
+    )
+    <RBR>
+    {
+	try {
+	    return new RenamedObject(currName,currOldName);
+	} catch (InvalidEdifNameException e) {
+	    throw new ParseException(e.toString());
+	}
+    }
+
+}
+
+int integerToken() :
+{}
+{
+    <INTEGER_TOK>
+    {	
+        return Integer.parseInt(token.image);
+    }
+}
+
+String nameRef() :
+{
+    String stringName;
+}
+{
+    stringName = ident() { return stringName; }
+    | stringName = name() {return stringName;}
+}
+
+String stringToken() :
+{}
+{
+    <STRING_TOK> {
+	return token.image.substring(1,token.image.length() - 1);
+    }
+}
+
+String stringDisplay() :
+{
+    String value;
+}
+{
+    <LBR> <STRINGDISPLAY> value = stringValue() ( display() )*
+    <RBR>
+    { return value; }
+}
+
+/**
+ * EDIF level 0 version
+ */
+String stringValue() :
+{
+    String value;
+}
+{
+    value = stringToken() { return value; }
+}
+
+/* EDIF level 1
+String stringValue() :
+{
+	String value;
+}
+{
+    value = stringToken() { return value; }
+    | value = valueNameRef() { return value; }
+    | value = concat() { return value; }
+}
+*/
+
+
+/**
+ * This will return an array element representing an integer array.
+ * A pre-constructed array element is used for the common case when
+ * the array is a single dimension.  
+ **/
+ArrayElement array() :
+{
+    EdifNameable name;
+    int intValue;
+    ArrayElement element = singleArray;
+}
+{         
+    <LBR> <ARRAY> 
+    name = nameDef() 
+    intValue = integerValue() {
+	element.setName(name);
+	element.setFirstElement(intValue);
+    }
+    ( 
+     intValue = integerValue()
+      {
+	  int size = element.getSize();
+	  element = new ArrayElement(element, size+1);
+	  element.setElement(size, intValue);
+      }
+    )*
+    <RBR>
+    { return element; }
+}
+
+void keywordLevel() :
+{}
+{
+    <LBR> <KEYWORDLEVEL> <INTEGER_TOK> <RBR>
+}
+
+void keywordMap() :
+{}
+{
+    <LBR> <KEYWORDMAP> keywordLevel() ( comment() )* <RBR>
+}
+
+void timeStamp() :
+{}
+{
+    <LBR> <TIMESTAMP> <INTEGER_TOK> <INTEGER_TOK> <INTEGER_TOK>
+         <INTEGER_TOK> <INTEGER_TOK> <INTEGER_TOK> <RBR>
+}
+
+String author() :
+{
+    String author;
+}
+{
+    <LBR> 
+    <AUTHOR> 
+    author = stringToken()
+    <RBR>
+    { return author; }
+}
+
+String program() :
+{
+    String program;
+}
+{
+    <LBR>
+    <PROGRAM> 
+    program = stringToken() 
+    [ version() ] 
+    <RBR>
+    { return program; }
+}
+
+Property property() :
+{
+    EdifNameable propertyName;
+    EdifTypedValue propertyValue;
+    Property p;
+}
+{
+    <LBR> <PROPERTY> 
+    propertyName = propertyNameDef() 
+    propertyValue = typedValue()
+    {
+	p = new Property(propertyName, propertyValue );
+    }
+    ( owner() 
+      | unit() 
+      | property() 
+      | comment() )*
+    <RBR>
+    { return p; }
+}
+
+
+/** 
+ *  Returns a List of Boolean objects associated with this
+ *  boolean specification. The List can be of zero size or
+ *  any arbitrary size.
+ * 
+ *  the method name "myBoolean" used because boolean is a reserved 
+ *  word in Java
+ **/
+List myBoolean() :
+{
+    boolean value;
+    List values = new ArrayList(1);
+    List otherValues = null;
+}
+{
+    <LBR> <BOOLEAN>
+    ( value = booleanValue()
+	{ values.add(new Boolean(value)); }
+    | value = booleanDisplay()
+	{ values.add(new Boolean(value)); }
+    | otherValues = myBoolean()
+	{ values.addAll(otherValues); }
+    )*
+    <RBR>
+    {
+	return values;
+    }
+}
+
+/** 
+ *  Returns a List of integer objects associated with this
+ *  integer specification. The List can be of zero size or
+ *  any arbitrary size.
+ **/
+List integer() :
+{
+    int value;
+    List values = new ArrayList(1);
+    List otherValues = null;
+}
+{
+    <LBR> <INTEGER> 
+    ( value = integerValue()
+        { values.add(new Integer(value)); }
+    | value = integerDisplay() 
+        { values.add(new Integer(value)); }
+    | otherValues = integer()
+        { values.addAll(otherValues); }
+    )*
+    <RBR>
+    { return values; }
+}
+
+/** 
+ *  Returns a List of ScaledInteger objects associated with this
+ *  number specification. The List can be of zero size or
+ *  any arbitrary size.
+ **/
+List number() :
+{
+    ScaledInteger value;
+    List values = new ArrayList(1);
+    List otherValues = null;
+}
+{
+    <LBR> <NUMBER> 
+    ( value = numberValue()
+        { values.add(value); }
+    | value = numberDisplay() 
+        { values.add(value); }
+    | otherValues = number()
+        { values.addAll(otherValues); }
+    )* 
+    <RBR>
+    { return values; }
+}
+
+/** 
+ * This is the EDIF level 0 version of numberValue
+ */
+ScaledInteger numberValue() :
+{
+    ScaledInteger si;
+}
+{
+    si = scaledInteger()
+    { return si; }
+}
+
+/* EDIF Level 1
+void numberValue() :
+{}
+{
+    scaledInteger() | valueNameRef() | floor() | ceiling() | fix() |
+        mod() | xCoord() | yCoord() | abs() | max() | min() | negate() |
+        product() | subtract() | sum()
+}
+*/
+
+ScaledInteger numberDisplay() :
+{
+    ScaledInteger si;
+}
+{
+    <LBR> <NUMBERDISPLAY> si = numberValue() ( display() )* <RBR>
+    { return si; }
+}
+
+
+// FIX ScaledInteger (make the type determined during construction) 
+ScaledInteger scaledInteger() :
+{
+    int val;
+    ScaledInteger si;
+    ExpValue exp;
+}
+{
+    val = integerToken() 
+        {
+            si = new ScaledInteger(val);
+	    return si;
+        }
+    | exp = e()
+       {
+	   return exp;
+        }
+}
+
+ExpValue e() :
+{
+    int base, exp;
+}
+{
+    <LBR> <IDENTIFIER> 
+    base = integerToken()
+    exp = integerToken()
+    <RBR> {
+        return new ExpValue(base,exp);
+    }
+}
+
+
+/** 
+ *  Returns a List of String objects associated with this
+ *  string specification. The List can be of zero size or
+ *  any arbitrary size.
+ **/
+List string() :
+{
+    String value;
+    List values = new ArrayList(1);
+    List otherValues = null;
+}
+{
+    <LBR> <STRING> 
+    ( value = stringValue()
+        { values.add(value); }
+     | value = stringDisplay()
+        { values.add(value); }
+     | string() 
+        { values.addAll(otherValues); }
+    )* 
+    <RBR>
+    { return values; }
+}
+
+void myTrue() :
+{}
+{
+    <LBR> <TRUE> <RBR>
+}
+
+void myFalse() :
+{}
+{
+    <LBR> <FALSE> <RBR>
+}
+
+
+
+/** The EDIF level 0 version of integerValue is
+ *  simply an integer token value.
+ */
+int integerValue() :
+{
+    int value;
+}
+{
+    value = integerToken()
+    {  return value; }
+}
+
+/* - this is the EDIF level 1 version of integerValue
+int integerValue() :
+{
+    int value;
+}
+{
+    value = integerToken()
+    | valueNameRef() | floor() | ceiling() | fix() |
+      mod() | xCoord() | yCoord() | abs() | max() | min() | negate() |
+      product() | subtract() | sum()
+    }
+*/
+
+
+
+
+
+
+boolean booleanValue() :
+{}
+{
+    myFalse() {return false;} 
+    | myTrue() {return true;}
+}
+
+
+
+
+
+/**
+ * Process an EDIF comment and return a EdifComment object.
+ */
+EdifComment comment() :
+{
+    EdifComment comment = null;
+    if (keepComments)
+	comment = new EdifComment();
+    String line;
+}
+{
+    <LBR> <COMMENT> 
+    ( 
+        line = stringToken() { if (keepComments) comment.addCommentLine(line); }
+    )*
+    <RBR>
+    {
+	return comment;
+    }
+}
+
+EdifTypedValue typedValue() :
+{
+    List values;
+}
+{
+    values = myBoolean()
+       { 
+	   if (values.size() != 1)
+              throw new ParseException("Illegal Boolean value");
+	   Boolean bool = (Boolean) values.get(0);
+	   return new BooleanTypedValue(bool.booleanValue());
+       }
+    | values = integer() 
+       { 
+	   if (values.size() != 1)
+              throw new ParseException("Illegal Integer value");
+	   Integer integ = (Integer) values.get(0);
+	   return new IntegerTypedValue(integ.intValue());
+       }
+    | miNoMax()                  // not used
+    | values = number()
+       { 
+	   if (values.size() != 1)
+              throw new ParseException("Illegal Number value");
+	   ScaledInteger si = (ScaledInteger) values.get(0);
+	   return si;
+       }
+    | point()                    // not used
+    | values = string()
+       { 
+	   if (values.size() != 1)
+              throw new ParseException("Illegal String value");
+	   String s = (String) values.get(0);
+	   return new StringTypedValue(s);
+       }
+}
+
+boolean booleanDisplay() :
+{
+    boolean value;
+}
+{
+    <LBR> <BOOLEANDISPLAY> value = booleanValue() ( display() )*
+    <RBR>
+    { return value; }
+}
+
+int integerDisplay() :
+{
+    int value;
+}
+{
+    <LBR> <INTEGERDISPLAY> value = integerValue() ( display() )* <RBR>
+    { return value; }
+}
+
+String ident() :
+{}
+{
+    identifier()
+    { return token.image; }
+}
+
+void identifier() :
+{}
+{
+    <IDENTIFIER> | <SUM> | <ANGLE> | <BEHAVIOR> | <CALCULATED> | <CAPACITANCE> | <CENTERCENTER> | <CENTERLEFT> | <CENTERRIGHT> | <CHARGE> | <CONDUCTANCE> | <CURRENT> | <DISTANCE> | <DOCUMENT> | <ENERGY> | <EXTEND> | <FLUX> | <FREQUENCY> | <GENERIC> | <GRAPHIC> | <INDUCTANCE> | <INOUT> | <INPUT> | <LOGICMODEL> | <LOWERCENTER> | <LOWERLEFT> | <LOWERRIGHT> | <MASKLAYOUT> | <MASS> | <MEASURED> | <MX> | <MXR90> | <MY> | <MYR90> | <NETLIST> | <OUTPUT> | <PCBLAYOUT> | <POWER> | <R0> | <R180> | <R270> | <R90> | <REQUIRED> | <RESISTANCE> | <RIPPER> | <ROUND> | <SCHEMATIC> | <STRANGER> | <SYMBOLIC> | <TEMPERATURE> | <TIE> | <TIME> | <TRUNCATE> | <UPPERCENTER> | <UPPERLEFT> | <UPPERRIGHT> | <VOLTAGE> | <ACLOAD> | <AFTER> | <ANNOTATE> | <APPLY> | <ARC> | <ARRAY> | <ARRAYMACRO> | <ARRAYRELATEDINFO> | <ARRAYSITE> | <ATLEAST> | <ATMOST> | <AUTHOR> | <BASEARRAY> | <BECOMES> | <BETWEEN> | <BOOLEAN> | <BOOLEANDISPLAY> | <BOOLEANMAP> | <BORDERPATTERN> | <BORDERWIDTH> | <BOUNDINGBOX> | <CELL> | <CELLREF> | <CELLTYPE> | <CHANGE> | <CIRCLE> | <COLOR> | <COMMENT> | <COMMENTGRAPHICS> | <COMPOUND> | <CONNECTLOCATION> | <CONTENTS> | <CORNERTYPE> | <CRITICALITY> | <CURRENTMAP> | <CURVE> | <CYCLE> | <DATAORIGIN> | <DCFANINLOAD> | <DCFANOUTLOAD> | <DCMAXFANIN> | <DCMAXFANOUT> | <DELAY> | <DELTA> | <DERIVATION> | <DESIGN> | <DESIGNATOR> | <DIFFERENCE> | <DIRECTION> | <DISPLAY> | <DOMINATES> | <DOT> | <DURATION> | <E> | <EDIF> | <EDIFLEVEL> | <EDIFVERSION> | <ENCLOSUREDISTANCE> | <ENDTYPE> | <ENTRY> | <EVENT> | <EXACTLY> | <EXTERNAL> | <FABRICATE> | <FALSE> | <FIGURE> | <FIGUREAREA> | <FIGUREGROUP> | <FIGUREGROUPOBJECT> | <FIGUREGROUPOVERRIDE> | <FIGUREGROUPREF> | <FIGUREPERIMETER> | <FIGUREWIDTH> | <FILLPATTERN> | <FOLLOW> | <FORBIDDENEVENT> | <GLOBALPORTREF> | <GREATERTHAN> | <GRIDMAP> | <IGNORE> | <INCLUDEFIGUREGROUP> | <INITIAL> | <INSTANCE> | <INSTANCEBACKANNOTATE> | <INSTANCEGROUP> | <INSTANCEMAP> | <INSTANCEREF> | <INTEGER> | <INTEGERDISPLAY> | <INTERFACE> | <INTERFIGUREGROUPSPACING> | <INTERSECTION> | <INTRAFIGUREGROUPSPACING> | <INVERSE> | <ISOLATED> | <JOINED> | <JUSTIFY> | <KEYWORDDISPLAY> | <KEYWORDLEVEL> | <KEYWORDMAP> | <LESSTHAN> | <LIBRARY> | <LIBRARYREF> | <LISTOFNETS> | <LISTOFPORTS> | <LOADDELAY> | <LOGICASSIGN> | <LOGICINPUT> | <LOGICLIST> | <LOGICMAPINPUT> | <LOGICMAPOUTPUT> | <LOGICONEOF> | <LOGICOUTPUT> | <LOGICPORT> | <LOGICREF> | <LOGICVALUE> | <LOGICWAVEFORM> | <MAINTAIN> | <MATCH> | <MEMBER> | <MINOMAX> | <MINOMAXDISPLAY> | <MNM> | <MULTIPLEVALUESET> | <MUSTJOIN> | <NAME> | <NET> | <NETBACKANNOTATE> | <NETBUNDLE> | <NETDELAY> | <NETGROUP> | <NETMAP> | <NETREF> | <NOCHANGE> | <NONPERMUTABLE> | <NOTALLOWED> | <NOTCHSPACING> | <NUMBER> | <NUMBERDEFINITION> | <NUMBERDISPLAY> | <OFFPAGECONNECTOR> | <OFFSETEVENT> | <OPENSHAPE> | <ORIENTATION> | <ORIGIN> | <OVERHANGDISTANCE> | <OVERLAPDISTANCE> | <OVERSIZE> | <OWNER> | <PAGE> | <PAGESIZE> | <PARAMETER> | <PARAMETERASSIGN> | <PARAMETERDISPLAY> | <PATH> | <PATHDELAY> | <PATHWIDTH> | <PERMUTABLE> | <PHYSICALDESIGNRULE> | <PLUG> | <POINT> | <POINTDISPLAY> | <POINTLIST> | <POLYGON> | <PORT> | <PORTBACKANNOTATE> | <PORTBUNDLE> | <PORTDELAY> | <PORTGROUP> | <PORTIMPLEMENTATION> | <PORTINSTANCE> | <PORTLIST> | <PORTLISTALIAS> | <PORTMAP> | <PORTREF> | <PROGRAM> | <PROPERTY> | <PROPERTYDISPLAY> | <PROTECTIONFRAME> | <PT> | <RANGEVECTOR> | <RECTANGLE> | <RECTANGLESIZE> | <RENAME> | <RESOLVES> | <SCALE> | <SCALEX> | <SCALEY> | <SECTION> | <SHAPE> | <SIMULATE> | <SIMULATIONINFO> | <SINGLEVALUESET> | <SITE> | <SOCKET> | <SOCKETSET> | <STATUS> | <STEADY> | <STRING> | <STRINGDISPLAY> | <STRONG> | <SYMBOL> | <SYMMETRY> | <TABLE> | <TABLEDEFAULT> | <TECHNOLOGY> | <TEXTHEIGHT> | <TIMEINTERVAL> | <TIMESTAMP> | <TIMING> | <TRANSFORM> | <TRANSITION> | <TRIGGER> | <TRUE> | <UNCONSTRAINED> | <UNDEFINED> | <UNION> | <UNIT> | <UNUSED> | <USERDATA> | <VERSION> | <VIEW> | <VIEWLIST> | <VIEWMAP> | <VIEWREF> | <VIEWTYPE> | <VISIBLE> | <VOLTAGEMAP> | <WAVEVALUE> | <WEAK> | <WEAKJOINED> | <WHEN> | <WRITTEN> | <ABS> | <AND> | <CEILING> | <CONCAT> | <CONSTANT> | <CONSTRAINT> | <DIVIDE> | <EQUAL> | <FIX> | <FLOOR> | <INCREASING> | <MAX> | <MIN> | <MOD> | <NEGATE> | <NOT> | <OR> | <POINTSUBTRACT> | <POINTSUM> | <PRODUCT> | <STRICTLYINCREASING> | <SUBTRACT> | <SUM> | <VARIABLE> | <XCOORD> | <XOR> | <YCOORD>
+}
+
+/**
+ Ignore:
+  Need to implement: userData(), comment()
+  Possible implement: technology(), keywordMap(), parameter(), 
+  Not likely to implement: display(), unused(), designator, dcFaninLoad(), dcFanoutLoad()
+                           dcMaxFanin, acLoad(), portDelay(), portBundle(), symbol(),
+                           protectionFrame(), arrayRelatedInfo(), 
+ **/
+
+/**************************************************
+ Accepted above
+ **************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**********************************************************************************
+ * The following constructs are NOT used by the Edif insfrastructure
+ *********************************************************************************/
+
+void acLoad() :        
+{}
+{
+    <LBR> <ACLOAD> ( miNoMaxValue() | miNoMaxDisplay() ) <RBR>
+         }
+
+void after() :
+{}
+{
+    <LBR> <AFTER> miNoMaxValue() ( logicAssign() | follow() | maintain() | comment() | userData() )* <RBR>
+}
+
+void annotate() :
+{}
+{
+    <LBR> <ANNOTATE> ( stringValue() | stringDisplay() ) <RBR>
+}
+
+void apply() :
+{}
+{
+    <LBR> <APPLY> cycle() ( logicInput() | logicOutput() | comment() | userData() )* <RBR>
+}
+
+void arc() :
+{}
+{
+    <LBR> <ARC> pointValue() pointValue() pointValue() <RBR>
+}
+
+
+void arrayMacro() :
+{}
+{
+    <LBR> <ARRAYMACRO> plug() <RBR>
+}
+
+void arrayRelatedInfo() :
+{}
+{
+    <LBR> <ARRAYRELATEDINFO> ( arrayMacro() | arraySite() | baseArray() ) ( comment() | userData() )* <RBR>
+}
+
+void arraySite() :
+{}
+{
+    <LBR> <ARRAYSITE> socket() <RBR>
+}
+
+void atLeast() :
+{}
+{
+    <LBR> <ATLEAST> numberValue() <RBR>
+}
+
+void atMost() :
+{}
+{
+    <LBR> <ATMOST> numberValue() <RBR>
+}
+
+
+void baseArray() :
+{}
+{
+    <LBR> <BASEARRAY> <RBR>
+}
+
+void becomes() :
+{}
+{
+    <LBR> <BECOMES> ( logicNameRef() | logicList() | logicOneOf() ) <RBR>
+}
+
+void between() :
+{}
+{
+    <LBR> <BETWEEN> ( atLeast() | greaterThan() ) ( atMost() | lessThan() ) 
+         <RBR>
+}
+
+
+
+void booleanMap() :
+{}
+{
+    <LBR> <BOOLEANMAP> booleanValue() <RBR>
+}
+
+void borderPattern() :
+{}
+{
+    <LBR> <BORDERPATTERN> integerValue() integerValue() myBoolean() <RBR>
+}
+
+void borderWidth() :
+{}
+{
+    <LBR> <BORDERWIDTH> integerValue() <RBR>
+}
+
+void boundingBox() :
+{}
+{
+    <LBR> <BOUNDINGBOX> rectangle() <RBR>
+}
+
+
+
+void change() :
+{}
+{
+    <LBR> <CHANGE> ( portNameRef() | portRef(null,null) | portList() ) 
+         [ transition() | becomes() ] <RBR>
+}
+
+void circle() :
+{}
+{
+    <LBR> <CIRCLE> pointValue() pointValue() ( property() )* <RBR>
+}
+
+void color() :
+{}
+{
+    <LBR> <COLOR> scaledInteger() scaledInteger() scaledInteger() <RBR>
+}
+
+
+void commentGraphics() :
+{}
+{
+    <LBR> <COMMENTGRAPHICS> ( annotate() | figure() | instance(null) | 
+                              boundingBox() | property() )* <RBR>
+}
+
+void compound() :
+{}
+{
+    <LBR> <COMPOUND> ( logicNameRef() )* <RBR>
+}
+
+void connectLocation() :
+{}
+{
+    <LBR> <CONNECTLOCATION> ( figure() )* <RBR>
+}
+
+/* this productions has a more detailed version in the level 1
+   void contents() :
+   {}
+   {
+   <LBR> <CONTENTS> ( instance() | offPageConnector() | figure() |
+   section() | net() | simulate() | when() | follow() | logicPort() | 
+   boundingBox() | comment() )* <RBR>
+   }
+*/
+
+void cornerType() :
+{}
+{
+    <LBR> <CORNERTYPE> ( <EXTEND> | <ROUND> | <TRUNCATE> ) <RBR>
+}
+
+void criticality() :
+{}
+{
+    <LBR> <CRITICALITY> ( integerValue() | integerDisplay() ) <RBR>
+}
+
+void currentMap() :
+{}
+{
+    <LBR> <CURRENTMAP> miNoMaxValue() <RBR>
+}
+
+void curve() :
+{}
+{
+    <LBR> <CURVE> ( arc() | pointValue() )* <RBR>
+}
+
+void cycle() :
+{}
+{
+    <LBR> <CYCLE> integerValue() [ duration() ] <RBR>
+}
+
+String dataOrigin() :
+{
+    String tok;
+}
+{
+    <LBR>
+    <DATAORIGIN>
+    tok = stringToken()
+    [ version() ]
+    <RBR>
+    { return tok; }
+}
+
+void dcFaninLoad() :
+{}
+{
+    <LBR> <DCFANINLOAD> ( numberValue() | numberDisplay() ) <RBR>
+}
+
+void dcFanoutLoad() :
+{}
+{
+    <LBR> <DCFANOUTLOAD> ( numberValue() | numberDisplay() ) <RBR>
+}
+
+void dcMaxFanin() :
+{}
+{
+    <LBR> <DCMAXFANIN> ( numberValue() | numberDisplay() ) <RBR>
+}
+
+void dcMaxFanout() :
+{}
+{
+    <LBR> <DCMAXFANOUT> ( numberValue() | numberDisplay() ) <RBR>
+}
+
+void delay() :
+{}
+{
+    <LBR> <DELAY> ( miNoMaxValue() | miNoMaxDisplay() ) <RBR>
+}
+
+void delta() :
+{}
+{
+    <LBR> <DELTA> ( pointValue() )* <RBR>
+}
+
+void derivation() :
+{}
+{
+    <LBR> <DERIVATION> ( <CALCULATED> | <MEASURED> | <REQUIRED> ) <RBR>
+}
+
+
+void designator() :
+{}
+{
+    <LBR> <DESIGNATOR> ( stringValue() | stringDisplay() ) <RBR>
+}
+
+
+void difference() :
+{}
+{
+    <LBR> <DIFFERENCE> ( figureGroupRef() | figureOp() ) 
+         ( figureGroupRef() | figureOp() )* <RBR>
+}
+
+void display() :
+{}
+{
+    <LBR> <DISPLAY>
+      ( figureGroupNameRef() | figureGroupOverride() )
+	[ justify() ] [ orientation() ] [ origin() ]
+    <RBR>
+}
+
+void dominates() :
+{}
+{
+    <LBR> <DOMINATES> ( logicNameRef() )* <RBR>
+}
+
+void dot() :
+{}
+{
+    <LBR> <DOT> pointValue() ( property() )* <RBR>
+}
+
+void duration() :
+{}
+{
+    <LBR> <DURATION> numberValue() <RBR>
+}
+
+
+void enclosureDistance() :
+{}
+{
+    <LBR> <ENCLOSUREDISTANCE> ruleNameDef() figureGroupObject()
+         figureGroupObject() ( range() | singleValueSet() )
+         ( comment() | userData() )* <RBR>
+}
+
+void endType() :
+{}
+{
+    <LBR> <ENDTYPE> ( <EXTEND> | <ROUND> | <TRUNCATE> ) <RBR>
+}
+
+void entry() :
+{}
+{
+    <LBR> <ENTRY> ( match() | change() | steady() )
+         ( logicRef() | portRef(null,null) | noChange() | table() )
+         [ delay() | loadDelay() ] <RBR>
+}
+
+void event() :
+{}
+{
+    <LBR> <EVENT> ( portRef(null,null) | portList() | portGroup() | netRef() |
+                    netGroup() ) ( transition() | becomes() )* <RBR>
+}
+
+void exactly() :
+{}
+{
+    <LBR> <EXACTLY> numberValue() <RBR>
+}
+
+
+void fabricate() :
+{}
+{
+    <LBR> <FABRICATE> layerNameDef() figureGroupNameRef() <RBR>
+}
+
+
+void figure() :
+{}
+{
+    <LBR> <FIGURE> ( figureGroupNameRef() | figureGroupOverride() )
+         ( circle() | dot() | openShape() | path() | polygon() | rectangle() | 
+           shape() | comment() | userData() )* <RBR>
+}
+
+void figureArea() :
+{}
+{
+    <LBR> <FIGUREAREA> ruleNameDef() figureGroupObject() 
+         ( range() | singleValueSet() ) ( comment() | userData() )* <RBR>
+}
+
+void figureGroup() :
+{}
+{
+    <LBR> <FIGUREGROUP> figureGroupNameDef() 
+         ( cornerType() | endType() | pathWidth() |
+           borderWidth() | color() | fillPattern()  |
+           textHeight() | visible() | includeFigureGroup() |
+           property() | comment() | userData() )* <RBR>
+}
+
+void figureGroupNameDef() :
+{}
+{
+    nameDef()
+        }
+
+EdifNameable figureGroupNameRef() :
+{
+	EdifNameable name;
+}
+{
+    name = nameDef()
+    { return name; }
+}
+
+void figureGroupObject() :
+{}
+{
+    <LBR> <FIGUREGROUPOBJECT> ( figureGroupNameRef() | figureGroupRef() | 
+                                figureOp() ) <RBR>
+}
+
+void figureGroupOverride() :
+{}
+{
+    <LBR> <FIGUREGROUPOVERRIDE> figureGroupNameRef() 
+         ( cornerType() | endType() | pathWidth() |
+           borderWidth() | color() | fillPattern() | 
+           borderPattern() | textHeight() | visible() | 
+           property() | comment() | userData() )* <RBR>
+}
+
+void figureGroupRef() :
+{}
+{
+    <LBR> <FIGUREGROUPREF> figureGroupNameRef() [ libraryRef() ] <RBR>
+}
+
+void figureOp() :
+{}
+{
+    ( difference() | intersection() | inverse() | oversize() | union() )
+        }
+
+void figurePerimeter() :
+{}
+{
+    <LBR> <FIGUREPERIMETER> ruleNameDef() figureGroupObject() 
+         ( range() | singleValueSet() ) ( comment() | userData() )* <RBR>
+}
+
+void figureWidth() :
+{}
+{
+    <LBR> <FIGUREPERIMETER> ruleNameDef() figureGroupObject() 
+         ( range() | singleValueSet() ) ( comment() | userData() )* <RBR>
+}
+
+void fillPattern() :
+{}
+{
+    <LBR> <FILLPATTERN> integerValue() integerValue() myBoolean() <RBR>
+}
+
+void follow() :
+{}
+{
+    <LBR> <FOLLOW> ( portNameRef() | portRef(null,null) ) ( portRef(null,null) | table() ) 
+         [ delay() | loadDelay() ] <RBR>
+}
+
+void forbiddenEvent() :
+{}
+{
+    <LBR> <FORBIDDENEVENT> timeInterval() ( event() )* <RBR>
+}
+
+void form() :
+{}
+{
+    <LBR> keywordNameRef() ( <INTEGER_TOK> | <STRING_TOK> | ident() | form() )*
+         <RBR>
+}
+
+
+void greaterThan() :
+{}
+{
+    <LBR> <GREATERTHAN> numberValue() <RBR>
+}
+
+void gridMap() :
+{}
+{
+    <LBR> <GRIDMAP> numberValue() numberValue() <RBR>
+}
+
+void ignore() :
+{}
+{
+    <LBR> <IGNORE> <RBR>
+}
+
+void includeFigureGroup() :
+{}
+{
+    <LBR> <INCLUDEFIGUREGROUP> ( figureGroupRef() | figureOp() ) <RBR>
+}
+
+void initial() :
+{}
+{
+    <LBR> <INITIAL> <RBR>
+}
+
+void instanceBackAnnotate() :
+{}
+{
+    <LBR> <INSTANCEBACKANNOTATE> instanceRef() ( designator() | 
+                                                 timing() | property() | comment() )* <RBR>
+}
+
+void instanceGroup() :
+{}
+{
+    <LBR> <INSTANCEGROUP> ( instanceRef() )* <RBR>
+}
+
+void instanceMap() :
+{}
+{
+    <LBR> <INSTANCEMAP> ( instanceRef() | instanceGroup() | comment() | 
+                          userData() )* <RBR>
+}
+
+
+
+
+void interFigureGroupSpacing() :
+{}
+{
+    <LBR> <INTERFIGUREGROUPSPACING> ruleNameDef() figureGroupObject()
+         figureGroupObject() ( range() | singleValueSet() )
+         ( comment() | userData() )* <RBR>
+}
+
+void intersection() :
+{}
+{
+    <LBR> <INTERSECTION> ( figureGroupRef() | figureOp() ) 
+         ( figureGroupRef() | figureOp() )* <RBR>
+}
+
+void intraFigureGroupSpacing() :
+{}
+{
+    <LBR> <INTRAFIGUREGROUPSPACING> ruleNameDef() figureGroupObject()
+         ( range() | singleValueSet() ) ( comment() | userData() )* <RBR>
+}
+
+void inverse() :
+{}
+{
+    <LBR> <INVERSE> ( figureGroupRef() | figureOp() ) <RBR>
+}
+
+void isolated() :
+{}
+{
+    <LBR> <ISOLATED> <RBR>
+}
+
+
+void justify() :
+{}
+{
+    <LBR> <JUSTIFY> ( <UPPERLEFT> | <UPPERCENTER> | <UPPERRIGHT> | 
+                      <CENTERLEFT> | <CENTERCENTER> | <CENTERRIGHT> | <LOWERLEFT> | 
+                      <LOWERCENTER> | <LOWERRIGHT> ) <RBR>
+}
+
+void keywordDisplay() :
+{}
+{
+    <LBR> <KEYWORDDISPLAY> keywordNameRef() ( display() )* <RBR>
+}
+
+void keywordNameRef() :
+{}
+{
+    ident()
+        }
+
+void layerNameDef() :
+{}
+{
+    nameDef()
+        }
+
+void lessThan() :
+{}
+{
+    <LBR> <LESSTHAN> numberValue() <RBR>
+}
+
+void listOfNets() :
+{}
+{
+    <LBR> <LISTOFNETS> ( net(null) )* <RBR>
+}
+
+void listOfPorts() :
+{}
+{
+    <LBR> <LISTOFPORTS> ( port(null) | portBundle() )* <RBR>
+}
+
+void loadDelay() :
+{}
+{
+    <LBR> <LOADDELAY> ( miNoMaxValue() | miNoMaxDisplay() )
+         ( miNoMaxValue() | miNoMaxDisplay() ) <RBR>
+}
+
+void logicAssign() :
+{}
+{
+    <LBR> <LOGICASSIGN> ( portNameRef() | portRef(null,null) )
+         ( portRef(null,null) | logicRef() | table() )
+         [ delay() | loadDelay() ] <RBR>
+}
+
+void logicInput() :
+{}
+{
+    <LBR> <LOGICINPUT> ( portNameRef() | portRef(null,null) | portList() )
+         logicWaveform() <RBR>
+}
+
+void logicList() :
+{}
+{
+    <LBR> <LOGICLIST> ( logicNameRef() | logicOneOf() | ignore() )* <RBR>
+}
+
+void logicMapInput() :
+{}
+{
+    <LBR> <LOGICMAPINPUT> ( logicRef() )* <RBR>
+}
+
+void logicMapOutput() :
+{}
+{
+    <LBR> <LOGICMAPOUTPUT> ( logicRef() )* <RBR>
+}
+
+void logicNameDef() :
+{}
+{
+    nameDef()
+        }
+
+void logicNameRef() :
+{}
+{
+    nameRef()
+        }
+
+void logicOneOf() :
+{}
+{
+    <LBR> <LOGICONEOF> ( logicNameRef() | logicList() )* <RBR>
+}
+
+void logicOutput() :
+{}
+{
+    <LBR> <LOGICOUTPUT> ( portNameRef() | portRef(null,null) | portList() )
+         logicWaveform() <RBR>
+}
+
+void logicPort() :
+{}
+{
+    <LBR> <LOGICPORT> portNameDef() ( property() | comment() | userData() )*
+         <RBR>
+}
+
+void logicRef() :
+{}
+{
+    <LBR> <LOGICREF> logicNameRef() [ libraryRef() ] <RBR>
+}
+
+void logicValue() :
+{}
+{
+    <LBR> <LOGICVALUE> logicNameDef() 
+         ( voltageMap() | currentMap() | booleanMap() | 
+           compound() | weak() | strong() | dominates() | 
+           logicMapOutput() | logicMapInput() | isolated() | 
+           resolves() | property() | comment() | userData() )* <RBR>
+}
+
+void logicWaveform() :
+{}
+{
+    <LBR> <LOGICWAVEFORM> ( logicNameRef() | logicList() | logicOneOf() | 
+                            ignore() )* <RBR>
+}
+
+void maintain() :
+{}
+{
+    <LBR> <MAINTAIN> ( portNameRef() | portRef(null,null) )
+         [ delay() | loadDelay() ] <RBR>
+}
+
+void match() :
+{}
+{
+    <LBR> <MATCH> ( portNameRef() | portRef(null,null) | portList() )
+         ( logicNameRef() | logicList() | logicOneOf() ) <RBR>
+}
+
+void miNoMax() :
+{}
+{
+    <LBR> <MINOMAX> ( miNoMaxValue() | miNoMaxDisplay() | miNoMax() )* <RBR>
+}
+
+void miNoMaxDisplay() :
+{}
+{
+    <LBR> <MINOMAXDISPLAY> miNoMaxValue() ( display() )* <RBR>
+}
+
+void mnm() :
+{}
+{
+    <LBR> <MNM> ( numberValue() | undefined() | unconstrained() )
+         ( numberValue() | undefined() | unconstrained() )
+         ( numberValue() | undefined() | unconstrained() ) <RBR>
+}
+
+void multipleValueSet() :
+{}
+{
+    <LBR> <MULTIPLEVALUESET> ( rangeVector() )* <RBR>
+}
+
+void mustJoin() :
+{}
+{
+    <LBR> <MUSTJOIN> ( portRef(null,null) | portList() | weakJoined() | joined(null,null) )* <RBR>
+}
+
+
+
+void netBackAnnotate() :
+{}
+{
+    <LBR> <NETBACKANNOTATE> netRef() ( netDelay() | criticality() | 
+                                       property() | comment() )* <RBR>
+}
+
+void netBundle() :
+{}
+{
+    <LBR> <NETBUNDLE> netNameDef() listOfNets() ( figure() |
+                                                  commentGraphics() | property() | comment() | userData() )* <RBR>
+}
+
+void netDelay() :
+{}
+{
+    <LBR> <NETDELAY> derivation() delay() ( transition() | becomes() )* <RBR>
+}
+
+void netGroup() :
+{}
+{
+    <LBR> <NETGROUP> ( netNameRef() | netRef() )* <RBR>
+}
+
+void netMap() :
+{}
+{
+    <LBR> <NETMAP> ( netRef() | netGroup() | comment() | userData() )* <RBR>
+}
+
+void netNameRef() :
+{}
+{
+    nameRef() | member()
+        }
+
+void netRef() :
+{}
+{
+    <LBR> <NETREF> netNameRef() [ netRef() | instanceRef() | viewRef(null) ] <RBR>
+}
+
+void noChange() :
+{}
+{
+    <LBR> <NOCHANGE> <RBR>
+}
+
+void nonPermutable() :
+{}
+{
+    <LBR> <NONPERMUTABLE> ( portRef(null,null) | permutable() )* <RBR>
+}
+
+void notAllowed() :
+{}
+{
+    <LBR> <NOTALLOWED> ruleNameDef() figureGroupObject() ( comment() |
+                                                           userData() )* <RBR>
+}
+
+void notchSpacing() :
+{}
+{
+    <LBR> <NOTCHSPACING> ruleNameDef() figureGroupObject() 
+         ( range() | singleValueSet() ) ( comment() | userData() )* <RBR>
+}
+
+void numberDefinition() :
+{}
+{
+    <LBR> <NUMBERDEFINITION> ( scale() | gridMap() | comment() )* <RBR>
+}
+
+void offPageConnector() :
+{}
+{
+    <LBR> <OFFPAGECONNECTOR> portNameDef() ( unused() | property() |
+                                             comment() | userData() )* <RBR>
+}
+
+void offsetEvent() :
+{}
+{
+    <LBR> <OFFSETEVENT> event() numberValue() <RBR>
+}
+
+void openShape() :
+{}
+{
+    <LBR> <OPENSHAPE> curve() ( property() )* <RBR>
+}
+
+void orientation() :
+{}
+{
+    <LBR> <ORIENTATION> ( <R0> | <R90> | <R180> | <R270> | <MX> | 
+                          <MY> | <MYR90> | <MXR90> ) <RBR>
+}
+
+void origin() :
+{}
+{
+    <LBR> <ORIGIN> pointValue() <RBR>
+}
+
+void overhangDistance() :
+{}
+{
+    <LBR> <OVERHANGDISTANCE> ruleNameDef() figureGroupObject() 
+         figureGroupObject() ( range() | singleValueSet() )
+         ( comment() | userData() )* <RBR>
+}
+
+void overlapDistance() :
+{}
+{
+    <LBR> <OVERLAPDISTANCE> ruleNameDef() figureGroupObject()
+         figureGroupObject() ( range() | singleValueSet() )
+         ( comment() | userData() )* <RBR>
+}
+
+void oversize() :
+{}
+{
+    <LBR> <OVERSIZE> integerValue() ( figureGroupRef() | figureOp() )
+         cornerType() <RBR>
+}
+
+void owner() :
+{}
+{
+    <LBR> <OWNER> <STRING_TOK> <RBR>
+}
+
+void pageSize() :
+{}
+{
+    <LBR> <PAGESIZE> rectangle() <RBR>
+}
+
+void parameter() :
+{}
+{
+    <LBR> <PARAMETER> valueNameDef() typedValue() [ unit() ] <RBR>
+}
+
+void parameterAssign() :
+{}
+{
+    <LBR> <PARAMETERASSIGN> valueNameRef() typedValue() <RBR>
+}
+
+void parameterDisplay() :
+{}
+{
+    <LBR> <PARAMETERDISPLAY> valueNameRef() ( display() )* <RBR>
+}
+
+void path() :
+{}
+{
+    <LBR> <PATH> pointList() ( property() )* <RBR>
+}
+
+void pathDelay() :
+{}
+{
+    <LBR> <PATHDELAY> delay() ( event() )* <RBR>
+}
+
+void pathWidth() :
+{}
+{
+    <LBR> <PATHWIDTH> integerValue() <RBR>
+}
+
+void permutable() :
+{}
+{
+    <LBR> <PERMUTABLE> ( portRef(null,null) | permutable() | nonPermutable() )* <RBR>
+}
+
+void physicalDesignRule() :
+{}
+{
+    <LBR> <PHYSICALDESIGNRULE> ( figureWidth() | figureArea() |
+                                 rectangleSize() | figurePerimeter() | overlapDistance() | 
+                                 overhangDistance() | enclosureDistance() | interFigureGroupSpacing() |
+                                 intraFigureGroupSpacing() | notchSpacing() | notAllowed() | 
+                                 figureGroup() | comment() | userData() )* <RBR>
+}
+
+void plug() :
+{}
+{
+    <LBR> <PLUG> ( socketSet() )* <RBR>
+}
+
+void point() :
+{}
+{
+    <LBR> <POINT> ( pointValue() | pointDisplay() | point() )* <RBR>
+}
+
+void pointDisplay() :
+{}
+{
+    <LBR> <POINTDISPLAY> pointValue() ( display() )* <RBR>
+}
+
+void pointList() :
+{}
+{
+    <LBR> <POINTLIST> ( pointValue() )* <RBR>
+}
+
+void polygon() :
+{}
+{
+    <LBR> <POLYGON> pointList() ( property() )* <RBR>
+}
+
+
+void portBackAnnotate() :
+{}
+{
+    <LBR> <PORTBACKANNOTATE> portRef(null,null) ( designator() | 
+                                         dcFaninLoad() | dcFanoutLoad() | dcMaxFanin() | 
+                                         dcMaxFanout() | acLoad() | portDelay() |
+                                         property() | comment() )* <RBR>
+}
+
+void portBundle() :
+{}
+{
+    <LBR> <PORTBUNDLE> portNameDef() listOfPorts() ( property() | comment() |
+                                                     userData() )* <RBR>
+}
+
+void portDelay() :
+{}
+{
+    <LBR> <PORTDELAY> derivation() ( delay() | loadDelay() ) 
+         ( transition() | becomes() )* <RBR>
+}
+
+void portGroup() :
+{}
+{
+    <LBR> <PORTGROUP> ( portNameRef() | portRef(null,null) )* <RBR>
+}
+
+void portImplementation() :
+{}
+{
+    <LBR> <PORTIMPLEMENTATION> ( portNameRef() | portRef(null,null) )
+         ( connectLocation() | figure() | instance(null) | commentGraphics() |
+           propertyDisplay() | keywordDisplay() | property() | comment() |
+           userData() )* <RBR>
+}
+
+void portInstance() :
+{}
+{
+    <LBR> <PORTINSTANCE> ( portNameRef() | portRef(null,null) )
+         ( unused() | designator() | dcFaninLoad() | 
+           dcFanoutLoad() | dcMaxFanin() | acLoad() | 
+           portDelay() | property() | comment() | userData() )* <RBR>
+}
+
+
+void portListAlias() :
+{}
+{
+    <LBR> <PORTLISTALIAS> portNameDef() portList() <RBR>
+}
+
+void portMap() :
+{}
+{
+    <LBR> <PORTMAP> ( portRef(null,null) | portGroup() | comment() | userData() )* <RBR>
+}
+
+
+
+
+void propertyDisplay() :
+{}
+{
+    <LBR> <PROPERTYDISPLAY> propertyNameRef() ( display() )* <RBR>
+}
+
+EdifNameable propertyNameDef() :
+{
+	EdifNameable name;
+}
+{
+    name = nameDef()
+    {
+        return name;
+    }
+}
+
+void propertyNameRef() :
+{}
+{
+    nameRef()
+}
+
+void protectionFrame() :
+{}
+{
+    <LBR> <PROTECTIONFRAME> ( portImplementation() | figure() | instance(null) |
+                              commentGraphics() | boundingBox() | propertyDisplay() |
+                              keywordDisplay() | parameterDisplay() | property() | comment() | 
+                              userData() )* <RBR>
+}
+
+void pt() :
+{}
+{
+    <LBR> <PT> integerValue() integerValue() <RBR>
+}
+
+void range() :
+{}
+{
+    atLeast() | atMost() | between() | exactly() | greaterThan() | lessThan()
+        }
+
+void rangeVector() :
+{}
+{
+    <LBR> <RANGEVECTOR> ( range() | singleValueSet() )* <RBR>
+}
+
+void rectangle() :
+{}
+{
+    <LBR> <RECTANGLE> pointValue() pointValue() ( property() )* <RBR>
+}
+
+void rectangleSize() :
+{}
+{
+    <LBR> <RECTANGLESIZE> ruleNameDef() figureGroupObject()
+         ( rangeVector() | multipleValueSet() )
+         ( comment() | userData() )* <RBR>
+}
+
+
+void resolves() :
+{}
+{
+    <LBR> <RESOLVES> ( logicNameRef() )* <RBR>
+}
+
+void ruleNameDef() :
+{}
+{
+    nameDef()
+        }
+
+void scale() :
+{}
+{
+    <LBR> <SCALE> numberValue() numberValue() unit() <RBR>
+}
+
+
+void scaleX() :
+{}
+{
+    <LBR> <SCALEX> integerValue() integerValue() <RBR>
+}
+
+void scaleY() :
+{}
+{
+    <LBR> <SCALEY> integerValue() integerValue() <RBR>
+}
+
+void section() :
+{}
+{
+    <LBR> <SECTION> stringValue() ( stringValue() | section() | instance(null) )*
+         <RBR>
+}
+
+void shape() :
+{}
+{
+    <LBR> <SHAPE> curve() ( property() )* <RBR>
+}
+
+void simulate() :
+{}
+{
+    <LBR> <SIMULATE> simulateNameDef() ( portListAlias() | waveValue() |
+                                         apply() | comment() | userData() )* <RBR>
+}
+
+void simulateNameDef() :
+{}
+{
+    nameDef()
+        }
+
+void simulationInfo() :
+{}
+{
+    <LBR> <SIMULATIONINFO> ( logicValue() | comment() | userData() )* <RBR>
+}
+
+void singleValueSet() :
+{}
+{
+    <LBR> <SINGLEVALUESET> ( range() )* <RBR>
+}
+
+void site() :
+{}
+{
+    <LBR> <SITE> viewRef(null) [ transform() ] <RBR>
+}
+
+void socket() :
+{}
+{
+    <LBR> <SOCKET> [ symmetry() ] <RBR>
+}
+
+void socketSet() :
+{}
+{
+    <LBR> <SOCKETSET> symmetry() ( site() )* <RBR>
+}
+
+void status() :
+{}
+{
+    <LBR>
+    <STATUS>
+    (
+      written() 
+      | comment() 
+      | userData()
+    )*
+    <RBR>
+}
+
+void steady() :
+{}
+{
+    <LBR> <STEADY> ( portNameRef() | portRef(null,null) | portList() ) duration()
+         [ transition() | becomes() ] <RBR>
+}
+
+void strong() :
+{}
+{
+    <LBR> <STRONG> logicNameRef() <RBR>
+}
+
+void symbol() :
+{}
+{
+    <LBR> <SYMBOL> ( portImplementation() | figure() | annotate() |
+                     instance(null) | commentGraphics() | pageSize() | boundingBox() | 
+                     propertyDisplay() | keywordDisplay() | parameterDisplay() | property() |
+                     comment() | userData() )* <RBR>
+}
+
+void symmetry() :
+{}
+{
+    <LBR> <SYMMETRY> ( transform() )* <RBR>
+}
+
+void table() :
+{}
+{
+    <LBR> <TABLE> ( entry() | tableDefault() )* <RBR>
+}
+
+void tableDefault() :
+{}
+{
+    <LBR> <TABLEDEFAULT> ( logicRef() | portRef(null,null) | noChange() | table() )
+         [ delay() | loadDelay() ] <RBR>
+}
+
+/* there is a more detailed productions in level 1
+   void technology() :
+   {}
+   {
+   <LBR> <TECHNOLOGY> numberDefinition() ( figureGroup() | fabricate() |
+   simulationInfo() | physicalDesignRule() | comment() |
+   userData() )* <RBR>
+   }
+*/
+
+void textHeight() :
+{}
+{
+    <LBR> <TEXTHEIGHT> integerValue() <RBR>
+}
+
+void timeInterval() :
+{}
+{
+    <LBR> <TIMEINTERVAL> ( event() | offsetEvent() ) ( event() |
+                                                       offsetEvent() | duration() ) <RBR>
+}
+
+void timing() :
+{}
+{
+    <LBR> <TIMING> derivation() ( pathDelay() | forbiddenEvent() |
+                                  comment() | userData() )* <RBR>
+}
+
+void transform() :
+{}
+{
+    <LBR> <TRANSFORM> [ scaleX() ] [ scaleY() ] [ delta() ] 
+         [ orientation() ] [ origin() ] <RBR>
+}
+
+void transition() :
+{}
+{
+    <LBR> <TRANSITION> ( logicNameRef() | logicList() | logicOneOf() )
+         ( logicNameRef() | logicList() | logicOneOf() ) <RBR>
+}
+
+void trigger() :
+{}
+{
+    <LBR> <TRIGGER> ( change() | steady() | initial() )* <RBR>
+}
+
+
+
+void unconstrained() :
+{}
+{
+    <LBR> <UNCONSTRAINED> <RBR>
+}
+
+void undefined() :
+{}
+{
+    <LBR> <UNDEFINED> <RBR>
+}
+
+void union() :
+{}
+{
+    <LBR> <UNION> ( figureGroupRef() | figureOp() ) 
+         ( figureGroupRef() | figureOp() )* <RBR>
+}
+
+void unit() :
+{}
+{
+    <LBR> <UNIT> ( <ANGLE> | <CAPACITANCE> | <CONDUCTANCE> | <CHARGE> | 
+                   <CURRENT> | <DISTANCE> | <ENERGY> | <FLUX> | <FREQUENCY> | 
+                   <INDUCTANCE> | <MASS> | <POWER> | <RESISTANCE> | <TEMPERATURE> | 
+                   <TIME> | <VOLTAGE> ) <RBR>
+}
+
+void unused() :
+{}
+{
+    <LBR> <UNUSED> <RBR>
+}
+
+void userData() :
+{}
+{
+    <LBR>
+    <USERDATA>
+    ident() 
+    ( <INTEGER_TOK> 
+      | <STRING_TOK> 
+      | ident() 
+      | form() 
+      | string() 
+      | owner() 
+      | property() 
+    )* <RBR>
+}
+
+void valueNameDef() :
+{}
+{
+    nameDef() | array()
+}
+
+void valueNameRef() :
+{
+}
+{
+    nameRef()
+    | member()
+}
+
+void version() :
+{}
+{
+    <LBR> <VERSION> <STRING_TOK> <RBR>
+}
+
+
+void viewList() :
+{}
+{
+    <LBR> <VIEWLIST> ( viewRef(null) | viewList() )* <RBR>
+}
+
+void viewMap() :
+{}
+{
+    <LBR> <VIEWMAP> ( portMap() | portBackAnnotate() | instanceMap() |
+                      instanceBackAnnotate() | netMap() | netBackAnnotate() | comment() |
+                      userData() )* <RBR>
+}
+
+
+
+
+
+void visible() :
+{}
+{
+    <LBR> <VISIBLE> booleanValue() <RBR>
+}
+
+void voltageMap() :
+{}
+{
+    <LBR> <VOLTAGEMAP> miNoMaxValue() <RBR>
+}
+
+void waveValue() :
+{}
+{
+    <LBR> <WAVEVALUE> logicNameDef() numberValue() logicWaveform() <RBR>
+}
+
+void weak() :
+{}
+{
+    <LBR> <WEAK> logicNameRef() <RBR>
+}
+
+void weakJoined() :
+{}
+{
+    <LBR> <WEAKJOINED> ( portRef(null,null) | portList() | joined(null,null) )* <RBR>
+}
+
+void when() :
+{}
+{
+    <LBR> <WHEN> trigger() ( after() | follow() | logicAssign() | maintain() |
+                             comment() | userData() )* <RBR>
+}
+
+void written() :
+{}
+{
+    <LBR>
+    <WRITTEN>
+    timeStamp()
+    ( 
+      author() 
+      | program() 
+      | dataOrigin() 
+      | property() 
+      | comment() 
+      | userData() 
+    )* 
+    <RBR>
+}
+
+/* Level 1 productions */
+
+void abs() :
+{}
+{
+    "(" "abs" numberValue() ")"
+        }
+
+void and() :
+{}
+{
+    "(" "and" ( booleanValue() )* ")"
+        }
+
+void ceiling() :
+{}
+{
+    "(" "ceiling" numberValue() ")"
+}
+
+String concat() :
+{
+	String value;
+	String concatValue = null;
+}
+{
+    <LBR> 
+    "concat"
+    ( value = stringValue() {
+			if (concatValue == null)
+				concatValue = value;
+			else
+				concatValue = concatValue + value;
+    	}
+    )* 
+    <RBR> {
+		return concatValue;
+    }
+}
+
+void constant() :
+{}
+{
+    "(" "constant" valueNameDef() typedValue() ")"
+}
+
+void constraint() :
+{}
+{
+    "(" "constraint" booleanValue() ( property() )* ")"
+}
+
+void divide() :
+{}
+{
+    "(" "divide" numberValue() ( numberValue() )* ")"
+}
+
+void equal() :
+{}
+{
+    "(" "equal" numberValue() | ( numberValue() )* ")"
+}
+
+void fix() :
+{}
+{
+    "(" "fix" numberValue() ")"
+        }
+
+void floor() :
+{}
+{
+    "(" "floor" numberValue() ")"
+}
+
+
+void increasing() :
+{}
+{
+    "(" "increasing" numberValue() ( numberValue() )* ")"
+}
+
+void max() :
+{}
+{
+    "(" "max" numberValue() ( numberValue() )* ")"
+}
+
+void min() :
+{}
+{
+    "(" "min" numberValue() ( numberValue() )* ")"
+}
+
+void miNoMaxValue() :
+{}
+{
+    numberValue() | mnm()
+}
+
+void mod() :
+{}
+{
+    "(" "mod" integerValue() integerValue() ")"
+}
+
+void negate() :
+{}
+{
+    "(" "negate" numberValue() ")"
+}
+
+void not() :
+{}
+{
+    "(" "not" booleanValue() ")"
+}
+
+
+void or() :
+{}
+{
+    "(" "or" ( booleanValue() )* ")"
+}
+
+void page() :
+{}
+{
+    "(" "page" instanceNameDef() ( instance(null) | net(null) | netBundle() | commentGraphics() | 
+                                   portImplementation() | pageSize() | boundingBox() | constant() | constraint() |
+                                   variable() | comment() | userData() )* ")"
+}
+
+void pointSubtract() :
+{}
+{
+    "(" "pointSubtract" pointValue() ( pointValue() )* ")"
+}
+
+void pointSum() :
+{}
+{
+    "(" "pointSum" ( pointValue() )* ")"
+}
+
+void pointValue() :
+{}
+{
+    pt() | valueNameRef() | pointSum() | pointSubtract()
+}
+
+void product() :
+{}
+{
+    "(" "product" ( numberValue() )* ")"
+}
+
+void strictlyIncreasing() :
+{}
+{
+    "(" "strictlyIncreasing" numberValue() ( numberValue() )* ")"
+}
+
+
+void subtract() :
+{}
+{
+    "(" "subtract" numberValue() ( numberValue() )* ")"
+}
+
+void sum() :
+{}
+{
+    "(" "sum" ( numberValue() )* ")"
+        }
+
+void technology() :
+{}
+{
+    "(" "technology" numberDefinition() ( figureGroup() | fabricate() | simulationInfo() |
+                                          physicalDesignRule() | constant() | constraint() | comment() | userData() )* ")"
+}
+
+void variable() :
+{}
+{
+    "(" "variable" valueNameDef() typedValue() ")"
+}
+
+void xCoord() :
+{}
+{
+    "(" "xCoord" pointValue() ")"
+}
+
+void xor() :
+{}
+{
+    "(" "xor" ( booleanValue() )* ")"
+}
+
+void yCoord() :
+{}
+{
+    "(" "yCoord" pointValue() ")"
+}

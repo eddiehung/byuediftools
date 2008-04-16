@@ -1,0 +1,421 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id$
+%
+% Documentation file for the BYU-LANL Triple Modular Redundancy (BLTmr) Tool.
+%
+% Author: Brian Pratt <bhpratt@gmail.com>
+%         James Carroll <jcarroll@byu.net>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[english]{article}
+%\usepackage[T1]{fontenc}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{moreverb}
+%\usepackage[latin1]{inputenc}
+\IfFileExists{url.sty}{\usepackage{url}}
+                      {\newcommand{\url}{\texttt}}
+% use this instead of pdfgraphcompat
+% Check for PDFLaTeX
+\newif\ifpdf 
+\ifx\pdfoutput\undefined 
+   \pdffalse % we are not running PDFLaTeX 
+\else 
+   \pdfoutput=1 % we are running PDFLaTeX 
+   \pdftrue 
+\fi
+
+
+% This processes the file using the 'hyperref.sty' package when
+% PDFLaTeX is used.  This adds internal hyperlinks throughout the
+% document in the generated PDF.
+\ifpdf
+   \usepackage[colorlinks={true},
+     urlcolor=rltblue,       % \href{...}{...} external (URL)
+     filecolor=rltgreen,     % \href{...} local file
+     linkcolor=rltred,       % \ref{...} and \pageref{...}
+     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.3.3 -  15 Jan 2008},%
+     pdfauthor={BYU Configurable Computing Lab},%
+     pdfproducer={pdfLaTeX},%
+     %pdfadjustspacing=1,
+     pdftex]{hyperref}
+\fi
+
+% Define colors used by hyperref
+\usepackage{color}
+\definecolor{rltred}{rgb}{0.75,0,0}
+\definecolor{rltgreen}{rgb}{0,0.5,0}
+\definecolor{rltblue}{rgb}{0,0,0.75}
+
+
+\vfuzz2pt % Don't report over-full v-boxes if over-edge is small
+\hfuzz2pt % Don't report over-full h-boxes if over-edge is small
+
+% 1: label, 2: path, 3: filename except extension (minus .png or .eps), 4: caption
+\newcommand\figurecaption[4]{
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=1.0\linewidth]{#2/#3}
+  \parbox{1.0\linewidth}{\caption{\label{#1}#4}}
+\end{figure}
+}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Bold symbol macro for standard LaTeX users
+\providecommand{\boldsymbol}[1]{\mbox{\boldmath $#1$}}
+
+\usepackage{babel}
+\makeatother
+
+\title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\ ~ \\
+  Version 0.3.3 - 15 Jan 2008 \\  }
+  
+\author{Brigham Young University \\ Configurable Computing Lab}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+The BYU-LANL Triple Modular Redundancy (BLTmr) Tool is an EDIF-based tool to 
+insert redundancy in an FPGA design in order to increase reliability. Triple 
+modular redundancy (TMR) is applied to the EDIF input file according to the 
+options chosen by the user. Partial TMR focuses on ``persistent'' components of 
+the design in order to get the ``most bang for your buck.''
+
+\section{TMR Toolflow}
+The Tool is split into several subtools. This allows the user to adjust various 
+command-line options in one phase, and then move onto the next phase, without
+having to wait for the entire TMR process to complete.
+
+\subsection{JEdifBuild}
+JEdifBuild creates merged netlists in a .jedif file format from 
+multiple .edif files. The .jedif file format is used by all the TMR tools.
+
+\subsection{JEdifNetList}
+JEdifNetList will convert a .jedif file into an .edf file for use with other
+standard edif tools 
+
+\subsection{JEdifSterilize}
+The first Tool in the TMR chain. This tool removes HalfLatches and FMAPs. If the 
+design does not have any, this tool is optional.
+
+\subsection{JEdifTMRAnalysis}
+This tool determines what parts of the cell to triplicate, and where to put voters,
+based on user input and the size of the device.
+
+\subsection{JEdifCutset}
+This tool finds all the feedback in the design, and creates of list of voters
+to be instered to interupt all feedback.
+
+\subsection{JEdifMoreFrequentVoting}
+\emph{Optional:} Inserts extra voters for more frequent voting within
+the design.
+
+\subsection{JEdifTMR}
+Takes information about voter placement from the previous steps, and
+creates a new design incorperating that information. Can output either
+a JEdif or an EDIF file.
+
+\subsection{EdifTMR}
+The EdifTMR tools combines all the tools in the JEdifTMR toolflow into
+one easy step. If you already know exactly what setting you wish use
+to perform TMR, this tool will be faster.
+
+\subsection{JEdifQuery}
+JEdifQuery is a tool used to query the contents of a jedif file and to 
+provide summary information about the EDIF design contained within.
+
+\subsection{Other JEdif tools}
+\subsubsection{JEdifClockDomain} 
+The BYU-LANL JEdif Clock Domain Parser is a jedif-based tool to parse FPGA
+designs to obtain information about the clock(s). The parser first identifies
+all clocks in a design. This information is then used to optionally display
+other information, such as classifying Xilinx primitives into one or more 
+domains, showing clock crossings, etc.
+
+It is analagous to the EDIF-based Clock Domain Parser.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Toolflow Illustration}
+\includegraphics[scale=0.8]{tool_flow.png}
+\newpage
+\input{Build}
+\newpage
+\input{Netlist}
+\newpage
+\input{Sterilize}
+\newpage
+\input{TMRAnalysis}
+\newpage
+\input{Cutset}
+\newpage
+\input{MoreFrequentVoting}
+\newpage
+\input{TMR}
+\newpage
+\input{EdifTMR}
+\newpage
+\input{Query}
+\newpage
+\input{ClockDomain}
+\newpage
+
+\input{Examples}
+\newpage
+\section{Sample Makefile for TMR tool flow}
+\verbatimtabinput{makefile}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Special Notes}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Naming Conventions}
+\label{naming conventions}
+The BLTmr tool alters the names of triplicated signals, cell instances, and 
+ports. Be aware of this when using placement (or other) constraints. An output 
+port named \texttt{myOutport} in the original EDIF file will, when triplicated, 
+become \texttt{myOutport\_TMR\_0, myOutport\_TMR\_1, and myOutport\_TMR\_2}. 
+Similarly, a flip-flop whose instance name is \texttt{myFF} in the original file
+will become \texttt{myFF\_TMR\_0}, \texttt{myFF\_TMR\_1}, 
+\texttt{and myFF\_TMR\_2}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Allocating More Memory for the JVM}
+Larger designs may require more heap memory than the Java Virtual Machine (JVM) 
+is allocated by default. Use the \texttt{-Xmx}
+\footnote{See 
+\url{http://java.sun.com/j2se/1.5.0/docs/tooldocs/windows/java.html\#Xms} 
+for more information about this and other command-line options to the JVM.} 
+option with the Java executable to change the maximum amount of memory for 
+the virtual machine. The following example allocates up to 256 MB of 
+heap space for the JVM:
+
+\begin{verbatim}
+> java -Xmx256M byucc.edif.tools.tmr.FlattenTMR ...
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{RLOC Constraints}
+The BLTmr tool does not support RLOC constraints at this time. RLOC constraints 
+must therefore be removed before processing the resulting EDIF file. RLOCs may 
+be removed from the either the source EDIF files (including any external EDIF 
+files) or from the triplicated output file. Automated RLOC removal may be added 
+to the tool in a later release.
+
+To remove RLOC constraints from an EDIF file, you can use the UNIX 
+\texttt{grep} tool. The following example uses \texttt{grep} to find all lines 
+in the source EDIF file \texttt{myDesign\_BLTmr.edf} that do \emph{not} contain 
+the string \texttt{RLOC} and copy them to the destination EDIF file 
+\texttt{myDesign\_tmr\_noRLOCs.edf.} Note that you may \emph{not} use the same 
+file for the source and destination.
+
+\begin{verbatim}
+> grep -v RLOC myDesign_BLTmr.edf > myDesign_BLTmr_noRLOCs.edf
+\end{verbatim}
+
+This trick is guaranteed to work for EDIF files created by the BLTmr tool as 
+well as all Xilinx CoreGen EDIF files. It is \emph{not} guaranteed to work for 
+all EDIF files in general since it relies on the fact that each RLOC constraint 
+with its associated parentheses do not spread across multiple lines (which is 
+not required by the EDIF file format). For example, it does not work for EDIF 
+files created with the JHDL netlister.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Change Log}
+
+\subsection*{Version 0.3.4 - ?? ??? 2008}
+\begin{itemize}
+\item Fixed --hl\_use\_port option on JEdifSterilize (was --hl\_port\_name)
+\item Rearranged and added sections of this document
+\item 
+\end{itemize}
+
+\subsection*{Version 0.3.3 - 15 Jan 2008}
+\begin{itemize}
+\item Fixed bug involving source-to-source edges in
+EdifCellInstanceConnectivity. This had caused IOB registers to not be recognized
+correctly.
+\item Fixed bug in which Virtex II parts were incorrectly rejected by the tool
+\item Added SRL Replacement to JEdifBuild
+\item BLDWC now has the option to separate detection between persistent and
+non-persistent
+\end{itemize}
+
+\subsection*{Version 0.3.2 - 24 Aug 2007}
+\begin{itemize}
+\item Various minor bug fixes
+\end{itemize}
+
+\subsection*{Version 0.3.1 - 14 Aug 2007}
+\begin{itemize}
+\item Fixed issues with BRAM and DSP blocks
+\item BLTMR can now extract the part number if included in the input EDIF file.
+\item Fixed bug in which a triplicated clock line could be voted on.
+\item Fixed bug in which DLLs were not recognized.
+\end{itemize}
+
+\subsection*{Version 0.3.0 - 16 Jul 2007}
+\begin{itemize}
+\item Split TMR into several tools
+\item TMR tool flow now uses jedif files
+\item Added clock domain analysis tools
+\item Added more frequent voting tool
+\end{itemize}
+
+\subsection*{Version 0.2.4 - 16 Feb 2007}
+\begin{itemize}
+\item Fixed bugs in EdifHalfLatchRemover: 
+\begin{itemize}
+\item Added support for BlackBox modules
+\item Removed addition of ``\_hl'' suffix to replaced primitives
+\end{itemize}
+\item Added option to allow user to specify suffixes for triplicated design
+elements
+\item Design name in output file now matches top-level Cell
+\item Fixed bug in SCCUtilities
+\item created new HalfLatchFlattenedEdifCell class, tool now flattens before HL
+removal
+\item HL removal now recognizes IOB registers
+\item Added option to ignore feedback through IOBs
+\item Port components are automatically triplicated/not triplicated with the port
+\end{itemize}
+
+\subsection*{Version 0.2.3 - 12 Oct 2006}
+\begin{itemize}
+\item Fixed bug when writing config files
+\item Fixed bug in SCC code that could cause a ConcurrentModificationException
+\item Fixed bug in which BLTmr could produce an invalid design due to too many
+  connections to a MUXF6 input
+\end{itemize}
+
+\subsection*{Version 0.2.2 - 25 Sep 2006}
+\begin{itemize}
+  \item User may now specify hierarchical instance names for forced inclusion
+  in/exclusion from TMR
+  \item Added Half-Latch Removal as a command-line option
+  \item Now using NMREdifCell instead of TMREdifCell, which slightly changed the
+  naming policy for triplicated elements (See section \ref{naming conventions}
+  ``Naming Conventions'')
+  \item Added fmap removal (fixes the use of inputAdditionType=1)
+  \item Added Multiple EDIF Creation
+  \begin{itemize}
+    \item Removed the DUF, UEF, and ASUF command-line parameters
+    \item Added factor\_type and factor\_value command-line parameters
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Version 0.2.1 - 28 Jul 2006}
+\begin{itemize}
+\item Now disallows voting between MUXF5, MUXF6, MUXF7, MUXF8
+\item Added unused cell trimming
+\end{itemize}
+
+\subsection*{Version 0.2.0 - 25 Jul 2006}
+\begin{itemize}
+\item New command-line parser\footnote{The BLTmr tool uses \emph{JSAP: the 
+Java-based Simple Argument Parser} by Martian Software, Inc.\ for parsing 
+command-line arguments.  JSAP and its source code can be found at 
+\url{http://www.martiansoftware.com/jsap/index.html}.} (not backwards 
+compatible)
+\item Added half-latch removal option
+\item Added configuration files support
+\item Some command-line parameters have been renamed
+\item Added recursive black box merging
+\item Fixed bug which caused some nets to lose their original name
+\end{itemize}
+
+\subsection*{Version 0.1.9 - 3 Jul 2006}
+\begin{itemize}
+\item Fixed bug in which output EDIF file could be invalid and crash in the map 
+stage (voters were inserted in the carry chain).
+\end{itemize}
+
+\subsection*{Version 0.1.8 - 13 Jun 2006}
+\begin{itemize}
+\item Added triplication status to reports
+\item Added available space utilization factor
+\item Added force triplicate options
+\item Fixed bug in SCCUtilities that could cause a class cast exception
+\end{itemize}
+
+\subsection*{Version 0.1.7 - 23 May 2006}
+\begin{itemize}
+\item Added DLLs to resources tracked for Virtex parts
+\item Added options for ordering of SCC additions (-SCCSortType)
+\end{itemize}
+
+\subsection*{Version 0.1.6 - 18 May 2006}
+\begin{itemize}
+\item Added options to select type of partial Input to Feedback and Feedback 
+Output addition to TMR (-input and -outputAdditionType)
+\item Added option to ignore INOUT port restriction
+\item Moved to Java 5
+\end{itemize}
+
+\subsection*{Version 0.1.5 - 12 May 2006}
+\begin{itemize}
+\item Version 0.1.4 contained a left-over debug printout. This was removed.
+\end{itemize}
+
+\subsection*{Version 0.1.4 - 11 May 2006}
+\begin{itemize}
+\item Added option for naming tmr domain report
+\item Added utilization\_expansion\_factor option
+\end{itemize}
+
+\subsection*{Version 0.1.3 - 3 May 2006}
+\begin{itemize}
+\item Added options to selectively exclude Feedback, Input to Feedback, 
+Feedback Output, and Feed-forward sections from TMR.
+\item Complete partial TMR now matches ``Full'' TMR\@. (Before this, the 
+``Feed-forward'' section was not included.)
+\end{itemize}
+
+\subsection*{Version 0.1.2 - 17 Apr 2006}
+\begin{itemize}
+\item Added automatic IOB handling. The user no longer needs to specifically 
+include or exclude IBUFs, OBUFs, etc.
+\item Added automatic log file creation. The user may also customize the 
+filename of the logfile.
+\item Fixed issue in which ``rename'' directives in the original EDIF were not 
+preserved. The output EDIF now contains the original ``rename''s.
+\end{itemize}
+
+\subsection*{Version 0.1.1 - 9 Mar 2006}
+\begin{itemize}
+\item Added version number to the output of the tool for version tracking
+purposes.
+\end{itemize}
+
+\subsection*{Initial Release---Version 0.1.0 - 8 Mar 2006}
+\begin{itemize}
+\item Initial release outside of BYU\@. No version number is contained in
+the released JAR file.
+\end{itemize}
+
+\end{document}
+
+%
+% Words to be ignored by the spell-checker:
+%
+
+% LocalWords:  BYU LANL BLTmr EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
+% LocalWords:  OBUFs logfile INOUT TMR'd tmr txt 
+
