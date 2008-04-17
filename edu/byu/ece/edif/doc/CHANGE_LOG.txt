@@ -1,0 +1,28 @@
+
+ Change Log for BYU EDIF Tools
+
+Electron Release (16 April 2008)
+
+New Features:
+
+  * None
+
+Bug Fixes:
+
+  * None
+
+Enhancements / Other:
+
+  * Released code under the GNU Public License (GPL) version 2
+  * Significant modifications to the Java package organization
+  * Migrated from CVS repository to staging SVN repository
+  * Posted latest code to
+    https://sourceforge.net/projects/byuediftools/
+  * Created coding style Eclipse configuration file
+  * Removed retiming code (moved to edu.byu.ece.retiming)
+  * Removed VHDL parser code from Dr. Grimm (moved to
+    de.uni_frankfurt.grimm.vhdl)
+  * Formatted much of the source code
+
+ $Id$
+
