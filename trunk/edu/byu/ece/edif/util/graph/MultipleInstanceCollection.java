@@ -23,12 +23,12 @@
 package edu.byu.ece.edif.util.graph;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 import edu.byu.ece.edif.core.EdifCellInstance;
 
-public class MultipleInstanceCollection extends HashSet<EdifCellInstance> implements EdifCellInstanceCollection {
+public class MultipleInstanceCollection extends LinkedHashSet<EdifCellInstance> implements EdifCellInstanceCollection {
 
     public MultipleInstanceCollection() {
         super();
