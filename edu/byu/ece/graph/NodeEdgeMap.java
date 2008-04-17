@@ -25,9 +25,9 @@ package edu.byu.ece.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
 
@@ -52,7 +52,7 @@ import java.util.LinkedHashSet;
  * time, the Map will fail to operate correctly. Make sure that the hash code of
  * any node Object <b>cannot</b> change over time.
  */
-public class NodeEdgeMap extends HashMap implements Cloneable {
+public class NodeEdgeMap extends LinkedHashMap implements Cloneable {
 
 	/** Construct a new object with an initial capacity.
 	 *  
