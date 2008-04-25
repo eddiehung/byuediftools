@@ -27,8 +27,9 @@ options {
 
 PARSER_BEGIN(EdifParserCore)
 
-package byucc.edif.javacc;
-import byucc.edif.*;
+
+package edu.byu.ece.edif.util.parse;
+import edu.byu.ece.edif.core.*;
 import java.util.*;
 
 /**
@@ -2560,7 +2561,7 @@ void figureGroup() :
 {}
 {
     <LBR> <FIGUREGROUP> figureGroupNameDef() 
-         ( cornerType() | endType() | pathWidth() |
+         ( cornerType() | endType() | pathWidth() | borderPattern() |
            borderWidth() | color() | fillPattern()  |
            textHeight() | visible() | includeFigureGroup() |
            property() | comment() | userData() )* <RBR>
