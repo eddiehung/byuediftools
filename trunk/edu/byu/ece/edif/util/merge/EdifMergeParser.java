@@ -1321,7 +1321,7 @@ public class EdifMergeParser {
 	public static EdifEnvironment getMergedEdifEnvironment(String filename,
 			Collection<String> dirs, Iterator<String> files_i,
 			EdifLibrary primLib, 
-			Map<String, EdifEnvironment> fileNameToEnv,boolean openPins, boolean quitOnError)
+			Map<String, EdifEnvironment> fileNameToEnv_param,boolean openPins, boolean quitOnError)
 			throws FileNotFoundException, ParseException {
 		
 		PrintStream outstream = LogFile.out();
@@ -1329,8 +1329,11 @@ public class EdifMergeParser {
 			outstream.println("Parsing file " + filename);
 
 		EdifEnvironment top = EdifParser.translate(filename);
-		if (fileNameToEnv == null)
+		Map<String, EdifEnvironment> fileNameToEnv;
+		if (fileNameToEnv_param == null)
 			fileNameToEnv = new LinkedHashMap<String, EdifEnvironment>();
+		else
+			fileNameToEnv = fileNameToEnv_param;
 		
 		// tag primitives by comparing against primitive library
 		if (primLib != null)
@@ -1356,10 +1359,12 @@ public class EdifMergeParser {
 					for (EdifCell blackBox : blackBoxes) {
 						for (int i = 0; i < EDIF_EXTENSIONS.length; i++){
 							String fName = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
-							if ((new File(fName).exists()) && !fileNameToEnv.containsKey(fName)){ 
+							if ((new File(fName).exists()) && !fileNameToEnv.containsKey(fName) 
+									&& (fName.equals(filename))){ 
 								// does this file exist? and did we already parse it?
-								fileNameToEnv.put(fName, getMergedEdifEnvironment(fName, 
-										dirs, files_i, primLib, fileNameToEnv ,openPins,quitOnError));
+								fileNameToEnv.put(fName, 
+										getMergedEdifEnvironment(fName,dirs, files_i, primLib, 
+												fileNameToEnv ,openPins,quitOnError));
 							}
 						}
 					}
