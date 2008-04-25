@@ -37,9 +37,9 @@ public class EDIFMain {
 
 	public static String EXECUTABLE_NAME = "edifmain";
 	
-	public static String VERSION_STRING = "v0.3.3";
+	public static String VERSION_STRING = "v0.3.4";
 	
-	public static String VERSION_DATE = "15 Jan 2008";
+	public static String VERSION_DATE = "17 Apr 2008";
 	
 	public static String COPYRIGHT_STRING = "Copyright (c) 2005-2007 Brigham Young University, All rights reserved.";
 
