@@ -1,6 +1,6 @@
-ROOT = ../../..
+ROOT = ../..
 
-include ${ROOT}/byucc/edif/config.mk
+include ${ROOT}/config.mk
 
 EXTRAKRUD = ${JAVACC_BASENAME}.java ${JAVACC_BASENAME}TokenManager.java ${JAVACC_BASENAME}Constants.java JavaCharStream.java ParseException.java Token.java TokenMgrError.java SimpleCharStream.java Node.java SimpleNode.java AST*.java
 JAVACC_BASENAME = EdifParserCore
@@ -16,6 +16,6 @@ ${JAVACC_BASENAME}.java: ${JJFILE}
 #CLASSPATH definition found in common.mk
 # comment this out so that 'make eclipse' will work properly - this breaks
 # the old way of building (ie, before we had eclipse)
-include ${ROOT}/byucc/edif/common.mk
+include ${ROOT}/common.mk
 
 
