@@ -80,6 +80,7 @@ public class JEdifTMR extends EDIFMain {
         // Print executable heading
         EXECUTABLE_NAME = "JEdifTMR";
         TOOL_SUMMARY_STRING = "Triplicates .jedif netlist according to previous triplication policy.";
+        printProgramExecutableString(out);
 
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
@@ -97,7 +98,7 @@ public class JEdifTMR extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         // Obtain the .jedif file and obtain references to various objects
         EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out);

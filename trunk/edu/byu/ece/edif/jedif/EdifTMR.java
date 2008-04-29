@@ -62,6 +62,8 @@ public class EdifTMR extends EDIFMain {
         EXECUTABLE_NAME = "EdifTMR";
         TOOL_SUMMARY_STRING = "Runs through the JEdif TMR toolflow in one step";
         // Parse command line options
+        printProgramExecutableString(out);
+
 
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new MergeParserCommandGroup());
@@ -84,7 +86,7 @@ public class EdifTMR extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         EdifEnvironment env;
         if (InputFileCommandGroup.getInputFileName(result).endsWith(".jedif"))

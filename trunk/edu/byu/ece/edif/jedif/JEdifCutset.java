@@ -80,6 +80,7 @@ public class JEdifCutset extends EDIFMain {
         // Print executable heading
         EXECUTABLE_NAME = "JEdifCutset";
         TOOL_SUMMARY_STRING = "Identifies PortRefs to cut feedback for possible voter insertion";
+        printProgramExecutableString(out);
 
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
@@ -100,7 +101,7 @@ public class JEdifCutset extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         // can be used to log currently used options, as well as to create help files
         //loggerCG.logOptions(parser.getCommands(),logger);

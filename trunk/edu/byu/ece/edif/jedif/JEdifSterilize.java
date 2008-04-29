@@ -68,6 +68,7 @@ public class JEdifSterilize extends EDIFMain {
         EXECUTABLE_NAME = "JEdifSterilize";
         TOOL_SUMMARY_STRING = "Sterilizes a JEdif file by removing half-latches and fmaps.";
         // Parse command line options
+        printProgramExecutableString(out);
 
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new JEdifSterilizeCommandGroup());
@@ -82,7 +83,8 @@ public class JEdifSterilize extends EDIFMain {
         LogFileCommandGroup.CreateLog(result);
         out = LogFile.out();
         err = LogFile.err();
-        printProgramExecutableString(out);
+        
+        printProgramExecutableString(LogFile.log());
 
         EdifEnvironment myEnv = JEdifParserCommandGroup.getEdifEnvironment(result, out);
 

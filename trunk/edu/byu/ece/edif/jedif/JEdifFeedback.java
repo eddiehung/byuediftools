@@ -31,9 +31,11 @@ import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifEnvironment;
+import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.util.graph.EdifOutputPortRefGraph;
 import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
+import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
 public class JEdifFeedback extends EDIFMain {
@@ -52,10 +54,17 @@ public class JEdifFeedback extends EDIFMain {
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new JEdifParserCommandGroup());
+        parser.addCommands(new LogFileCommandGroup());
         JSAPResult result = parser.parse(args);
         if (!result.success())
             System.exit(1);
 
+        LogFileCommandGroup.CreateLog(result);
+        out = LogFile.out();
+        err = LogFile.err();
+
+        printProgramExecutableString(LogFile.log());
+        
         // Create EdifEnvironment data structure
         EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out);
         EdifCell flatCell = top.getTopCell();

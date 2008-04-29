@@ -92,6 +92,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
         // Print executable heading
         EXECUTABLE_NAME = "JEdifDWCAnalysis";
         TOOL_SUMMARY_STRING = "Determines which ports and instances in the design will be duplicated.";
+        printProgramExecutableString(out);
 
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
@@ -109,7 +110,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         // Step 1: Get EdifEnvironment from JEdif File
         EdifEnvironment env = JEdifParserCommandGroup.getEdifEnvironment(result, out);

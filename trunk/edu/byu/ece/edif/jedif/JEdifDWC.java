@@ -75,6 +75,7 @@ public class JEdifDWC extends EDIFMain {
         // Define the print streams for this program
         PrintStream out = System.out;
         PrintStream err = System.out;
+        printProgramExecutableString(out);
 
         // Print executable heading
         EXECUTABLE_NAME = "JEdifDWC";
@@ -96,7 +97,7 @@ public class JEdifDWC extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         // Obtain the .jedif file and obtain references to various objects
         EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out);
