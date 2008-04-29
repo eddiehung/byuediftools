@@ -64,6 +64,7 @@ public class JEdifBuild extends EDIFMain {
 
         EXECUTABLE_NAME = "JEdifBuild";
         TOOL_SUMMARY_STRING = "Creates merged netlists in a .jedif file format from multiple .edif files";
+        printProgramExecutableString(System.out);
 
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
@@ -79,9 +80,7 @@ public class JEdifBuild extends EDIFMain {
         PrintStream out = LogFile.out();
         PrintStream err = LogFile.err();
 
-        printProgramExecutableString(out);
-
-        //LogFileCommandGroup.logOptions( parser.getCommands(), result);
+        printProgramExecutableString(LogFile.log());
 
         // Parse EDIF file and generate a EdifEnvironment object
         EdifEnvironment top = MergeParserCommandGroup.getEdifEnvironment(result);

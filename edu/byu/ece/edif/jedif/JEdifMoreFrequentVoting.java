@@ -69,6 +69,7 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         // Print executable heading
         EXECUTABLE_NAME = "JEdifMoreFrequentVoting";
         TOOL_SUMMARY_STRING = "Identifies PortRefs to cut for possible voter insertion for NMR with frequent voting";
+        printProgramExecutableString(out);
 
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
@@ -94,7 +95,7 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         out = LogFile.out();
         err = LogFile.err();
 
-        printProgramExecutableString(out);
+        printProgramExecutableString(LogFile.log());
 
         // can be used to log currently used options, as well as to create help files
         LogFile.log().println("These command-line options were used:" + Arrays.asList(args) + "\n");
