@@ -1360,7 +1360,7 @@ public class EdifMergeParser {
 						for (int i = 0; i < EDIF_EXTENSIONS.length; i++){
 							String fName = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
 							if ((new File(fName).exists()) && !fileNameToEnv.containsKey(fName) 
-									&& (fName.equals(filename))){ 
+									&& (!fName.equals(filename))){ 
 								// does this file exist? and did we already parse it?
 								fileNameToEnv.put(fName, 
 										getMergedEdifEnvironment(fName,dirs, files_i, primLib, 
