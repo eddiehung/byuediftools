@@ -33,6 +33,30 @@ files, and the destination EDIF file.
 Filename and path to the EDIF source file containing the top-level cell to be 
 converted. This is the only required parameter.
 
+Allowed filename extensions are:
+\begin{itemize}
+  \item Parsable Edif: edn,edf,ndf
+  \item Binary Edif (Blackboxes): ngc,ngo
+  \item Blackbox Utilization: bb
+\end{itemize}
+
+Parsable EDIF files will be parsed and included in the algorithms.
+Binary EDIF files are not parsable, but the program recognizes them as
+blackboxes, and will not complain about not finding the entity.
+Blackbox utilization files allow the user to specify the resource use
+of the blackboxes to help in the utilization estimate and partial tmr
+algorithms.  The file format is ``Resource:Number''.  Below is an
+example:
+
+myblackbox.bb:\\
+\begin{verbatim}
+  BRAM:1
+  FF:400
+  LUT:100
+\end{verbatim}
+
+This entity, named myblackbox uses 1 BRAM, 400 Flipflops and 100 LUTS
+
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
 Filename and path to the jedif output file.
 
@@ -43,7 +67,8 @@ Comma-separated list of directories containing external EDIF files referenced
 by the top-level EDIF file. The current working directory is included by 
 default and need not be specified. There can be multiple \texttt{-d} options.
 
-Example: \texttt{-d aux\_files,/usr/share/edif/common -d moreEdifFiles/}
+Example: \texttt{-d aux\_files,/usr/share/edif/common -d
+  moreEdifFiles/}
 
 \subsubsection{\texttt{(-f|--file) file1,file2,\ldots,fileN}}
 Similar to the previous option, but rather than specifying directories to 
