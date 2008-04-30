@@ -1125,6 +1125,8 @@ public class NMRCommandParser extends JSAPCommandParser {
 	public static final String HIGHEST_FANOUT_CUTSET = "highest_fanout_cutset";
 	
 	public static final String HIGHEST_FF_FANOUT_CUTSET= "highest_ff_fanout_cutset";
+	
+	public static final String NO_OBUFS = "no_obufs";
 
 	/**
 	 * Range := [0,oo], where oo = Float.MAX_VALUE (nearly infinity)

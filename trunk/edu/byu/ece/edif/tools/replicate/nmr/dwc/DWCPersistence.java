@@ -123,6 +123,7 @@ public class DWCPersistence {
         boolean highestFFFanoutCutset = _result.getBoolean(DWCCommandParser.HIGHEST_FF_FANOUT_CUTSET);
         boolean highestFanoutCutset = _result.getBoolean(DWCCommandParser.HIGHEST_FANOUT_CUTSET);
         boolean registerDetection = _result.getBoolean(DWCCommandParser.REGISTER_DETECTION);
+        boolean noObufs = _result.getBoolean(DWCCommandParser.NO_OBUFS);
 
         /*
          * 1.b) Setup log file and print command-line argument information to
@@ -537,13 +538,13 @@ public class DWCPersistence {
                             feedbackPlusInput, new XilinxTMRArchitecture(), dwcArch, portsToDuplicateMap,
                             instancesToDuplicateMap, persistentPortRefsToCompare, _result
                                     .getBoolean(DWCCommandParser.USE_DRC), packOutputRegs, registerDetection, clockNet,
-                            replicationSuffixMap);
+                            replicationSuffixMap, noObufs);
                 } else {
                     // Use default suffixes
                     dwcCell = new TMRDWCEdifCell(cell.getLibrary(), flatCell.getName() + "_DWC", flatCell,
                             feedbackPlusInput, new XilinxTMRArchitecture(), dwcArch, portsToDuplicateMap,
                             instancesToDuplicateMap, persistentPortRefsToCompare, _result
-                                    .getBoolean(DWCCommandParser.USE_DRC), packOutputRegs, registerDetection, clockNet);
+                                    .getBoolean(DWCCommandParser.USE_DRC), packOutputRegs, registerDetection, clockNet, noObufs);
                 }
             } catch (EdifNameConflictException e2) {
                 e2.toRuntime();
