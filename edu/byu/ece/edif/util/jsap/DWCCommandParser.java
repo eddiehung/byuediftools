@@ -151,6 +151,8 @@ public class DWCCommandParser extends NMRCommandParser {
         _DWCParameters.add(new Switch(REGISTER_DETECTION).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(
                 REGISTER_DETECTION).setDefault(FALSE).setHelp(
                 "Register the detection signals before they go to the outputs."));
+        
+        _DWCParameters.add(new Switch(NO_OBUFS).setLongFlag(NO_OBUFS).setDefault("false").setHelp("Disable insertion of output buffers on error detection signals."));
 
         /*
          * Register the parameters. For more information, see the JSAP API.
