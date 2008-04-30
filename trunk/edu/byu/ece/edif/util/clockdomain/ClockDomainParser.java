@@ -290,7 +290,7 @@ public class ClockDomainParser {
                         // The following is for a special case which
                         // doesn't allow GNDs to drive a clock net
                     	Iterator<EdifPortRef> it = epr.getNet().getOutputPortRefs().iterator();
-                        if (it.hasNext() && !it.next().getCellInstance().getType().toLowerCase().equals("gnd"))
+                        if (!it.hasNext() || !it.next().getCellInstance().getType().toLowerCase().equals("gnd"))
                             clockNets.add(epr.getNet());
                     }
                 }
