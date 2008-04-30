@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -288,8 +289,8 @@ public class ClockDomainParser {
                     if (XilinxTools.isClockPort(epr.getSingleBitPort())) {
                         // The following is for a special case which
                         // doesn't allow GNDs to drive a clock net
-                        if (!epr.getNet().getOutputPortRefs().iterator().next().getCellInstance().getType()
-                                .toLowerCase().equals("gnd"))
+                    	Iterator<EdifPortRef> it = epr.getNet().getOutputPortRefs().iterator();
+                        if (it.hasNext() && !it.next().getCellInstance().getType().toLowerCase().equals("gnd"))
                             clockNets.add(epr.getNet());
                     }
                 }
