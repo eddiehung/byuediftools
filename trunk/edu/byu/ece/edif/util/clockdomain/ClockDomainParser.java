@@ -305,7 +305,7 @@ public class ClockDomainParser {
                     Queue<EdifNet> q = new ConcurrentLinkedQueue<EdifNet>();
                     Set<EdifNet> classifiedNets = new LinkedHashSet<EdifNet>();
                     // Special Handling for dual-port BRAMs
-                    if (eci.getType().toLowerCase().contains(RAM_PREFIX)) {
+                    if (eci != null && eci.getType().toLowerCase().contains(RAM_PREFIX)) {
                         for (EdifPortRef myEpr : _ecic.getEPRsWhichReferenceInputPortsOfECI(eci)) {
                             if (myEpr.getPort().getName().toLowerCase().contains("clk")) {
                                 if (myEpr.getNet().equals(n)) {
