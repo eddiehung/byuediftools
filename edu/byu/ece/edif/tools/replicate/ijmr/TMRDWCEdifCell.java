@@ -94,7 +94,7 @@ public class TMRDWCEdifCell extends MMREdifCell {
             NMRArchitecture dwcArchitecture, Map<Integer, List<EdifPort>> portsToReplicate,
             Map<Integer, List<EdifCellInstance>> instancesToReplicate, Collection<EdifPortRef> cutSet,
             boolean useDualRail, boolean packOutputRegs, boolean registerDetection, EdifNet clockNet,
-            Map<Integer, List<String>> replicationSuffixes) throws EdifNameConflictException, InvalidEdifNameException {
+            Map<Integer, List<String>> replicationSuffixes, boolean noObufs) throws EdifNameConflictException, InvalidEdifNameException {
         super(lib, name, origCell, replicationSuffixes);
         _tmrArchitecture = tmrArchitecture;
         _dwcArchitecture = (XilinxDWCArchitecture) dwcArchitecture;
@@ -113,6 +113,8 @@ public class TMRDWCEdifCell extends MMREdifCell {
 
         _voters = new ArrayList<EdifCellInstance>();
         _comparators = new ArrayList<EdifCellInstance>();
+        
+        _noObufs = noObufs;
         replicateCell(portsToReplicate, instancesToReplicate);
     }
 
@@ -120,11 +122,11 @@ public class TMRDWCEdifCell extends MMREdifCell {
             Collection<EdifCellInstance> feedbackPlusInput, NMRArchitecture tmrArchitecture,
             NMRArchitecture dwcArchitecture, Map<Integer, List<EdifPort>> portsToReplicate,
             Map<Integer, List<EdifCellInstance>> instancesToReplicate, Collection<EdifPortRef> cutSet,
-            boolean useDualRail, boolean packOutputRegs, boolean registerDetection, EdifNet clockNet)
+            boolean useDualRail, boolean packOutputRegs, boolean registerDetection, EdifNet clockNet, boolean noObufs)
             throws EdifNameConflictException, InvalidEdifNameException {
         this(lib, name, origCell, feedbackPlusInput, tmrArchitecture, dwcArchitecture, portsToReplicate,
                 instancesToReplicate, cutSet, useDualRail, packOutputRegs, registerDetection, clockNet,
-                DEFAULT_SUFFIXES);
+                DEFAULT_SUFFIXES, noObufs);
     }
 
     /**
@@ -200,18 +202,36 @@ public class TMRDWCEdifCell extends MMREdifCell {
                 EdifPort portToAdd = addPortUniqueName(portName[i], 1, EdifPort.OUT);
                 EdifPortRef portRefToAdd = new EdifPortRef(outNet[i], portToAdd.getSingleBitPort(0), null);
                 outNet[i].addPortConnection(portRefToAdd);
-
-                if (_registerDetection) {
-                    try {
-                        addNet(ofdNet[i]);
-                    } catch (EdifNameConflictException e) {
-                        // can't get here
-                        e.toRuntime();
-                    }
-                    createOFD(this, ofdName[i], mergedErrorNet[i], ofdNet[i]);
-                    _dwcArchitecture.createOBUF(this, obufName[i], ofdNet[i], outNet[i]);
-                } else {
-                    _dwcArchitecture.createOBUF(this, obufName[i], mergedErrorNet[i], outNet[i]);
+                
+                if (!_noObufs) {
+                	if (_registerDetection) {
+                		try {
+                			addNet(ofdNet[i]);
+                		} catch (EdifNameConflictException e) {
+                			// can't get here
+                			e.toRuntime();
+                		}
+                		createOFD(this, ofdName[i], mergedErrorNet[i], ofdNet[i]);
+                		_dwcArchitecture.createOBUF(this, obufName[i], ofdNet[i], outNet[i]);
+                	} else {
+                		_dwcArchitecture.createOBUF(this, obufName[i], mergedErrorNet[i], outNet[i]);
+                	}
+                }
+                else {
+                	if (_registerDetection) {
+                		createOFD(this, ofdName[i], mergedErrorNet[i], ofdNet[i]);
+                		for (EdifPortRef epr : ofdNet[i].getConnectedPortRefs()) {
+                			EdifPortRef newEpr = new EdifPortRef(outNet[i], epr.getSingleBitPort(), epr.getCellInstance());
+                			outNet[i].addPortConnection(newEpr);
+                		}
+                	} else {
+                		deleteNet(mergedErrorNet[i]);
+                		for (EdifPortRef epr : mergedErrorNet[i].getConnectedPortRefs()) {
+                			EdifPortRef newEpr = new EdifPortRef(outNet[i], epr.getSingleBitPort(), epr.getCellInstance());
+                			outNet[i].addPortConnection(newEpr);
+                		}
+                	}
+                	
                 }
             }
         }
@@ -836,4 +856,9 @@ public class TMRDWCEdifCell extends MMREdifCell {
      * Whether to register the detection signals
      */
     private boolean _registerDetection;
+    
+    /**
+     * Whether to disable insertion of output buffers after error detection signals
+     */
+    private boolean _noObufs;
 }
