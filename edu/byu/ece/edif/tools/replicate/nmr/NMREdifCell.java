@@ -465,7 +465,11 @@ public abstract class NMREdifCell extends EdifCell {
                 newNetName = net.getEdifNameable();
             else
                 newNetName = replicationNetNameable(net.getEdifNameable(), i);
-            newNet = new EdifNet(newNetName);
+            // Double-check that the newNetName does not clash with any others.
+            // BHP: We previously assumed that this could not happen since the 
+            //      input EDIF must be flat.
+            //newNet = new EdifNet(newNetName);
+            newNet = new EdifNet(getUniqueNetNameable(newNetName), this);
 
             newNets[i] = newNet;
             newNet.copyProperties(net);
