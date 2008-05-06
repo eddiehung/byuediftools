@@ -128,8 +128,8 @@ public class BadCutConnections implements Serializable {
             String sinkPortName) {
 
         // Get the names of the source and sink to look up
-        String sourceName = _getEPRName(sourceCellType, sourcePortName);
-        String sinkName = _getEPRName(sinkCellType, sinkPortName);
+        String sourceName = (_getEPRName(sourceCellType, sourcePortName)).toUpperCase();
+        String sinkName = (_getEPRName(sinkCellType, sinkPortName)).toUpperCase();
 
         // Does this source have an entry in the Map?
         HashSet<String> sinkEPRSet = (HashSet<String>) _badConnectionMap.get(sourceName);
