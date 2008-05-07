@@ -163,8 +163,8 @@ public class JEdifDWCAnalysis extends EDIFMain {
         DeviceUtilizationTracker duTracker = null;
 
         try {
-            duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, TechnologyCommandGroup
-                    .getTech(result), TechnologyCommandGroup.getPart(result), JEdifDWCAnalysisCommandGroup
+            duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
+            		TechnologyCommandGroup.getPart(result), JEdifDWCAnalysisCommandGroup
                     .getMergeFactor(result), JEdifDWCAnalysisCommandGroup.getOptimizationFactor(result),
                     JEdifDWCAnalysisCommandGroup.getFactorValue(result), JEdifDWCAnalysisCommandGroup
                             .ignoreLogicUtilization(result), JEdifDWCAnalysisCommandGroup.getFactorType(result));

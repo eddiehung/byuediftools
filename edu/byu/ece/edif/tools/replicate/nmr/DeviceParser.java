@@ -29,6 +29,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxDeviceUtilizationTracker;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex4DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexIIDeviceUtilizationTracker;
@@ -74,7 +75,7 @@ public class DeviceParser {
         double mergeFactor = XilinxDeviceUtilizationTracker.DEFAULT_MERGE_FACTOR;
         double optimizationFactor = XilinxDeviceUtilizationTracker.DEFAULT_OPTIMIZATION_FACTOR;
         double desiredUtilizationFactor = XilinxDeviceUtilizationTracker.DEFAULT_DESIRED_UTILIZATION_FACTOR;
-        return createXilinxDeviceUtilizationTracker(cell, family, part, mergeFactor, optimizationFactor,
+        return createXilinxDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                 desiredUtilizationFactor);
     }
 
@@ -90,11 +91,11 @@ public class DeviceParser {
      * @throws OverutilizationEstimatedStopException
      * @throws OverutilizationHardStopException
      */
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String family,
-            String part, double mergeFactor, double optimizationFactor, double desiredUtilizationFactor)
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
+    		String part, double mergeFactor, double optimizationFactor, double desiredUtilizationFactor)
             throws OverutilizationException, OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
-        String xilinxFamily = parseXilinxFamily(family);
+        String xilinxFamily = parseXilinxFamily(XilinxPartValidator.getTechnologyFromPart(part));
         if (xilinxFamily == VIRTEX)
             return new XilinxVirtexDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
@@ -108,14 +109,14 @@ public class DeviceParser {
             return new XilinxVirtex4DeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
         else
-            throw new EdifRuntimeException("Xilinx family " + family + " not yet supported.");
+            throw new EdifRuntimeException("Xilinx family " + xilinxFamily + " not yet supported.");
     }
 
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String family,
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
             String part, double mergeFactor, double optimizationFactor, double factorValue,
             NMRUtilities.UtilizationFactor type) throws OverutilizationException,
             OverutilizationEstimatedStopException, OverutilizationHardStopException {
-        return createXilinxDeviceUtilizationTracker(cell, family, part, mergeFactor, optimizationFactor, factorValue,
+        return createXilinxDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor, factorValue,
                 false, type);
     }
 
@@ -134,7 +135,6 @@ public class DeviceParser {
      * and value.
      * 
      * @param cell The EdifCell object
-     * @param family The technology family of the target part (String object)
      * @param part The target part name (String object)
      * @param mergeFactor The merge factor
      * @param optimizationFactor The optimization factor
@@ -151,7 +151,7 @@ public class DeviceParser {
      * etc.).
      * @author <a href="mailto:jcarroll@byu.net">James Carroll</a>
      */
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String family,
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
             String part, double mergeFactor, double optimizationFactor, double factorValue, boolean ignore_logic,
             NMRUtilities.UtilizationFactor type) throws OverutilizationException,
             OverutilizationEstimatedStopException, OverutilizationHardStopException {
@@ -160,7 +160,7 @@ public class DeviceParser {
          * First, create a utilization tracker with an "infinite" utilization
          * limit, to guarantee that it will finish with the initial estimation.
          */
-        XilinxDeviceUtilizationTracker tracker = createXilinxDeviceUtilizationTracker(cell, family, part, mergeFactor,
+        XilinxDeviceUtilizationTracker tracker = createXilinxDeviceUtilizationTracker(cell, part, mergeFactor,
                 optimizationFactor, Double.MAX_VALUE);
 
         tracker.setDesiredUtilizationFactor(Double.valueOf(NMRUtilities.DEFAULT_FACTOR_VALUE));
