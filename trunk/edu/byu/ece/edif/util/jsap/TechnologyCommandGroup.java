@@ -54,14 +54,6 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
 	 */
 	public TechnologyCommandGroup() {
 		super();
-		_tech = new FlaggedOption(TECHNOLOGY);
-		//_tech.setStringParser(EnumeratedStringParser.getParser("virtex;virtex2;virtex4", false));
-		_tech.setRequired(JSAP.NOT_REQUIRED);
-		_tech.setShortFlag(JSAP.NO_SHORTFLAG);
-		_tech.setLongFlag(TECHNOLOGY);
-		_tech.setDefault("Virtex");
-		_tech.setHelp("depriciated: the part type is now infered from part number");
-		this.addCommand(_tech);
 		
 		_part=new FlaggedOption(PART);
 		_part.setStringParser(JSAP.STRING_PARSER);
@@ -80,13 +72,12 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
     //  Public fields
 	
 	public static final String PART = "part";
-	public static final String TECHNOLOGY = "technology";
 	
     ///////////////////////////////////////////////////////////////////
     //  Public methods
 	
 	static public NMRArchitecture getArch(JSAPResult result) {
-		return getArchitecture(result.getString(TECHNOLOGY));
+		return getArchitecture(tech_str);
 	}
 	static public String getPart(JSAPResult result) {
 		//return result.getString(PART);
@@ -155,7 +146,6 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
     //  Protected fields
 	
 	static protected FlaggedOption _part;
-	static protected FlaggedOption _tech;
 	static protected String part_str; 
 	static protected String tech_str;
 	protected static final String VIRTEX = "virtex";

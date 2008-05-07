@@ -63,6 +63,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationException;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationHardStopException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.dwc.FlattenDWC;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.sterilize.fmap.FmapRemover;
 import edu.byu.ece.edif.tools.sterilize.halflatch.EdifHalfLatchRemover;
 import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchArchitecture;
@@ -160,7 +161,7 @@ public class FlattenTMR {
         final boolean HighestFFFanoutCutset = _commands.getBoolean(TMRCommandParser.HIGHEST_FF_FANOUT_CUTSET);
 
         // 2. Create TMR architecture
-        NMRArchitecture tmrArch = getArchitecture(_commands.getString(TMRCommandParser.TECHNOLOGY));
+        NMRArchitecture tmrArch = getArchitecture(_commands.getString(TMRCommandParser.PART));
 
         // 3. Load EDIF and merge multiple EDIF files
         EdifCell cell = XilinxMergeParser.parseAndMergeXilinx(_commands.getString(TMRCommandParser.INPUT_FILE), Arrays
@@ -378,8 +379,8 @@ public class FlattenTMR {
              */
             DeviceUtilizationTracker duTracker = null;
             try {
-                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _commands
-                        .getString(TMRCommandParser.TECHNOLOGY), _commands.getString(TMRCommandParser.PART), _commands
+                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
+                		_commands.getString(TMRCommandParser.PART), _commands
                         .getDouble(TMRCommandParser.MERGE_FACTOR), _commands
                         .getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
             } catch (OverutilizationException e) {
@@ -740,8 +741,8 @@ public class FlattenTMR {
             //flatCell.getLibrary().deleteCell(flatCell, true);
             {//scope make duTracker
                 try {
-                    duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _commands
-                            .getString(TMRCommandParser.TECHNOLOGY), _commands.getString(TMRCommandParser.PART),
+                    duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
+                            _commands.getString(TMRCommandParser.PART),
                             _commands.getDouble(TMRCommandParser.MERGE_FACTOR), _commands
                                     .getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
                 } catch (OverutilizationException e) {
@@ -1093,12 +1094,13 @@ public class FlattenTMR {
     }
 
     /**
-     * Return a TMRArchitecture object for the specified technology.
+     * Return a TMRArchitecture object for the specified part.
      * 
-     * @param technologyString The specified technology
+     * @param partString The specified part
      * @return A TMRArchtecture object
      */
-    protected static XilinxTMRArchitecture getArchitecture(String technologyString) {
+    protected static XilinxTMRArchitecture getArchitecture(String partString) {
+    	String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
         if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX4))
@@ -1181,7 +1183,6 @@ public class FlattenTMR {
             //_log.println("\tIgnoring restriction on designs with INOUT ports.");
             _log.println("\tNote: The " + TMRCommandParser.NO_IN_OUT_CHECK + " option is no longer necessary.");
 
-        _log.println("\tTechnology: " + _commands.getString(TMRCommandParser.TECHNOLOGY));
         _log.println("\tPart: " + _commands.getString(TMRCommandParser.PART));
         _log.println("\tLog file: " + _commands.getString(TMRCommandParser.LOG));
         _log.println();

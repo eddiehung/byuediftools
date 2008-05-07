@@ -68,6 +68,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.PartialInputOutputFeedForwardTMR;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.tools.sterilize.fmap.FmapRemover;
 import edu.byu.ece.edif.tools.sterilize.halflatch.EdifHalfLatchRemover;
@@ -139,7 +140,7 @@ public class DWCPersistence {
         }
 
         // 2. Create DWC architecture
-        NMRArchitecture dwcArch = getArchitecture(_result.getString(DWCCommandParser.TECHNOLOGY));
+        NMRArchitecture dwcArch = getArchitecture(_result.getString(DWCCommandParser.PART));
 
         // 3. Load EDIF and merge multiple EDIF files
         EdifCell cell = XilinxMergeParser.parseAndMergeXilinx(_result.getString(DWCCommandParser.INPUT_FILE), Arrays
@@ -330,8 +331,8 @@ public class DWCPersistence {
              */
             DeviceUtilizationTracker duTracker = null;
             try {
-                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _result
-                        .getString(DWCCommandParser.TECHNOLOGY), _result.getString(DWCCommandParser.PART), _result
+                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
+                		_result.getString(DWCCommandParser.PART), _result
                         .getDouble(DWCCommandParser.MERGE_FACTOR), _result
                         .getDouble(DWCCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
             } catch (OverutilizationException e) {
@@ -822,12 +823,13 @@ public class DWCPersistence {
     }
 
     /**
-     * Return a DWCArchitecture object for the specified technology.
+     * Return a DWCArchitecture object for the specified part.
      * 
-     * @param technologyString The specified technology
+     * @param partString The specified part
      * @return A DWCArchtecture object
      */
-    protected static XilinxDWCArchitecture getArchitecture(String technologyString) {
+    protected static XilinxDWCArchitecture getArchitecture(String partString) {
+    	String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
         if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2))
             return new XilinxDWCArchitecture();
@@ -973,7 +975,6 @@ public class DWCPersistence {
             _log.println("\tUsing Single Rail Checker");
         }
 
-        _log.println("\tTechnology: " + _result.getString(DWCCommandParser.TECHNOLOGY));
         _log.println("\tPart: " + _result.getString(DWCCommandParser.PART));
         _log.println("\tLog file: " + _result.getString(DWCCommandParser.LOG));
         _log.println();

@@ -490,19 +490,6 @@ public class NMRCommandParser extends JSAPCommandParser {
 		 * Target Technology and Part Options
 		 */
 		_NMRParameters
-				.add(new FlaggedOption(TECHNOLOGY)
-						.setStringParser(
-								EnumeratedStringParser.getParser(
-										"virtex;virtex2;virtex4", false))
-						.setRequired(JSAP.NOT_REQUIRED)
-						.setShortFlag(JSAP.NO_SHORTFLAG)
-						.setLongFlag("technology")
-						.setDefault("Virtex")
-						.setUsageName("{virtex|virtex2|virtex4}")
-						.setHelp(
-								"Target architecture for the triplicated design. Valid technologies include 'Virtex,' 'Virtex2,' and 'Virtex4'. Not case-sensitive."));
-
-		_NMRParameters
 				.add(new FlaggedOption(PART)
 						.setStringParser(JSAP.STRING_PARSER)
 						.setRequired(JSAP.NOT_REQUIRED)
@@ -515,14 +502,6 @@ public class NMRCommandParser extends JSAPCommandParser {
 		/*
 		 * Log, Report, and Configuration File Options
 		 */
-		_NMRParameters
-				.add(new Switch(SUMMARY)
-						.setShortFlag(JSAP.NO_SHORTFLAG)
-						.setLongFlag("summary")
-						.setDefault(FALSE)
-						.setHelp(
-								"Print (to stdout) a summary of how much logic was added during triplication as well as the resource utilization estimate after NMR is performed."));
-
 		_NMRParameters
 				.add(new FlaggedOption(LOG)
 						.setStringParser(JSAP.STRING_PARSER)
@@ -1088,10 +1067,6 @@ public class NMRCommandParser extends JSAPCommandParser {
 	public static final String REMOVE_HL = "removeHL";
 
 	public static final String SCC_SORT_TYPE = "SCCSortType";
-
-	public static final String SUMMARY = "summary";
-
-	public static final String TECHNOLOGY = "technology";
 
 	/**
 	 * Force NMR of cell type
