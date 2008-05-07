@@ -163,7 +163,8 @@ public class JEdifTMRAnalysis extends EDIFMain {
             		TechnologyCommandGroup.getPart(result), JEdifTMRAnalysisCommandGroup
                     .getMergeFactor(result), JEdifTMRAnalysisCommandGroup.getOptimizationFactor(result),
                     JEdifTMRAnalysisCommandGroup.getFactorValue(result), JEdifTMRAnalysisCommandGroup
-                            .ignoreLogicUtilization(result), JEdifTMRAnalysisCommandGroup.getFactorType(result));
+                            .ignoreHardResourceUtilizationLimits(result), JEdifTMRAnalysisCommandGroup
+                            .ignoreSoftLogicUtilizationLimit(result), JEdifTMRAnalysisCommandGroup.getFactorType(result));
         } catch (OverutilizationException e) {
             String errmsg = new String("ERROR: Original cell " + flatCell + " could not fit into specified part "
                     + TechnologyCommandGroup.getPart(result) + "\n." + e);

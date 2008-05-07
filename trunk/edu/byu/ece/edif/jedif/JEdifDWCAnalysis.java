@@ -166,8 +166,9 @@ public class JEdifDWCAnalysis extends EDIFMain {
             duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
             		TechnologyCommandGroup.getPart(result), JEdifDWCAnalysisCommandGroup
                     .getMergeFactor(result), JEdifDWCAnalysisCommandGroup.getOptimizationFactor(result),
-                    JEdifDWCAnalysisCommandGroup.getFactorValue(result), JEdifDWCAnalysisCommandGroup
-                            .ignoreLogicUtilization(result), JEdifDWCAnalysisCommandGroup.getFactorType(result));
+                    JEdifDWCAnalysisCommandGroup.getFactorValue(result), JEdifTMRAnalysisCommandGroup
+                    .ignoreHardResourceUtilizationLimits(result), JEdifTMRAnalysisCommandGroup
+                    .ignoreSoftLogicUtilizationLimit(result), JEdifDWCAnalysisCommandGroup.getFactorType(result));
         } catch (OverutilizationException e) {
             String errmsg = new String("ERROR: Original cell " + flatCell + " could not fit into specified part "
                     + TechnologyCommandGroup.getPart(result) + "\n." + e);
