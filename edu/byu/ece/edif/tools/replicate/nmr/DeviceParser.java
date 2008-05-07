@@ -117,7 +117,7 @@ public class DeviceParser {
             NMRUtilities.UtilizationFactor type) throws OverutilizationException,
             OverutilizationEstimatedStopException, OverutilizationHardStopException {
         return createXilinxDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor, factorValue,
-                false, type);
+                false, false, type);
     }
 
     /**
@@ -152,7 +152,8 @@ public class DeviceParser {
      * @author <a href="mailto:jcarroll@byu.net">James Carroll</a>
      */
     public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
-            String part, double mergeFactor, double optimizationFactor, double factorValue, boolean ignore_logic,
+            String part, double mergeFactor, double optimizationFactor, double factorValue, 
+            boolean ignore_hard_limits, boolean ignore_soft_limits,
             NMRUtilities.UtilizationFactor type) throws OverutilizationException,
             OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
@@ -195,8 +196,13 @@ public class DeviceParser {
         } else {
             throw new InvalidParameterException("Invalid factor type.  Use one of the following: ASUF, UEF, DUF.");
         }
-        if (ignore_logic) {
+        
+        if (ignore_soft_limits) {
             tracker.setDesiredUtilizationFactor(Double.MAX_VALUE);
+        }
+        
+        if (ignore_hard_limits) {
+        	tracker.ignoreHardResourceUtilizationLimits();
         }
 
         return tracker;

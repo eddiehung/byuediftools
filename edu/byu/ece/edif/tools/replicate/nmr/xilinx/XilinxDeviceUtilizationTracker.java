@@ -246,11 +246,21 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
-        sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
-                + getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
-        sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
-        sb.append("Specified Optimization Factor: " + _optimizationFactor + "\n");
-        sb.append("Desired Utilization Factor: " + _desiredUtilizationFactor + "\n");
+        if (getMaxLogicBlocks() == Integer.MAX_VALUE) {
+        	sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of (no limit).\n");
+        }
+        else {
+        	sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
+        			+ getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
+        }
+        if (_desiredUtilizationFactor == Double.MAX_VALUE) {
+        	sb.append("Logic Utilization ignored.");
+        }
+        else {
+        	sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
+        	sb.append("Specified Optimization Factor: " + _optimizationFactor + "\n");
+        	sb.append("Desired Utilization Factor: " + _desiredUtilizationFactor + "\n");
+        }
         return sb.toString();
     }
 
@@ -270,6 +280,10 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     @Override
     protected void _init(EdifCell cell) throws OverutilizationEstimatedStopException, OverutilizationHardStopException {
         // !!! This ordering matters, the super call to _init should be last !!!
+    	// Set the Max logic blocks based on the number of LUT-FF pairs
+    	//   This assumes that the number of logic blocks (LUT-FF pairs) is 
+    	//   equal to the number of LUTs.
+    	_maxLogicBlocks = getResourceLimit(XilinxResourceMapper.LUT);
         super._init(cell);
     }
 
@@ -278,7 +292,8 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
      * the number of LUTs.
      */
     protected int getMaxLogicBlocks() {
-        return getResourceLimit(XilinxResourceMapper.LUT);
+        //return getResourceLimit(XilinxResourceMapper.LUT);
+        return _maxLogicBlocks;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -290,6 +305,12 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
      * be 0.75
      */
     protected double _desiredUtilizationFactor;
+
+    /**
+     * This is the number of logic blocks contained in the device, a logic
+     * block consisting of one LUT and one FF.
+     */
+    protected int _maxLogicBlocks;
 
     /**
      * This factor scales the number of LUTs and FFs which will share a logic
