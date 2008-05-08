@@ -569,6 +569,19 @@ public class PartialInputOutputFeedForwardTMR {
                 // If this instance is NOT part of the original set of SCC instances,
                 //   add it to TMR
                 if (!sccInstances.contains(eci)) {
+                	// All the instances from a particular bad cut group must be added as a whold set.
+                	// If one of them doesn't fit, we must not add any of them.
+                	// Build up a list of instances to add and attempt to add them as a group.
+                	// TODO: implement this!
+                	// BHP: These "sccGroup" groups are bad cut groups based on the original
+                	//   groups found by the SCC algorithms. But the original groups have 
+                	//   already been added to TMR, so is it too late to back out of adding 
+                	//   the entire group now? Do we have to go back and add the bad cut 
+                	//   grouping code to the SCC code instead?
+                	// BHP: The SCC code handles bad cut edges internally. The only problem
+                	//   is bad cut edges that actually leave the SCC. These edges are NOT
+                	//   checked in the SCC code and could potentially cause a problem for
+                	//   us here. I'm not sure of the best way (or place) to handle this.
                     try {
                         if (DEBUG)
                             System.out.println("Adding SCC bad cut instance: " + eci);
