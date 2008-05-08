@@ -275,18 +275,6 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     public double getResourceUtilizationRatio(String resourceType) throws UnsupportedResourceTypeException {
         return getResourceUtilization(resourceType) / getResourceLimit(resourceType);
     }
-    
-    /**
-     * Causes this DeviceUtilizationTracker to ignore all hard resource limits
-     * by setting the entries in _maxUtilizationMap to the maximum integer value.
-     *
-     */
-    public void ignoreHardResourceUtilizationLimits() {
-    	// Modify all entries in _maxUtilizationMap to maxInt
-    	for (String key : _maxUtilizationMap.keySet()) {
-    		_maxUtilizationMap.put(key, Integer.MAX_VALUE);
-    	}
-    }
 
     /**
      * A method to check if the given EdifCellInstance object will be skipped
@@ -514,14 +502,8 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
         for (String resourceType : resources) {
             int used = (int) getResourceUtilization(resourceType);
             if (used > 0) {
-            	int limit = getResourceLimit(resourceType);
-            	if (limit == Integer.MAX_VALUE) {
-            		sb.append(resourceType + ": " + used + " out of (no limit).\n");
-            	}
-            	else {
-            		sb.append(resourceType + ": " + used + " out of " + limit + " ("
-                            + (int) (100.0 * getResourceUtilizationRatio(resourceType)) + "%).\n");
-            	}
+                sb.append(resourceType + ": " + used + " out of " + getResourceLimit(resourceType) + " ("
+                        + (int) (100.0 * getResourceUtilizationRatio(resourceType)) + "%).\n");
             }
         }
         return sb.toString();

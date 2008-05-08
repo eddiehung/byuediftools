@@ -168,6 +168,20 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     }
 
     /**
+     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization limit
+     */
+    public void ignoreSoftLogicUtilizationLimit() {
+    	_ignoreSoftLogicUtilizationLimit = true;
+    }
+
+    /**
+     * Causes this DeviceUtilizationTracker to ignore all hard resource limits
+     */
+    public void ignoreHardResourceUtilizationLimits() {
+    	_ignoreHardResourceUtilizationLimits = true;
+    }
+
+    /**
      * Increments the utilization of the cell-type parameter resourceType.
      */
     public void incrementResourceCount(String resourceType) throws OverutilizationEstimatedStopException,
@@ -178,7 +192,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         if (resourceType == null || resourceType.compareToIgnoreCase("") == 0) {
             return;
         }
-        if (_currentNMRInstances.size() / total_instances > coverage_factor)
+        if (!_ignoreSoftLogicUtilizationLimit && (_currentNMRInstances.size() / total_instances > coverage_factor) )
             throw new OverutilizationEstimatedStopException("Reached desired Triplication coverage");
 
         Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
@@ -190,7 +204,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         int maxUtilization = maxUtilizationI.intValue();
 
         // Check for hard resource exception, otherwise increment utilization
-        if (currentUtilization + 1.0 > maxUtilization)
+        if (!_ignoreHardResourceUtilizationLimits && (currentUtilization + 1.0 > maxUtilization) )
             throw new OverutilizationHardStopException("Adding instance of resource type" + resourceType + " exceeds "
                     + maxUtilization + ", the maximum number of available resources for type " + resourceType + ".");
         else
@@ -201,7 +215,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         int estimatedLogicBlockUtilization = (int) getEstimatedLogicBlockUtilization();
         double maxLogicBlocks = getMaxLogicBlocks();
         double maxDesiredLogicBlocks = _desiredUtilizationFactor * maxLogicBlocks;
-        if (estimatedLogicBlockUtilization > maxDesiredLogicBlocks) {
+        if (!_ignoreSoftLogicUtilizationLimit && (estimatedLogicBlockUtilization > maxDesiredLogicBlocks) ) {
             double currentLUTUtilization = _currentUtilizationMap.get(XilinxResourceMapper.LUT).doubleValue();
             double currentFFUtilization = _currentUtilizationMap.get(XilinxResourceMapper.FF).doubleValue();
             throw new OverutilizationEstimatedStopException("The current device has " + maxLogicBlocks
@@ -246,15 +260,10 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
-        if (getMaxLogicBlocks() == Integer.MAX_VALUE) {
-        	sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of (no limit).\n");
-        }
-        else {
-        	sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
-        			+ getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
-        }
-        if (_desiredUtilizationFactor == Double.MAX_VALUE) {
-        	sb.append("Logic Utilization ignored.");
+        sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
+        		+ getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
+        if (_ignoreSoftLogicUtilizationLimit) {
+        	sb.append("Estimated Logic Utilization limit ignored.");
         }
         else {
         	sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
@@ -410,7 +419,20 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     private int _numVoters = 0;
 
     ///////////////////////////////////////////////////////////////////
-    ////                         package private variables         ////
+    ////                         protected variables               ////
+
+    
+    /**
+     * Causes this DeviceUtilizationTracker to ignore all hard resource limits
+     */
+    protected boolean _ignoreHardResourceUtilizationLimits = false;
+    /**
+     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization limit
+     */
+    protected boolean _ignoreSoftLogicUtilizationLimit = false;
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         constant variables                ////
 
     /**
      * The default merge factor
