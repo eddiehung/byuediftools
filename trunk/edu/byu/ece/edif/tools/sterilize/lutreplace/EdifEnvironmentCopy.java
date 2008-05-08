@@ -35,7 +35,7 @@ public class EdifEnvironmentCopy {
 	 */
 	public EdifEnvironmentCopy(EdifEnvironment env) throws EdifNameConflictException {
 		_origEnv = env;
-		createEdifEnvironment();
+		//createEdifEnvironment();
 	}
 	
 	/**
@@ -91,10 +91,10 @@ public class EdifEnvironmentCopy {
 	 */
 	protected void setEdifEnvironmentDateAuthorProgramVersion() {
 		// Copy all of the date, author, etc. This can always be changed at a later time.
-	    _newEnv.setDate(_origEnv.getDate());
-	    _newEnv.setAuthor(_origEnv.getAuthor());
-	    _newEnv.setProgram(_origEnv.getProgram());
-	    _newEnv.setVersion(_origEnv.getVersion());
+	    //_newEnv.setDate(_origEnv.getDate());
+	    //_newEnv.setAuthor(_origEnv.getAuthor());
+	    //_newEnv.setProgram(_origEnv.getProgram());
+	    //_newEnv.setVersion(_origEnv.getVersion());
 	}
 
 	/**
@@ -275,9 +275,10 @@ public class EdifEnvironmentCopy {
 	protected void addNets(EdifCell origCell, EdifCell newCell) 
 		throws EdifNameConflictException {		
 		// copy nets
-		for (EdifNet oldNet : origCell.getNetList() ) {
-			addNet(origCell, newCell, oldNet);
-		}
+		if (origCell.getNetList() != null)
+			for (EdifNet oldNet : origCell.getNetList() ) {
+				addNet(origCell, newCell, oldNet);
+			}
 	}
 
 	protected EdifNet addNet(EdifCell origCell, EdifCell newCell, EdifNet oldNet) 
