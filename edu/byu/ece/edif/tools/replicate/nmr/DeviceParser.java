@@ -198,7 +198,8 @@ public class DeviceParser {
         }
         
         if (ignore_soft_limits) {
-            tracker.setDesiredUtilizationFactor(Double.MAX_VALUE);
+            //tracker.setDesiredUtilizationFactor(Double.MAX_VALUE);
+            tracker.ignoreSoftLogicUtilizationLimit();
         }
         
         if (ignore_hard_limits) {
