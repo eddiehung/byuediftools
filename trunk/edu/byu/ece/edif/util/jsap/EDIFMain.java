@@ -37,7 +37,7 @@ public class EDIFMain {
 
 	public static String EXECUTABLE_NAME = "edifmain";
 	
-	public static String VERSION_STRING = "v0.3.4";
+	public static String VERSION_STRING = "v0.3.4rc1.$Revision$";
 	
 	public static String VERSION_DATE = "17 Apr 2008";
 	
