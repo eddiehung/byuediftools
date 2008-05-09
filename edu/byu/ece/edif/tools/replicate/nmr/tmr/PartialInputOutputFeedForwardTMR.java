@@ -1047,6 +1047,8 @@ public class PartialInputOutputFeedForwardTMR {
                     //nextWave.remove(atomicSet);
                     continue;
                 } catch (OverutilizationEstimatedStopException e2) {
+                    // Ran out of logic while trying to triplicate this 
+                	//   atomic set. Thus, none of the set was triplicated.
                     // DeviceUtilizationTracker says to stop adding instances
                     //   for triplication
                     if (DEBUG)
@@ -1054,43 +1056,15 @@ public class PartialInputOutputFeedForwardTMR {
                     allInstancesTriplicated = false;
                     throw e2;
                 } catch (OverutilizationHardStopException e3) {
+                    // Ran out of resources for (at least) one of the instances
+                	//   included in this atomic set. Thus, none of the set
+                	//   was triplicated.
+                    if (DEBUG)
+                        System.out.println("Received EstimatedStopException. Halting triplication.");
                     // Can't triplicate all instances. Record this for the
                     //   return value
                     allInstancesTriplicated = false;
-                    try {
-                        // Skip Hard Stops
-                        resourceTracker.nmrInstances(atomicSet, false, true, _replicationFactor);
-                        // Add atomic sets of ECIs to the input/outputList if there is room 
-                        if (DEBUG) {
-                            if (doInput) {
-                                _inputSets.add(atomicSet);
-                                //System.out.println("Input Group added: "+atomicSet);
-                            } else {
-                                _outputSets.add(atomicSet);
-                                //System.out.println("Output Group added: "+atomicSet);
-                            }
-                            instancesAdded += atomicSet.size();
-                            _ECIsRelatedToFB.addAll(atomicSet);
-                        }
-                    } catch (DuplicateNMRRequestException e4) {
-                        // Don't want to follow this branch anymore???
-                        // TODO: See message above
-                        //nextWave.remove(atomicSet);
-                        continue;
-                    } catch (OverutilizationEstimatedStopException e5) {
-                        // DeviceUtilizationTracker says to stop adding instances
-                        //   for triplication
-                        if (DEBUG)
-                            System.out.println("Received EstimatedStopException. Halting triplication.");
-                        //stopTriplication = true;
-                        //break;
-                        allInstancesTriplicated = false;
-                        throw e5;
-                    } catch (OverutilizationHardStopException e6) {
-                        // !!! Shouldn't get here because we called tmrInstances
-                        //     with the flag set to skip hard stops
-                        throw new EdifRuntimeException("ERROR: Shouldn't get here! " + e6);
-                    }
+                    continue;
                 }
             }
 
