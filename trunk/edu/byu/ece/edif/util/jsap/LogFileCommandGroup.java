@@ -28,7 +28,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Set;
 
-
 import com.martiansoftware.jsap.Flagged;
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -79,8 +78,9 @@ public class LogFileCommandGroup extends AbstractCommandGroup {
 		_verbose.setDefault("3");
 		_verbose.setUsageName("{1|2|3|4|5}");
 		_verbose.setAllowMultipleDeclarations(true);
-		_verbose.setHelp("sets the verbosity level. 1 prints only errors, " +
-				"2 warnings, 3 normal, 4 log to stdout. 5 prints debug information.");
+		_verbose.setHelp("sets the verbosity level for standard out." +
+				" 1 prints only errors, 2 warnings, 3 normal, 4 prints log" +
+				" messages to stdout. 5 prints debug messages to stdout.");
 		this.addCommand(_verbose);
 
 		_append_log_file = new Switch(APPEND_LOG_OPTION);
