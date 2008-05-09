@@ -98,7 +98,7 @@ public class EDIFMain {
 	        in.close();
 	    } 
 		catch (IOException e) {} 
-	    //catch (NullPointerException e) {}
+	    catch (NullPointerException e) {}
 	    
 		return str;
 	
