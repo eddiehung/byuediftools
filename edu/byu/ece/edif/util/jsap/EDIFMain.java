@@ -24,6 +24,10 @@
  */
 package edu.byu.ece.edif.util.jsap;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 /**
@@ -37,7 +41,7 @@ public class EDIFMain {
 
 	public static String EXECUTABLE_NAME = "edifmain";
 	
-	public static String VERSION_STRING = "v0.3.4rc1.$Revision$";
+	public static String VERSION_STRING = "v0.3.4rc1";
 	
 	public static String VERSION_DATE = "17 Apr 2008";
 	
@@ -46,7 +50,7 @@ public class EDIFMain {
 	public static String TOOL_SUMMARY_STRING = "Generic main function that does not actually do anything";
 	
 	public static void printProgramExecutableString(PrintStream out) {
-		out.print(EXECUTABLE_NAME + " - " + VERSION_STRING + newLine
+		out.print(EXECUTABLE_NAME + " - " + VERSION_STRING + getSVNversion() + newLine
 		+ TOOL_SUMMARY_STRING + newLine
 		+ COPYRIGHT_STRING + newLine);
 	}
@@ -57,4 +61,46 @@ public class EDIFMain {
 
 	public static String newLine = System.getProperty("line.separator");
 	
+	
+	/**
+	 * Reads the first line from a file at edu.byu.ece.jarversion and uses that as the 
+	 * version number.  If that file does not exist then the local version number will be used, 
+	 * which is very likely to be inaccurate.  To create the jar follow these steps:
+	 * <ol>
+	 * <li> svnversion > edu/byu/ece/jarversion
+	 * <li> jar cf ...
+	 * </ol>
+	 * <br>
+	 * Another option is to have the jarversion file in 
+	 * the repository, and add the following steps to creating a jar:
+	 * <ol>
+	 * <li> touch jarversion
+	 * <li> svn commit
+	 * <li> svn update
+	 * <li> jar cf ...
+	 * </ol> 
+	 * @return Version number as a string
+	 */
+	private static String getSVNversion() {
+		String str="$Revision$";
+		str=str.replace("$Revision: ",".svn");
+		str=str.replace(" $","L ");
+		//System.out.println (Thread.currentThread ().getContextClassLoader ().getResource ("edu/byu/ece/jarversion"));
+		InputStream is = Thread.currentThread ().getContextClassLoader ().getResourceAsStream("edu/byu/ece/jarversion");
+		try {
+			//package edu.byu.ece.edif.util.jsap;
+	        //BufferedReader in = new BufferedReader(new FileReader(new File(version)));
+	        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+	        
+	        String s = in.readLine();
+	        if(s!=null)
+	        	str=".svn"+s;
+	        in.close();
+	    } 
+		catch (IOException e) {} 
+	    //catch (NullPointerException e) {}
+	    
+		return str;
+	
+	}
 }
