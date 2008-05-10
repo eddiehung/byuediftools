@@ -24,18 +24,17 @@ package edu.byu.ece.edif.tools.sterilize.lutreplace.logicLutRam;
 
 /**
  * TODO: Insert class description here.
- * 
  */
 public enum TargetPart {
-	VIRTEX("virtex"), VIRTEX2("virtex2"), VIRTEX2PRO("virtex2pro"), VIRTEX4("virtex4"), VIRTEX5("virtex5");
+    VIRTEX("virtex"), VIRTEX2("virtex2"), VIRTEX2PRO("virtex2pro"), VIRTEX4("virtex4"), VIRTEX5("virtex5");
 
-	private String value;
+    private String value;
 
-	TargetPart(String value) {
-		this.value = value;
-	}
+    TargetPart(String value) {
+        this.value = value;
+    }
 
-	public String toString() {
-		return value;
-	}
+    public String toString() {
+        return value;
+    }
 }
