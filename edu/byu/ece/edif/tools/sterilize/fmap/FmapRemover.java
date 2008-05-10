@@ -43,10 +43,10 @@ import edu.byu.ece.edif.core.EdifLibrary;
  * sophisticated, the need for fmaps has gone. In the BYU EDIF tools, an fmap is
  * represented with an EdifCell object. For this reason, fmaps can cause
  * problems in circuits; for example, when a design is partially triplicated
- * (see {@link edu.byu.ece.edif.tools.replicate.nmr.tmr}), and the fmap is marked
- * to be triplicated, but not all of its contents are triplicated, the result is
- * an error being thrown by the triplication tool. Thus, fmaps are completely
- * removed from designs before performing triplication.
+ * (see {@link edu.byu.ece.edif.tools.replicate.nmr.tmr}), and the fmap is
+ * marked to be triplicated, but not all of its contents are triplicated, the
+ * result is an error being thrown by the triplication tool. Thus, fmaps are
+ * completely removed from designs before performing triplication.
  * </p>
  * <p>
  * The following might help to clarify the definition of an fmap. It comes from
