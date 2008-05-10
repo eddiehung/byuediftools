@@ -32,36 +32,36 @@ import edu.byu.ece.edif.core.EdifPort;
  */
 public interface HalfLatchArchitecture {
 
-	public EdifCellInstance addConstantCellInstance(EdifCell cell, int safeConstantPolarity);
+    public EdifCellInstance addConstantCellInstance(EdifCell cell, int safeConstantPolarity);
 
-	public String getSafeConstantCellOutputPortName();
+    public String getSafeConstantCellOutputPortName();
 
-	public boolean cellRequiresReplacement(EdifCellInstance edifCellInstance);
+    public boolean cellRequiresReplacement(EdifCellInstance edifCellInstance);
 
-	public boolean isConstantCell(String edifCellInstanceType);
+    public boolean isConstantCell(String edifCellInstanceType);
 
-	public int getConstantCellValue(String edifCellInstanceType);
+    public int getConstantCellValue(String edifCellInstanceType);
 
-	public String getPrimitiveReplacementType(EdifCellInstance edifCellInstance);
+    public String getPrimitiveReplacementType(EdifCellInstance edifCellInstance);
 
-	public String[] getPrimitiveReplacementFloatingPorts(EdifCellInstance edifCellInstance);
+    public String[] getPrimitiveReplacementFloatingPorts(EdifCellInstance edifCellInstance);
 
-	public int getPrimitiveReplacementFloatingPortDefaultValue(EdifCellInstance edifCellInstance, String floatingPort);
+    public int getPrimitiveReplacementFloatingPortDefaultValue(EdifCellInstance edifCellInstance, String floatingPort);
 
-	public EdifCell findOrAddPrimitiveReplacementCell(EdifLibraryManager elm, String safePrimitiveType);
+    public EdifCell findOrAddPrimitiveReplacementCell(EdifLibraryManager elm, String safePrimitiveType);
 
-	public EdifCell findOrAddPrimitiveInverterCell(EdifLibraryManager elm);
+    public EdifCell findOrAddPrimitiveInverterCell(EdifLibraryManager elm);
 
-	public String getPrimitiveInverterCellInputPortName();
+    public String getPrimitiveInverterCellInputPortName();
 
-	public String getPrimitiveInverterCellOutputPortName();
+    public String getPrimitiveInverterCellOutputPortName();
 
-	public EdifCell findOrAddPrimitiveInputBufferCell(EdifLibraryManager elm);
+    public EdifCell findOrAddPrimitiveInputBufferCell(EdifLibraryManager elm);
 
-	public String getPrimitiveInputBufferCellInputPortName();
+    public String getPrimitiveInputBufferCellInputPortName();
 
-	public String getPrimitiveInputBufferOutputBufferName();
+    public String getPrimitiveInputBufferOutputBufferName();
 
-	public boolean isBadCutPin(EdifPort port);
+    public boolean isBadCutPin(EdifPort port);
 
 }
