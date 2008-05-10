@@ -27,12 +27,12 @@ import edu.byu.ece.graph.BasicGraph;
 
 /**
  * An abstract class that represents an EdifCell as a Graph data structure. This
- * abstract class is used for Edif graph classes that store the connectivity
+ * abstract class is used for EDIF graph classes that store the connectivity
  * information as a Mapping between node objects and their input and output
  * edges. Default implementations are provided for getAcestors, getDescendents,
  * getSuccessors, and getPredecessor. Extending classes must implement:
  * getInputEdges, getOutputEdges, getNodes and getEdges. This class also
- * provides method for determining all ancestors and descendents.
+ * provides method for determining all ancestors and descendants.
  * 
  * @since Created on Jan 23, 2006
  */

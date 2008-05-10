@@ -39,7 +39,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
 import edu.byu.ece.graph.Edge;
 
 /**
- * @author 
+ * @author
  * @since Created on Jan 9, 2006
  */
 public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
