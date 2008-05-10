@@ -1,5 +1,5 @@
 /*
- * TODO: Insert class description here.
+ * Includes functionality for loading a design directly into cvt.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -78,7 +78,7 @@ import edu.byu.ece.edif.util.parse.ParseException;
  * TODO:
  * <ul>
  * <li> Allow user to specify name of top-level design (default: top-level
- * design is the top design in first edif file
+ * design is the top design in first EDIF file
  * </ul>
  * 
  * @author Welson Sun, Tyler Anderson
@@ -979,7 +979,9 @@ public class BuildWrapper extends JHDLWrapper {
 
     public static final String MENU_EDIF = "EDIF";
 
-    /** The minimum argument number for this class. * */
+    /**
+     * The minimum argument number for this class. *
+     */
     private static final int MINARGNUMBER = 3;
 
     private static int _gndcnt;

@@ -1,5 +1,5 @@
 /*
- * TODO: Insert class description here.
+ * Builds a JHDL Wrapper circuit from an EDIF file with the given technology.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -41,7 +41,7 @@ import edu.byu.ece.edif.util.parse.EdifParser;
 import edu.byu.ece.edif.util.parse.ParseException;
 
 /**
- * Builds a JHDL Wrapper circuit from an Edif file with a passed technology and
+ * Builds a JHDL Wrapper circuit from an EDIF file with a passed technology and
  * file name as arguments to main.
  * 
  * @author Welson Sun, Tyler Anderson
@@ -52,7 +52,7 @@ public class JHDLWrapper {
 
     /**
      * This method will check the validity of a given technology string. This
-     * method return a false if the technoloyg is not valid and true if it is
+     * method return a false if the technology is not valid and true if it is
      * valid.
      * 
      * @param technology The technology name to check against the valid ones
@@ -112,15 +112,15 @@ public class JHDLWrapper {
      * </ol>
      * 
      * @param parent The parent HWSystem for the new cell.
-     * @param instance EdifCellInstance of the top edif cell to build the JHDL
+     * @param instance EdifCellInstance of the top EDIF cell to build the JHDL
      * cell off of.
      * @param technology The technology to base the circuit off of.
-     * @return The JHDL version of the Edif Cell.
+     * @return The JHDL version of the EDIF Cell.
      */
     public static Cell buildWrapper(HWSystem parent, EdifCellInstance instance, String technology,
             boolean addEdifCellInstanceAsProperty) {
 
-        // Step 0. Check technolgy
+        // Step 0. Check technology
         if (!checkTechnologyValidity(technology)) {
             System.err.println("Bad technology " + technology);
             System.err.println(listValidTechnologies());

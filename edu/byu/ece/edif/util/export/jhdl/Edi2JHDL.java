@@ -1,5 +1,5 @@
 /*
- * TODO: Insert class description here.
+ * Generate a JHDL circuit from EDIF for the designated EdifCellInstance.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -51,7 +51,7 @@ import edu.byu.ece.edif.core.NamedObjectCompare;
 import edu.byu.ece.edif.core.StringTypedValue;
 
 /**
- * This class is used to generate a JHDL circuit from an Edif object. Generates
+ * This class is used to generate a JHDL circuit from an EDIF object. Generates
  * a JHDL circuit for the designated EdifCellInstance.
  * <p>
  * TO-DO:
@@ -922,7 +922,7 @@ public class Edi2JHDL {
         // Default initialization Strings for BRAMs
         String rambInitDefault = "00000000000000000000000000000000" + "00000000000000000000000000000000";
 
-        /** *********** Special cases for memory initialization ********** */
+        /** Special cases for memory initialization */
 
         // lut
         if (className.startsWith("lut")) {
@@ -1001,7 +1001,7 @@ public class Edi2JHDL {
             memDepth = parseMemDepth(leafCell.getCellType().getName());
         }
 
-        /** *********************** Retrieve the class ******************** */
+        /* Retrieve the class */
 
         // Class name should be had by now, so retrieve the class
         try {
@@ -1029,7 +1029,7 @@ public class Edi2JHDL {
             return;
         }
 
-        /** * Objects for Constructor retrieval and class instantiation *** */
+        /* Objects for Constructor retrieval and class instantiation */
 
         // Objects used to find and instantiate the constructor for
         // the loaded class
@@ -1044,7 +1044,7 @@ public class Edi2JHDL {
         arg_class[0] = Node.class;
         arg_class[1] = String.class;
 
-        /** **************** Memory initialization retrieval ************** */
+        /* Memory initialization retrieval */
 
         // Memory initialization retrieval
         int initPos = argSize - 1;
@@ -1061,7 +1061,7 @@ public class Edi2JHDL {
             _getPropertyINITString(leafCell, initDefault, initString, argSize, initPos, memDepth, arg_class, args);
         }
 
-        /** **************** Argument/class type collection ************** */
+        /* Argument/class type collection */
 
         /*
          * NR - START<p> <p>Solving Problem: Multiple single-bit ports in EDIF
@@ -1093,8 +1093,10 @@ public class Edi2JHDL {
          * NR -END
          */
 
-        // Collect the rest of the arguments to instantiate the class,
-        // as well as set the class type of each argument
+        /*
+         * Collect the rest of the arguments to instantiate the class, as well
+         * as set the class type of each argument
+         */
         Iterator it = xilinxCell.getSortedPortList().iterator();
         int i = 1;
         while (it.hasNext()) {
@@ -1103,15 +1105,15 @@ public class Edi2JHDL {
             arg_class[2 * i + 1] = Wire.class;
             String str;
 
-            // Collect because you don't want to send all base names
-            // to the constructor or your ports won't match up in the
-            // JHDL constructor.
+            /*
+             * Collect because you don't want to send all base names to the
+             * constructor or your ports won't match up in the JHDL constructor.
+             */
 
             //	        Collection ports = (port.getCellInterface().findSinglePortsWithMatchingBaseName(port.getBaseName()));
             //            if (ports != null && ports.size() == 1)
             //                str = JHDL_ID(port.getBaseName());
             //            else
-
             str = JHDL_ID(port.getName());
             Object obj = wires.get(i - 1);
             args[2 * i] = str;
@@ -1181,14 +1183,25 @@ public class Edi2JHDL {
     protected void createSubCellWires(EdifCellInstance subcell, EdifCellInstance parentCell, ArrayList wires,
             Cell jhdlInstance, HashMap internalWires, Map instToMap) {
 
-        /*
-         * NR - START <p> Solving Problem: Multiple single-bit ports in EDIF
-         * need to be a single multiple-bit port for JHDL constructors <p> This
-         * problem only appears with BRAMs <p> Check the passed-in EdifCell to
-         * see if it's a BRAM type <ul> <li>instCell - passed-in EdifCell <li>xilinxCell -
-         * xilinx EdifCell (if passed-in is a BRAM type) or passed-in EdifCell
-         * <li>Map one2many <ul> <li> key: xilinxCell EdifPort <li> value:
-         * ArrayList of instCell EdifPorts </ul> </ul>
+        /**
+         * NR - START
+         * <p>
+         * Solving Problem: Multiple single-bit ports in EDIF need to be a
+         * single multiple-bit port for JHDL constructors
+         * <p>
+         * This problem only appears with BRAMs
+         * <p>
+         * Check the passed-in EdifCell to see if it's a BRAM type
+         * <ul>
+         * <li>instCell - passed-in EdifCell
+         * <li>xilinxCell - xilinx EdifCell (if passed-in is a BRAM type) or
+         * passed-in EdifCell
+         * <li>Map one2many
+         * <ul>
+         * <li> key: xilinxCell EdifPort
+         * <li> value: ArrayList of instCell EdifPorts
+         * </ul>
+         * </ul>
          */
         EdifLibrary xilinxLib = edu.byu.ece.edif.arch.xilinx.XilinxLibrary.library;
         EdifCell instCell = subcell.getCellType();
@@ -1243,10 +1256,14 @@ public class Edi2JHDL {
                 if (debug) {
                     System.out.println("SINGLE BIT");
                 }
-                /*
-                 * NR -START <ul> <li>port - xilinxCell EdifPort <li>oldPort -
-                 * instCell EdifPort </ul> <p> Note that 'oldPort' is usually
-                 * used
+                /**
+                 * NR -START
+                 * <ul>
+                 * <li>port - xilinxCell EdifPort
+                 * <li>oldPort - instCell EdifPort
+                 * </ul>
+                 * <p>
+                 * Note that 'oldPort' is usually used
                  */
                 if (diffPorts || samePorts) {
                     ArrayList singlePorts = (ArrayList) one2many.get(port);
@@ -1332,7 +1349,7 @@ public class Edi2JHDL {
                         System.out.println("BUS <" + j + ">");
                     }
 
-                    /*
+                    /**
                      * NR -START
                      * <p>
                      * Since we have a bus, we have to check for 2 things:
