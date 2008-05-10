@@ -25,7 +25,6 @@ package edu.byu.ece.edif.arch.xilinx.test;
 import edu.byu.ece.edif.arch.xilinx.EdifXPowerCompare;
 import edu.byu.ece.edif.arch.xilinx.EdifXPowerParser;
 
-
 /**
  * @author nhr2
  * @since Created on Jun 13, 2005

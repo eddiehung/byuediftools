@@ -32,7 +32,7 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
 
 /**
- * This class is auto-generated - do not modify 
+ * This class is auto-generated - do not modify
  */
 public class XilinxGenLib {
 
