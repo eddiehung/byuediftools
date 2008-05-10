@@ -1,6 +1,5 @@
 /*
- * 
- * 
+ * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -104,8 +103,11 @@ public class XilinxTools {
 
     /**
      * Get the output EdifSingleBitPort for the FF EdifCell NOTE: We make the
-     * following 2 assumptions: 1. a FF sink will have ONLY one output port 2.
-     * the single output port will ALWAYS be one bit wide
+     * following 2 assumptions:
+     * <ol>
+     * <li> a FF sink will have ONLY one output port
+     * <li> the single output port will ALWAYS be one bit wide.
+     * </ol>
      */
     public static EdifSingleBitPort getRegisterOutputPort(EdifCell cell) {
         EdifSingleBitPort returnPort = null;
@@ -462,10 +464,13 @@ public class XilinxTools {
 
     /**
      * In order to determine 'illegal' src-sink links for edge cutting, retiming
-     * FF locations etc. a HashMap is created (restrictedMap) which has: key:
-     * String name of CLB EdifCell source value: String Collection of all
-     * 'illegal' EdifCells as sinks To create this restricted Map, some helper
-     * Collections are used.
+     * FF locations etc. a HashMap is created (restrictedMap) which has:
+     * <ul>
+     * <li>key: String name of CLB EdifCell source
+     * <li>value: String Collection of all 'illegal' EdifCells as sinks
+     * </ul>
+     * <p>
+     * To create this restricted Map, some helper Collections are used.
      */
     public static HashMap<String, Collection<String>> restrictedMap;
 

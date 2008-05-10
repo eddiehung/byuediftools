@@ -1,5 +1,5 @@
 /*
- * TODO: Insert class description here.
+ * Parse and merge EDIF files using the Xilinx library.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -37,7 +37,7 @@ import edu.byu.ece.edif.util.parse.ParseException;
 
 /**
  * This is a simple class that contains a static method for parsing and merging
- * edif files using the Xilinx library as the primitive library.
+ * EDIF files using the Xilinx library as the primitive library.
  * 
  * @return The top-level {@link EdifCell} of the parsed EDIF file.
  * @author wirthlin

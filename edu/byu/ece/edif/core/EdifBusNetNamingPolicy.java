@@ -36,11 +36,11 @@ package edu.byu.ece.edif.core;
  */
 public interface EdifBusNetNamingPolicy {
 
-    /***************************************************************************
-     * Returns true if the given name is valid under the given naming policy.
+    /**
+     * @return true if the given name is valid under the given naming policy.
      * This method should only return true if the naming policy can return both
      * the basename and bit position of the net.
-     **************************************************************************/
+     */
     public boolean isValidBusNetName(String name);
 
     /**
