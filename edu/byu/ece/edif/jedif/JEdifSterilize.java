@@ -83,7 +83,7 @@ public class JEdifSterilize extends EDIFMain {
         LogFileCommandGroup.CreateLog(result);
         out = LogFile.out();
         err = LogFile.err();
-        
+
         printProgramExecutableString(LogFile.log());
 
         EdifEnvironment myEnv = JEdifParserCommandGroup.getEdifEnvironment(result, out);
