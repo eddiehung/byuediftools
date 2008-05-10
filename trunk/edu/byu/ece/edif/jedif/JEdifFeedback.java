@@ -64,7 +64,7 @@ public class JEdifFeedback extends EDIFMain {
         err = LogFile.err();
 
         printProgramExecutableString(LogFile.log());
-        
+
         // Create EdifEnvironment data structure
         EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out);
         EdifCell flatCell = top.getTopCell();

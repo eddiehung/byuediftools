@@ -64,7 +64,6 @@ public class EdifTMR extends EDIFMain {
         // Parse command line options
         printProgramExecutableString(out);
 
-
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new MergeParserCommandGroup());
         parser.addCommands(new OutputFileCommandGroup());

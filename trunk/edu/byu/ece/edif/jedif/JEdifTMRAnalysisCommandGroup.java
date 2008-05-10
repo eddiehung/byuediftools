@@ -305,8 +305,9 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
 
         Switch ignore_hard_resource_utilization = new Switch(IGNORE_HARD_UTILIZATION_LIMITS);
         ignore_hard_resource_utilization.setLongFlag(IGNORE_HARD_UTILIZATION_LIMITS);
-        ignore_hard_resource_utilization.setHelp("This option makes the BLTmr tool ignore all hard resource utilization limits when "
-                + "triplicating the design. ");
+        ignore_hard_resource_utilization
+                .setHelp("This option makes the BLTmr tool ignore all hard resource utilization limits when "
+                        + "triplicating the design. ");
         this.addCommand(ignore_hard_resource_utilization);
 
         Switch ignore_soft_logic_utilization = new Switch(IGNORE_SOFT_UTILIZATION_LIMIT);
@@ -542,9 +543,9 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
     public static final String FACTOR_TYPE = "factor_type";
 
     public static final String FACTOR_VALUE = "factor_value";
-    
+
     public static final String IGNORE_HARD_UTILIZATION_LIMITS = "ignore_hard_resource_utilization_limits";
-    
+
     public static final String IGNORE_SOFT_UTILIZATION_LIMIT = "ignore_soft_logic_utilization_limit";
 
     public static final String FILE = "file";

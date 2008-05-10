@@ -79,7 +79,7 @@ public class JEdifNetlist extends EDIFMain {
         } catch (FileNotFoundException e) {
             err.println("Error:" + e);
             System.exit(1);
-        } 
+        }
     }
 
     /**

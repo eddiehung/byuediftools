@@ -72,9 +72,9 @@ import edu.byu.ece.edif.util.jsap.PTMRFileCommandGroup;
  * duplication and generate a netlist.
  */
 public class JEdifDWC extends EDIFMain {
-	
-	public static String NO_OBUFS = "no_obufs";
-	
+
+    public static String NO_OBUFS = "no_obufs";
+
     public static void main(String args[]) {
 
         // Define the print streams for this program
@@ -95,11 +95,12 @@ public class JEdifDWC extends EDIFMain {
         parser.addCommands(new PTMRFileCommandGroup());
         parser.addCommands(new LogFileCommandGroup("JEdifDWC.log"));
         try {
-			parser.registerParameter(new Switch(NO_OBUFS).setLongFlag(NO_OBUFS).setDefault("false").setHelp("Disable insertion of output buffers on error detection signals."));
-		} catch (JSAPException e1) {
-			e1.printStackTrace();
-		}
-        
+            parser.registerParameter(new Switch(NO_OBUFS).setLongFlag(NO_OBUFS).setDefault("false").setHelp(
+                    "Disable insertion of output buffers on error detection signals."));
+        } catch (JSAPException e1) {
+            e1.printStackTrace();
+        }
+
         JSAPResult result = parser.parse(args, err);
         if (!result.success())
             System.exit(1);
@@ -234,7 +235,8 @@ public class JEdifDWC extends EDIFMain {
                         new XilinxTMRArchitecture(), dwcArch, portsToDuplicateMap, instancesToDuplicateMap,
                         persistentPortRefsToCompare, result.getBoolean(JEdifDWCParserCommandGroup.USE_DRC), result
                                 .getBoolean(JEdifDWCParserCommandGroup.PACK_DETECTION_REGS), result
-                                .getBoolean(JEdifDWCParserCommandGroup.REGISTER_DETECTION), clockNet, result.getBoolean(NO_OBUFS));
+                                .getBoolean(JEdifDWCParserCommandGroup.REGISTER_DETECTION), clockNet, result
+                                .getBoolean(NO_OBUFS));
             }
 
         } catch (EdifNameConflictException e2) {
