@@ -25,7 +25,6 @@ package edu.byu.ece.edif.util.jsap;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
-
 import com.martiansoftware.jsap.Flagged;
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;

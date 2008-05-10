@@ -28,7 +28,6 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 
-
 public class MoreFrequentVotingCommandGroup extends AbstractCommandGroup {
 
     protected FlaggedOption _voter_threshold;
