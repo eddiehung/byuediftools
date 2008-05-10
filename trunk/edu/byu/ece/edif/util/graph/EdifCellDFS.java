@@ -37,7 +37,7 @@ import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.graph.dfs.DFSTree;
 
 /**
- * A depth first search algorithm using the Edif classes only. This requires
+ * A depth first search algorithm using the EDIF classes only. This requires
  * much less memory and is much faster than the Ptolemy graph version.
  * <p>
  * TODO:

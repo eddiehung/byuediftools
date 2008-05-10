@@ -26,7 +26,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,7 +40,6 @@ import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.util.export.jhdl.BuildWrapper;
 import edu.byu.ece.edif.util.merge.EdifMergeParser;
 import edu.byu.ece.edif.util.parse.EdifParser;
-
 
 /**
  * This testbench tests the JHDL support within the EDIF tool.
@@ -166,7 +164,8 @@ public class JHDLTests {
         }
         opts += " -nocvt";
         opts += " -w -b2EDIF";
-        String cmd = "java -Xmx800M edu.byu.ece.edif.util.export.jhdl.BuildWrapper " + currDir.getPath() + " -t " + technologyName + opts;
+        String cmd = "java -Xmx800M edu.byu.ece.edif.util.export.jhdl.BuildWrapper " + currDir.getPath() + " -t "
+                + technologyName + opts;
         int parseErr = _runCommand(cmd, currDir, false);
         if (parseErr > 0) {
             _parseErrors++;
