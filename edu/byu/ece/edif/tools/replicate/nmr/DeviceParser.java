@@ -91,8 +91,8 @@ public class DeviceParser {
      * @throws OverutilizationEstimatedStopException
      * @throws OverutilizationHardStopException
      */
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
-    		String part, double mergeFactor, double optimizationFactor, double desiredUtilizationFactor)
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String part,
+            double mergeFactor, double optimizationFactor, double desiredUtilizationFactor)
             throws OverutilizationException, OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
         String xilinxFamily = parseXilinxFamily(XilinxPartValidator.getTechnologyFromPart(part));
@@ -112,12 +112,11 @@ public class DeviceParser {
             throw new EdifRuntimeException("Xilinx family " + xilinxFamily + " not yet supported.");
     }
 
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
-            String part, double mergeFactor, double optimizationFactor, double factorValue,
-            NMRUtilities.UtilizationFactor type) throws OverutilizationException,
-            OverutilizationEstimatedStopException, OverutilizationHardStopException {
-        return createXilinxDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor, factorValue,
-                false, false, type);
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String part,
+            double mergeFactor, double optimizationFactor, double factorValue, NMRUtilities.UtilizationFactor type)
+            throws OverutilizationException, OverutilizationEstimatedStopException, OverutilizationHardStopException {
+        return createXilinxDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor, factorValue, false,
+                false, type);
     }
 
     /**
@@ -151,10 +150,9 @@ public class DeviceParser {
      * etc.).
      * @author <a href="mailto:jcarroll@byu.net">James Carroll</a>
      */
-    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, 
-            String part, double mergeFactor, double optimizationFactor, double factorValue, 
-            boolean ignore_hard_limits, boolean ignore_soft_limits,
-            NMRUtilities.UtilizationFactor type) throws OverutilizationException,
+    public static XilinxDeviceUtilizationTracker createXilinxDeviceUtilizationTracker(EdifCell cell, String part,
+            double mergeFactor, double optimizationFactor, double factorValue, boolean ignore_hard_limits,
+            boolean ignore_soft_limits, NMRUtilities.UtilizationFactor type) throws OverutilizationException,
             OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
         /*
@@ -196,14 +194,14 @@ public class DeviceParser {
         } else {
             throw new InvalidParameterException("Invalid factor type.  Use one of the following: ASUF, UEF, DUF.");
         }
-        
+
         if (ignore_soft_limits) {
             //tracker.setDesiredUtilizationFactor(Double.MAX_VALUE);
             tracker.ignoreSoftLogicUtilizationLimit();
         }
-        
+
         if (ignore_hard_limits) {
-        	tracker.ignoreHardResourceUtilizationLimits();
+            tracker.ignoreHardResourceUtilizationLimits();
         }
 
         return tracker;

@@ -27,10 +27,10 @@ package edu.byu.ece.edif.tools.replicate.nmr;
 /**
  * A resource mapper interface.
  * <p>
- * TODO: Is
- * this interface even necessary, it doesn't do anything now???
+ * TODO: Is this interface even necessary, it doesn't do anything now???
+ * 
  * @author ksm4
- * @version $Id$ 
+ * @version $Id$
  */
 public interface ResourceMapper {
 
