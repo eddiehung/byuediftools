@@ -1,6 +1,5 @@
 /*
- * Defines the resource capacity and utilization of a part in the Xilinx Virtex4
- * FPGA family.
+ * Defines resource capacity and utilization of Xilinx Virtex4 part.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 

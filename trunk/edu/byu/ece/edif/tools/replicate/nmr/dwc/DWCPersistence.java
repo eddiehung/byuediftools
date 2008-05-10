@@ -92,8 +92,8 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * Provides a NMR method that includes design flattening and support for
  * persistent error lines. This class will perform DWC as follows:
  * <ol>
- * <li> Parse and merge the top-level edif file
- * <li> Flatten the top-level edif file
+ * <li> Parse and merge the top-level EDIF file
+ * <li> Flatten the top-level EDIF file
  * <li> Create an EdifCellGraph from the flattened file
  * <li> Identify cuts
  * </ol>
@@ -331,9 +331,8 @@ public class DWCPersistence {
              */
             DeviceUtilizationTracker duTracker = null;
             try {
-                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
-                		_result.getString(DWCCommandParser.PART), _result
-                        .getDouble(DWCCommandParser.MERGE_FACTOR), _result
+                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _result
+                        .getString(DWCCommandParser.PART), _result.getDouble(DWCCommandParser.MERGE_FACTOR), _result
                         .getDouble(DWCCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
             } catch (OverutilizationException e) {
                 String errmsg = new String("ERROR: Original cell " + flatCell + " could not fit into specified part "
@@ -545,7 +544,8 @@ public class DWCPersistence {
                     dwcCell = new TMRDWCEdifCell(cell.getLibrary(), flatCell.getName() + "_DWC", flatCell,
                             feedbackPlusInput, new XilinxTMRArchitecture(), dwcArch, portsToDuplicateMap,
                             instancesToDuplicateMap, persistentPortRefsToCompare, _result
-                                    .getBoolean(DWCCommandParser.USE_DRC), packOutputRegs, registerDetection, clockNet, noObufs);
+                                    .getBoolean(DWCCommandParser.USE_DRC), packOutputRegs, registerDetection, clockNet,
+                            noObufs);
                 }
             } catch (EdifNameConflictException e2) {
                 e2.toRuntime();
@@ -829,7 +829,7 @@ public class DWCPersistence {
      * @return A DWCArchtecture object
      */
     protected static XilinxDWCArchitecture getArchitecture(String partString) {
-    	String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
+        String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
         if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2))
             return new XilinxDWCArchitecture();

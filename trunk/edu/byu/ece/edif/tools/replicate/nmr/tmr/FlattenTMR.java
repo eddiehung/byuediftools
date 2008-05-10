@@ -89,8 +89,8 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * Provides a TMR method that includes design flattening. This class will
  * perform TMR as follows:
  * <ol>
- * <li> Parse and merge the top-level edif file
- * <li> Flatten the top-level edif file
+ * <li> Parse and merge the top-level EIDF file
+ * <li> Flatten the top-level EDIF file
  * <li> Create an EdifCellGraph from the flattened file
  * <li> Identify cuts
  * </ol>
@@ -379,10 +379,9 @@ public class FlattenTMR {
              */
             DeviceUtilizationTracker duTracker = null;
             try {
-                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
-                		_commands.getString(TMRCommandParser.PART), _commands
-                        .getDouble(TMRCommandParser.MERGE_FACTOR), _commands
-                        .getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
+                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _commands
+                        .getString(TMRCommandParser.PART), _commands.getDouble(TMRCommandParser.MERGE_FACTOR),
+                        _commands.getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
             } catch (OverutilizationException e) {
                 String errmsg = new String("ERROR: Original cell " + flatCell + " could not fit into specified part "
                         + _commands.getString(TMRCommandParser.PART) + "\n." + e);
@@ -741,10 +740,9 @@ public class FlattenTMR {
             //flatCell.getLibrary().deleteCell(flatCell, true);
             {//scope make duTracker
                 try {
-                    duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
-                            _commands.getString(TMRCommandParser.PART),
-                            _commands.getDouble(TMRCommandParser.MERGE_FACTOR), _commands
-                                    .getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
+                    duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _commands
+                            .getString(TMRCommandParser.PART), _commands.getDouble(TMRCommandParser.MERGE_FACTOR),
+                            _commands.getDouble(TMRCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
                 } catch (OverutilizationException e) {
                     String errmsg = new String("ERROR: Original cell " + flatCell
                             + " could not fit into specified part " + _commands.getString(TMRCommandParser.PART)
@@ -1100,7 +1098,7 @@ public class FlattenTMR {
      * @return A TMRArchtecture object
      */
     protected static XilinxTMRArchitecture getArchitecture(String partString) {
-    	String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
+        String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
         if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX4))
