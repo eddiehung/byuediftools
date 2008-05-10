@@ -77,7 +77,6 @@ import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
 import edu.byu.ece.edif.util.jsap.DWCCommandParser;
 import edu.byu.ece.edif.util.jsap.NMRCommandParser;
-import edu.byu.ece.edif.util.jsap.TMRCommandParser;
 import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
@@ -87,8 +86,8 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * Provides a NMR method that includes design flattening. This class will
  * perform DWC as follows:
  * <ol>
- * <li> Parse and merge the top-level edif file
- * <li> Flatten the top-level edif file
+ * <li> Parse and merge the top-level EDIF file
+ * <li> Flatten the top-level EDIF file
  * <li> Create an EdifCellGraph from the flattened file
  * <li> Identify cuts
  * </ol>
@@ -316,9 +315,8 @@ public class FlattenDWC {
              */
             DeviceUtilizationTracker duTracker = null;
             try {
-                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, 
-                		_result.getString(DWCCommandParser.PART), _result
-                        .getDouble(DWCCommandParser.MERGE_FACTOR), _result
+                duTracker = DeviceParser.createXilinxDeviceUtilizationTracker(flatCell, _result
+                        .getString(DWCCommandParser.PART), _result.getDouble(DWCCommandParser.MERGE_FACTOR), _result
                         .getDouble(DWCCommandParser.OPTIMIZATION_FACTOR), factorValue, factorType);
             } catch (OverutilizationException e) {
                 String errmsg = new String("ERROR: Original cell " + flatCell + " could not fit into specified part "
@@ -770,7 +768,7 @@ public class FlattenDWC {
      * @return A DWCArchtecture object
      */
     protected static XilinxDWCArchitecture getArchitecture(String partString) {
-    	String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
+        String technologyString = XilinxPartValidator.getTechnologyFromPart(partString);
         if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
                 || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2))
             return new XilinxDWCArchitecture();

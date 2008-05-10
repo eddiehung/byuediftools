@@ -569,19 +569,19 @@ public class PartialInputOutputFeedForwardTMR {
                 // If this instance is NOT part of the original set of SCC instances,
                 //   add it to TMR
                 if (!sccInstances.contains(eci)) {
-                	// All the instances from a particular bad cut group must be added as a whold set.
-                	// If one of them doesn't fit, we must not add any of them.
-                	// Build up a list of instances to add and attempt to add them as a group.
-                	// TODO: implement this!
-                	// BHP: These "sccGroup" groups are bad cut groups based on the original
-                	//   groups found by the SCC algorithms. But the original groups have 
-                	//   already been added to TMR, so is it too late to back out of adding 
-                	//   the entire group now? Do we have to go back and add the bad cut 
-                	//   grouping code to the SCC code instead?
-                	// BHP: The SCC code handles bad cut edges internally. The only problem
-                	//   is bad cut edges that actually leave the SCC. These edges are NOT
-                	//   checked in the SCC code and could potentially cause a problem for
-                	//   us here. I'm not sure of the best way (or place) to handle this.
+                    // All the instances from a particular bad cut group must be added as a whold set.
+                    // If one of them doesn't fit, we must not add any of them.
+                    // Build up a list of instances to add and attempt to add them as a group.
+                    // TODO: implement this!
+                    // BHP: These "sccGroup" groups are bad cut groups based on the original
+                    //   groups found by the SCC algorithms. But the original groups have 
+                    //   already been added to TMR, so is it too late to back out of adding 
+                    //   the entire group now? Do we have to go back and add the bad cut 
+                    //   grouping code to the SCC code instead?
+                    // BHP: The SCC code handles bad cut edges internally. The only problem
+                    //   is bad cut edges that actually leave the SCC. These edges are NOT
+                    //   checked in the SCC code and could potentially cause a problem for
+                    //   us here. I'm not sure of the best way (or place) to handle this.
                     try {
                         if (DEBUG)
                             System.out.println("Adding SCC bad cut instance: " + eci);
@@ -1048,7 +1048,7 @@ public class PartialInputOutputFeedForwardTMR {
                     continue;
                 } catch (OverutilizationEstimatedStopException e2) {
                     // Ran out of logic while trying to triplicate this 
-                	//   atomic set. Thus, none of the set was triplicated.
+                    //   atomic set. Thus, none of the set was triplicated.
                     // DeviceUtilizationTracker says to stop adding instances
                     //   for triplication
                     if (DEBUG)
@@ -1057,8 +1057,8 @@ public class PartialInputOutputFeedForwardTMR {
                     throw e2;
                 } catch (OverutilizationHardStopException e3) {
                     // Ran out of resources for (at least) one of the instances
-                	//   included in this atomic set. Thus, none of the set
-                	//   was triplicated.
+                    //   included in this atomic set. Thus, none of the set
+                    //   was triplicated.
                     if (DEBUG)
                         System.out.println("Received EstimatedStopException. Halting triplication.");
                     // Can't triplicate all instances. Record this for the

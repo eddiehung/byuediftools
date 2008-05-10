@@ -168,17 +168,18 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     }
 
     /**
-     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization limit
+     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization
+     * limit
      */
     public void ignoreSoftLogicUtilizationLimit() {
-    	_ignoreSoftLogicUtilizationLimit = true;
+        _ignoreSoftLogicUtilizationLimit = true;
     }
 
     /**
      * Causes this DeviceUtilizationTracker to ignore all hard resource limits
      */
     public void ignoreHardResourceUtilizationLimits() {
-    	_ignoreHardResourceUtilizationLimits = true;
+        _ignoreHardResourceUtilizationLimits = true;
     }
 
     /**
@@ -192,7 +193,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         if (resourceType == null || resourceType.compareToIgnoreCase("") == 0) {
             return;
         }
-        if (!_ignoreSoftLogicUtilizationLimit && (_currentNMRInstances.size() / total_instances > coverage_factor) )
+        if (!_ignoreSoftLogicUtilizationLimit && (_currentNMRInstances.size() / total_instances > coverage_factor))
             throw new OverutilizationEstimatedStopException("Reached desired Triplication coverage");
 
         Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
@@ -204,7 +205,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         int maxUtilization = maxUtilizationI.intValue();
 
         // Check for hard resource exception, otherwise increment utilization
-        if (!_ignoreHardResourceUtilizationLimits && (currentUtilization + 1.0 > maxUtilization) )
+        if (!_ignoreHardResourceUtilizationLimits && (currentUtilization + 1.0 > maxUtilization))
             throw new OverutilizationHardStopException("Adding instance of resource type" + resourceType + " exceeds "
                     + maxUtilization + ", the maximum number of available resources for type " + resourceType + ".");
         else
@@ -215,7 +216,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         int estimatedLogicBlockUtilization = (int) getEstimatedLogicBlockUtilization();
         double maxLogicBlocks = getMaxLogicBlocks();
         double maxDesiredLogicBlocks = _desiredUtilizationFactor * maxLogicBlocks;
-        if (!_ignoreSoftLogicUtilizationLimit && (estimatedLogicBlockUtilization > maxDesiredLogicBlocks) ) {
+        if (!_ignoreSoftLogicUtilizationLimit && (estimatedLogicBlockUtilization > maxDesiredLogicBlocks)) {
             double currentLUTUtilization = _currentUtilizationMap.get(XilinxResourceMapper.LUT).doubleValue();
             double currentFFUtilization = _currentUtilizationMap.get(XilinxResourceMapper.FF).doubleValue();
             throw new OverutilizationEstimatedStopException("The current device has " + maxLogicBlocks
@@ -261,14 +262,13 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         StringBuffer sb = new StringBuffer();
         sb.append(super.toString());
         sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
-        		+ getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
+                + getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
         if (_ignoreSoftLogicUtilizationLimit) {
-        	sb.append("Estimated Logic Utilization limit ignored.");
-        }
-        else {
-        	sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
-        	sb.append("Specified Optimization Factor: " + _optimizationFactor + "\n");
-        	sb.append("Desired Utilization Factor: " + _desiredUtilizationFactor + "\n");
+            sb.append("Estimated Logic Utilization limit ignored.");
+        } else {
+            sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
+            sb.append("Specified Optimization Factor: " + _optimizationFactor + "\n");
+            sb.append("Desired Utilization Factor: " + _desiredUtilizationFactor + "\n");
         }
         return sb.toString();
     }
@@ -289,10 +289,10 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     @Override
     protected void _init(EdifCell cell) throws OverutilizationEstimatedStopException, OverutilizationHardStopException {
         // !!! This ordering matters, the super call to _init should be last !!!
-    	// Set the Max logic blocks based on the number of LUT-FF pairs
-    	//   This assumes that the number of logic blocks (LUT-FF pairs) is 
-    	//   equal to the number of LUTs.
-    	_maxLogicBlocks = getResourceLimit(XilinxResourceMapper.LUT);
+        // Set the Max logic blocks based on the number of LUT-FF pairs
+        //   This assumes that the number of logic blocks (LUT-FF pairs) is 
+        //   equal to the number of LUTs.
+        _maxLogicBlocks = getResourceLimit(XilinxResourceMapper.LUT);
         super._init(cell);
     }
 
@@ -316,8 +316,8 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     protected double _desiredUtilizationFactor;
 
     /**
-     * This is the number of logic blocks contained in the device, a logic
-     * block consisting of one LUT and one FF.
+     * This is the number of logic blocks contained in the device, a logic block
+     * consisting of one LUT and one FF.
      */
     protected int _maxLogicBlocks;
 
@@ -421,13 +421,14 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables               ////
 
-    
     /**
      * Causes this DeviceUtilizationTracker to ignore all hard resource limits
      */
     protected boolean _ignoreHardResourceUtilizationLimits = false;
+
     /**
-     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization limit
+     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization
+     * limit
      */
     protected boolean _ignoreSoftLogicUtilizationLimit = false;
 
