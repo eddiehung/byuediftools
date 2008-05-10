@@ -1,5 +1,5 @@
 /*
- * TODO: Insert class description here.
+ * Represents a Black box for the new JHDL circuit being built.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -31,9 +31,11 @@ import byucc.jhdl.base.Wire;
 import edu.byu.ece.edif.core.EdifPort;
 
 /**
- * Represents a Black box for the new JHDL circuit being built. TO DO:
+ * Represents a Black box for the new JHDL circuit being built.
+ * <p>
+ * TO DO:
  * <ul>
- * <li>Provide methods for addign ports. You need to keep track of the ports
+ * <li>Provide methods for adding ports. You need to keep track of the ports
  * you add
  * </ul>
  * 
