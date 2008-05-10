@@ -136,7 +136,7 @@ public class ClockDomainParser {
     }
 
     /**
-     * Construct a ClockDomainArchitectureImpl object and initilize for clock
+     * Construct a ClockDomainArchitectureImpl object and initialize for clock
      * domain analysis.
      * 
      * @param flatCell The FlattenedEdifCell to analyze
@@ -151,7 +151,7 @@ public class ClockDomainParser {
     }
 
     /**
-     * Construct a ClockDomainArchitectureImpl object and initilize for clock
+     * Construct a ClockDomainArchitectureImpl object and initialize for clock
      * domain analysis.
      * 
      * @param flatCell The FlattenedEdifCell to analyze
@@ -277,7 +277,7 @@ public class ClockDomainParser {
      * 
      * @return A map whose key is the EdifNet of the clock domain and whose
      * value is a set of EdifNets that belong to that domain. The sets of
-     * EdifNets are not neccessarily mutually exclusive.
+     * EdifNets are not necessarily mutually exclusive.
      */
     protected Map<EdifNet, Set<EdifNet>> classifyNets() {
         _noClockNets = new LinkedHashSet<EdifNet>(_top.getTopCell().getNetList());
@@ -289,7 +289,7 @@ public class ClockDomainParser {
                     if (XilinxTools.isClockPort(epr.getSingleBitPort())) {
                         // The following is for a special case which
                         // doesn't allow GNDs to drive a clock net
-                    	Iterator<EdifPortRef> it = epr.getNet().getOutputPortRefs().iterator();
+                        Iterator<EdifPortRef> it = epr.getNet().getOutputPortRefs().iterator();
                         if (!it.hasNext() || !it.next().getCellInstance().getType().toLowerCase().equals("gnd"))
                             clockNets.add(epr.getNet());
                     }
@@ -362,7 +362,7 @@ public class ClockDomainParser {
      * 
      * @return A map whose key is the EdifNet of the clock domain and whose
      * value is a set of EdifCellInstances that belong to that domain. The sets
-     * of EdifCellInstances are not neccessarily mutually exclusive.
+     * of EdifCellInstances are not necessarily mutually exclusive.
      */
     protected Map<EdifNet, Set<EdifCellInstance>> classifyECIs() {
         _noClockECIs = new LinkedHashSet<EdifCellInstance>(_top.getTopCell().getSubCellList());
@@ -588,7 +588,7 @@ public class ClockDomainParser {
      * 
      * @return A map whose key is the EdifNet of the clock domain and whose
      * value is a set of EdifCellInstances that belong to that domain. The sets
-     * of EdifCellInstances are not neccessarily mutually exclusive.
+     * of EdifCellInstances are not necessarily mutually exclusive.
      */
     public Map<EdifNet, Set<EdifCellInstance>> getECIMap() {
         classifyNets();
