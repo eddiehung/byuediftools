@@ -28,44 +28,46 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 
 public abstract class AbstractProblemPrimitiveMap implements ProblemPrimitiveMap {
 
-    public String getPrimitiveReplacementType(EdifCellInstance primitiveECI) {
-        String primitiveType = primitiveECI.getType().toUpperCase();
-        String primitiveReplacementType = null;
-        primitiveReplacementType = (String) _safePrimitiveMap.get(primitiveType);
-        return primitiveReplacementType;
-    }
+	public String getPrimitiveReplacementType(EdifCellInstance primitiveECI) {
+		String primitiveType = primitiveECI.getType().toUpperCase();
+		String primitiveReplacementType = null;
+		primitiveReplacementType = (String) _safePrimitiveMap.get(primitiveType);
+		return primitiveReplacementType;
+	}
 
-    public String[] getPrimitiveReplacementFloatingPorts(EdifCellInstance primitiveECI) {
-        String primitiveType = primitiveECI.getType().toUpperCase();
-        String[] primitiveReplacementFloatingPorts = null;
-        primitiveReplacementFloatingPorts = (String[]) _floatingPortMap.get(primitiveType);
-        return primitiveReplacementFloatingPorts;
-    }
+	public String[] getPrimitiveReplacementFloatingPorts(EdifCellInstance primitiveECI) {
+		String primitiveType = primitiveECI.getType().toUpperCase();
+		String[] primitiveReplacementFloatingPorts = null;
+		primitiveReplacementFloatingPorts = (String[]) _floatingPortMap.get(primitiveType);
+		return primitiveReplacementFloatingPorts;
+	}
 
-    public int getPrimitiveReplacementFloatingPortDefaultValue(EdifCellInstance primitiveECI, String floatingPort) {
-        if (primitiveECI == null || floatingPort == null)
-            return -1;
-        int primitiveReplacementFloatingPortDefaultValue = -1;
-        String primitiveType = primitiveECI.getType().toUpperCase();
-        String[] primitiveReplacementFloatingPorts = getPrimitiveReplacementFloatingPorts(primitiveECI);
-        int[] primitiveReplacementFloatingPortsDefaultValues = (int[]) _floatingPortDefaultValueMap.get(primitiveType);
-        if (primitiveReplacementFloatingPortsDefaultValues != null) {
-            for (int i = 0; i < primitiveReplacementFloatingPorts.length; i++) {
-                if (primitiveReplacementFloatingPorts[i].compareToIgnoreCase(floatingPort) == 0) {
-                    primitiveReplacementFloatingPortDefaultValue = primitiveReplacementFloatingPortsDefaultValues[i];
-                }
-            }
-        }
-        return primitiveReplacementFloatingPortDefaultValue;
-    }
+	public int getPrimitiveReplacementFloatingPortDefaultValue(EdifCellInstance primitiveECI, String floatingPort) {
+		if (primitiveECI == null || floatingPort == null)
+			return -1;
+		int primitiveReplacementFloatingPortDefaultValue = -1;
+		String primitiveType = primitiveECI.getType().toUpperCase();
+		String[] primitiveReplacementFloatingPorts = getPrimitiveReplacementFloatingPorts(primitiveECI);
+		int[] primitiveReplacementFloatingPortsDefaultValues = (int[]) _floatingPortDefaultValueMap.get(primitiveType);
+		if (primitiveReplacementFloatingPortsDefaultValues != null) {
+			for (int i = 0; i < primitiveReplacementFloatingPorts.length; i++) {
+				if (primitiveReplacementFloatingPorts[i].compareToIgnoreCase(floatingPort) == 0) {
+					primitiveReplacementFloatingPortDefaultValue = primitiveReplacementFloatingPortsDefaultValues[i];
+				}
+			}
+		}
+		return primitiveReplacementFloatingPortDefaultValue;
+	}
 
-    // Map 1 maps primitive names to the corresponding 'safe primitive' name
-    // Map 2 maps primitive names to the will-be floating port names once it is replaced by its corresponding 'safe primitive'
-    // Map 3 maps primitive names to the will-be floating port default values (once it is replaced by its corresponding 'safe primitive')
-    protected Map<String, String[]> _floatingPortMap;
+	// Map 1 maps primitive names to the corresponding 'safe primitive' name
+	// Map 2 maps primitive names to the will-be floating port names once it is
+	// replaced by its corresponding 'safe primitive'
+	// Map 3 maps primitive names to the will-be floating port default values
+	// (once it is replaced by its corresponding 'safe primitive')
+	protected Map<String, String[]> _floatingPortMap;
 
-    protected Map<String, int[]> _floatingPortDefaultValueMap;
+	protected Map<String, int[]> _floatingPortDefaultValueMap;
 
-    protected Map<String, String> _safePrimitiveMap;
+	protected Map<String, String> _safePrimitiveMap;
 
 }
