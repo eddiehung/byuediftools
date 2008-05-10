@@ -39,12 +39,11 @@ public class XilinxLibrary extends XilinxGenLib {
         //XilinxMacros.insertMacros(library);
     }
 
-    /**
-     **/
-    /*
-     * public XilinxLibrary() { super("xilinx", false);
-     * XilinxGenLib.insertPrimitives(this); XilinxMacros.insertMacros(this); }
-     */
+    //    public XilinxLibrary() {
+    //        super("xilinx", false);
+    //        XilinxGenLib.insertPrimitives(this);
+    //        XilinxMacros.insertMacros(this);
+    //    }
 
     /**
      * This method will search the libraries found within the library manager

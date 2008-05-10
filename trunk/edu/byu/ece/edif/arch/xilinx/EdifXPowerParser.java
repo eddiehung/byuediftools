@@ -1,10 +1,5 @@
 /*
- * Created on Jun 14, 2005
- * 
- */
-/*
- * 
- * 
+ * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -37,6 +32,7 @@ import java.util.List;
 
 /**
  * @author nhr2
+ * @since Created on Jun 14, 2005
  */
 public class EdifXPowerParser {
 
@@ -106,7 +102,7 @@ public class EdifXPowerParser {
     /**
      * This method will open the given "power" file and parse the contents to
      * create a List of String objects where each String is a Net name or
-     * instnace name in the file.
+     * instance name in the file.
      * 
      * @param fileName
      * @return List of names

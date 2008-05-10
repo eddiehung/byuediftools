@@ -1,10 +1,5 @@
 /*
- * Created on Jun 14, 2005
- * 
- */
-/*
- * 
- * 
+ * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -36,12 +31,10 @@ import java.util.Map;
 
 /**
  * @author nhr2
+ * @since Created on Jun 14, 2005
  */
 public class EdifXPowerCompare {
 
-    /**
-     * 
-     */
     public EdifXPowerCompare(String EDIFFile, String xpowerFile) {
         super();
         _edifFound = new LinkedHashMap();

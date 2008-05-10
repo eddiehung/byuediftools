@@ -1,5 +1,5 @@
 /*
- * Created on Jun 30, 2005
+ * 
  * 
  */
 /*
@@ -39,12 +39,20 @@ import edu.byu.ece.edif.core.EdifNet;
  * framework. This is a tree data structure with a reference to the parent
  * branch (if not the root) and an array of the children representing each child
  * branch. The top node in this tree is the top-level of the hierarchy. An
- * instance in the hierarchy includes the following: - A reference to a given
- * EdifCellInstance (self) - A reference to a parent instance (null if it is the
- * root) - An array of NetHierarchy objects representing nets at this level of
- * hierarchy - An array of InstanceHierarchy children representing children in
- * the hierarchy. TODO: Move this to byucc.edif.hierarchy Rename to
+ * instance in the hierarchy includes the following:
+ * <ul>
+ * <li> A reference to a given EdifCellInstance (self)
+ * <li>A reference to a parent instance (null if it is the root)
+ * <li>An array of NetHierarchy objects representing nets at this level of
+ * hierarchy
+ * <li> An array of InstanceHierarchy children representing children in the
+ * hierarchy.
+ * </ul>
+ * <p>
+ * TODO: Move this to edu.byu.ece.edif.core.hierarchy Rename to
  * EDIFInstanceHierarchy
+ * 
+ * @since Created on Jun 30, 2005
  */
 public class InstanceHierarchy {
 

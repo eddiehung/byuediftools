@@ -34,6 +34,7 @@ import java.util.Map;
  * desired for the name space then in the constructor of the other name space
  * object _names is instantiated. This class is abstract and doesn't and doesn't
  * implement an interface because interface methods can't be declared abstract.
+ * <p>
  * TODO: this class supports both maps and collections. This should probably be
  * split up.
  * 

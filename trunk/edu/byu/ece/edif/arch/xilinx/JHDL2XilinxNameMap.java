@@ -1,10 +1,5 @@
 /*
- * Created on Jun 27, 2005
- * 
- */
-/*
- * 
- * 
+ * Map between a JHDL Wire and a Collection of Xilinx names for the wire.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -53,6 +48,7 @@ import edu.byu.ece.edif.util.export.jhdl.Edi2JHDL;
  * objects within the JHDL hierarchy will be in this Map.
  * 
  * @author nhr2
+ * @since Created on Jun 27, 2005
  */
 public class JHDL2XilinxNameMap extends HashMap {
 

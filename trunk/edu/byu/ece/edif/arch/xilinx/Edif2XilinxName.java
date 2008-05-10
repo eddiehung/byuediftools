@@ -1,10 +1,5 @@
 /*
- * Created on Jun 8, 2005
- * 
- */
-/*
- * 
- * 
+ * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -50,26 +45,63 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.util.parse.EdifParser;
 
 /**
- * This class is used for converting hierarchical Edif names into valid
- * flattened Xilinx names. The rules for Xilinx Xpower names are as follows: 1)
- * Outputs For top-level "outputs" use the top-level instance names (old names)
- * for instances having only one output that drive the output signal ? What
- * about instances with multiple outputs? 2) Signals A) Top-level signals:
- * driven by ibufs/top-level instances: - use the top-level net name (old name)
- * (not instance name) B) For names with hierarchy: - find the highest level of
- * hierarchy for the net - find the hierachy of this level. Add net name. (IE:
- * if any of the net's portRefs refer to top level ports, don't add the port) -
- * append "old names" of each instance (separated by "/") - append final net
- * name - Special case extension * driver&sinks are lower levels of hierarchy 3)
- * Logic A) Top-level and hierarchic names: - find cell instance hierarchy -
- * append "old names" of each instance hierarchy level (separated by "/") -
- * Special case extensions - NOTE: "_rt" & ".WSGEN" specaial case extensions
- * hacked 4) Inputs Use top-level instance names (old names) 5) IOs Use
- * top-level instance names (old names) Create a "Map" between: key: List:
- * (ordered List of EdifCellInstance objects/Nets) value: String (corresponding
- * Xilinx String)
+ * This class is used for converting hierarchical EDIF names into valid
+ * flattened Xilinx names.
+ * <p>
+ * The rules for Xilinx Xpower names are as follows:
+ * <ol>
+ * <li> Outputs For top-level "outputs" use the top-level instance names (old
+ * names) for instances having only one output that drive the output signal
+ * <p>
+ * What about instances with multiple outputs?
+ * <li> Signals
+ * <ol>
+ * <li> Top-level signals: driven by ibufs/top-level instances:
+ * <ul>
+ * <li> use the top-level net name (old name) (not instance name)
+ * </ul>
+ * <li> For names with hierarchy:
+ * <ol>
+ * <li> find the highest level of hierarchy for the net
+ * <li> find the hierarchy of this level. Add net name. (IE: if any of the net's
+ * portRefs refer to top level ports, don't add the port)
+ * <li> append "old names" of each instance (separated by "/")
+ * <li> append final net name
+ * <li> Special case extension
+ * <ul>
+ * <li> driver &amp; sinks are lower levels of hierarchy
+ * </ul>
+ * </ol>
+ * </ol>
+ * <li> Logic
+ * <ol>
+ * <li> Top-level and hierarchical names:
+ * <ol>
+ * <li> find cell instance hierarchy
+ * <li> append "old names" of each instance hierarchy level (separated by "/")
+ * <li> Special case extensions
+ * <ul>
+ * <li> NOTE: "_rt" & ".WSGEN" specaial case extensions hacked
+ * </ul>
+ * </ol>
+ * </ol>
+ * <li> Inputs
+ * <ul>
+ * <li>Use top-level instance names (old names)
+ * </ul>
+ * <li> IOs
+ * <ul>
+ * <li>Use top-level instance names (old names)
+ * </ul>
+ * </ol>
+ * Create a "Map" between:
+ * <ul>
+ * <li>key: List: (ordered List of EdifCellInstance objects/Nets)
+ * <li>value: String (corresponding Xilinx String)
+ * </ul>
  * 
  * @author Nathan Rollins
+ * @since Created on Jun 8, 2005
  */
 public class Edif2XilinxName {
 
