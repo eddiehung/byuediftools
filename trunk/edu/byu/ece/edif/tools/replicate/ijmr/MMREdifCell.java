@@ -52,7 +52,7 @@ import edu.byu.ece.edif.core.RenamedObject;
 public abstract class MMREdifCell extends EdifCell {
 
     /**
-     * Construct a replicated edif cell with the elements replicated according
+     * Construct a replicated EDIF cell with the elements replicated according
      * to the replication factors specified.
      * 
      * @param lib the library to place the cell in

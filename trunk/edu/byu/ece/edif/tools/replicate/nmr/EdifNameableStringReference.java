@@ -36,11 +36,11 @@ import edu.byu.ece.edif.core.NamedPropertyObject;
  * Represents the String reference of an EdifNameable object without storing the
  * reference to the object. Only the valid EdifNameable String is stored in this
  * class. This class is used to store the name for later referencing from a
- * parent Edif class object.
+ * parent EDIF class object.
  * <p>
  * This is a fairly generic object and does not store the context of the
  * original EdifObject (i.e. store any parent relationships). A variety of
- * methods are provided for finding actual Edif objects within a given context
+ * methods are provided for finding actual EDIF objects within a given context
  * from the saved name reference.
  */
 public class EdifNameableStringReference implements Serializable {
