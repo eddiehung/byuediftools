@@ -1,4 +1,3 @@
-
 /*
  * 
  * 
@@ -41,7 +40,6 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
-
 
 public class XilinxTools {
 
@@ -359,10 +357,10 @@ public class XilinxTools {
      * A list of all the register input ports that often are connected to GND
      */
     public static String[] constantGNDFFPorts = { "CLR", /* "L", */"PRE" /*
-                                                                         * ,
-                                                                         * "R",
-                                                                         * "S"
-                                                                         */
+                                                                             * ,
+                                                                             * "R",
+                                                                             * "S"
+                                                                             */
     };
 
     public static List constantGNDFFPortsList = Arrays.asList(constantGNDFFPorts);

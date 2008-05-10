@@ -35,7 +35,6 @@ import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.util.merge.EdifMergeParser;
 import edu.byu.ece.edif.util.parse.ParseException;
 
-
 /**
  * This is a simple class that contains a static method for parsing and merging
  * edif files using the Xilinx library as the primitive library.

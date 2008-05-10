@@ -30,7 +30,6 @@ package edu.byu.ece.edif.arch.xilinx;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;

@@ -1,10 +1,5 @@
 /*
- * Created on Jun 30, 2005
- * 
- */
-/*
- * 
- * 
+ * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -30,8 +25,8 @@ package edu.byu.ece.edif.arch.xilinx;
 import edu.byu.ece.edif.core.EdifNet;
 
 /**
- * @author wirthlin TODO To change the template for this generated type comment
- * go to Window - Preferences - Java - Code Style - Code Templates
+ * @author wirthlin
+ * @since Created on Jun 30, 2005
  */
 public class NetHierarchy {
 
@@ -50,32 +45,34 @@ public class NetHierarchy {
      * @param instanceHierarchy
      * @return
      */
-    /*
-     * public static Collection createNetHierarchy(List instanceHierarchy) {
-     * List c = new ArrayList(); // key: instanceHierarchy, value: List of nets
-     * Map instanceNetMap = new LinkedHashMap(instanceHierarchy.size());
-     * 
-     * for (Iterator i = instanceHierarchy.iterator(); i.hasNext(); ) {
-     * InstanceHierarchy ih = (InstanceHierarchy) i.next(); EdifCell cell =
-     * ih.getInstanceCellType();
-     *  // Don't process leaf cells if (cell.isLeafCell()) continue;
-     * 
-     * ArrayList instanceNets = new ArrayList(cell.getNetList().size());
-     * instanceNetMap.put(ih,instanceNets);
-     * 
-     * for (Iterator j = cell.getNetList().iterator();j.hasNext();) { EdifNet
-     * net = (EdifNet) j.next(); NetHierarchy nh = new NetHierarchy(ih,net);
-     * instanceNets.add(nh);
-     * 
-     * if (net.hasTopLevelPortConnection() && !ih.isTop()) { // Connects to a
-     * top-level port & not TOP cell
-     *  // find the
-     *  } else { // Does not connect to a top-level port or TOP cell
-     *  // Create a new List of nets List connectedNets = new ArrayList();
-     * connectedNets.add(nh); }
-     *  } } return c; } <<<<<<< NetHierarchy.java
-     */
-
+    //    public static Collection createNetHierarchy(List instanceHierarchy) {
+    //        List c = new ArrayList(); // key: instanceHierarchy, value: List of nets
+    //        Map instanceNetMap = new LinkedHashMap(instanceHierarchy.size());
+    //
+    //        for (Iterator i = instanceHierarchy.iterator(); i.hasNext();) {
+    //            InstanceHierarchy ih = (InstanceHierarchy) i.next();
+    //            EdifCell cell = ih.getInstanceCellType();
+    //            // Don't process leaf cells if (cell.isLeafCell()) continue;
+    //
+    //            ArrayList instanceNets = new ArrayList(cell.getNetList().size());
+    //            instanceNetMap.put(ih, instanceNets);
+    //
+    //            for (Iterator j = cell.getNetList().iterator(); j.hasNext();) {
+    //                EdifNet net = (EdifNet) j.next();
+    //                NetHierarchy nh = new NetHierarchy(ih, net);
+    //                instanceNets.add(nh);
+    //             // Connects to a top-level port & not TOP cell
+    //                if (net.hasTopLevelPortConnection() && !ih.isTop()) { 
+    //                    // find the
+    //                } else { // Does not connect to a top-level port or TOP cell
+    //                    // Create a new List of nets 
+    //                    List connectedNets = new ArrayList();
+    //                    connectedNets.add(nh);
+    //                }
+    //            }
+    //        }
+    //        return c;
+    //    }
     public EdifNet getEdifNet() {
         return _net;
     }
