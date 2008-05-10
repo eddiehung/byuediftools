@@ -33,7 +33,6 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 
-
 /**
  * Provides a stand alone EDIF parser that interacts with the {@link byucc.edif}
  * package. This class extends the {@link EdifParserCore} class which is auto
