@@ -65,8 +65,8 @@ import edu.byu.ece.edif.util.merge.EdifMergeParser;
  * more intuitive method names for use (this is difficult code to follow).
  * <li> Create an interface for a hierarchical instance object. This interface
  * would contain many of the methods described in the
- * edu.byu.ece.edif.arch.xilinx.InstanceHierarchy class. "InstanceHierachical" (or
- * whatever)
+ * edu.byu.ece.edif.arch.xilinx.InstanceHierarchy class. "InstanceHierachical"
+ * (or whatever)
  * <ul>
  * <li> public Collection<InstanceHierarchical> getChildren
  * <li> public EdifCellInstance getInstance
@@ -633,8 +633,8 @@ public class FlattenedEdifCell extends EdifCell {
         }
 
         System.out.println("Done");
-        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell) + " flat="
-                + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
+        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell)
+                + " flat=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
         System.out.println("Port Refs: orig=" + edu.byu.ece.edif.core.EdifUtils.countPortRefs(cell, true) + " flat="
                 + edu.byu.ece.edif.core.EdifUtils.countPortRefs(flat_cell, true));
 
