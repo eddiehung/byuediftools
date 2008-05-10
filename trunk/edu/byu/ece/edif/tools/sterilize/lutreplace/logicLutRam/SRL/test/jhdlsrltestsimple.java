@@ -1,6 +1,6 @@
 /*
  * Instances a logic and a JHDL SRL16; used for testing purposes
- *
+ * 
  * Copyright (c) 2008 Brigham Young University
  * 
  * This file is part of the BYU EDIF Tools.

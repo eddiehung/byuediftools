@@ -26,6 +26,7 @@ import byucc.jhdl.Logic.Logic;
 import byucc.jhdl.base.CellInterface;
 import byucc.jhdl.base.Node;
 import byucc.jhdl.base.Wire;
+
 /**
  * Logic implementation of an SRL16
  * 

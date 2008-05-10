@@ -349,8 +349,8 @@ public class NewFlattenedEdifCell extends EdifCell {
         }
 
         System.out.println("Done");
-        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell) + " flat="
-                + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
+        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell)
+                + " flat=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
         System.out.println("Port Refs: orig=" + edu.byu.ece.edif.core.EdifUtils.countPortRefs(cell, true) + " flat="
                 + edu.byu.ece.edif.core.EdifUtils.countPortRefs(flat_cell, true));
 
