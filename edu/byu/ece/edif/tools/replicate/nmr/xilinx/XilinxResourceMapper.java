@@ -46,7 +46,7 @@ public class XilinxResourceMapper implements ResourceMapper {
     public static double getApproxLutUsage(EdifCell cell) {
         if (cell == null)
             return 0;
-        return ((Double) cellToLUTEquivalentMap.get(cell.getName().toUpperCase())).doubleValue();
+        return (cellToLUTEquivalentMap.get(cell.getName().toUpperCase())).doubleValue();
     }
 
     public static double getApproxLUTUsage(EdifCellInstance eci) {
@@ -58,7 +58,7 @@ public class XilinxResourceMapper implements ResourceMapper {
     public static String getResourceType(EdifCell cell) {
         if (cell == null)
             return "";
-        return (String) cellToResourceMap.get(cell.getName().toUpperCase());
+        return cellToResourceMap.get(cell.getName().toUpperCase());
     }
 
     public static String getResourceType(EdifCellInstance eci) {
@@ -164,15 +164,15 @@ public class XilinxResourceMapper implements ResourceMapper {
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables               ////
 
-    protected static final Map cellToResourceMap;
+    protected static final Map<String, String> cellToResourceMap;
 
-    protected static final Map cellToLUTEquivalentMap;
+    protected static final Map<String, Double> cellToLUTEquivalentMap;
 
     ///////////////////////////////////////////////////////////////////
     ////                         static initializers               ////
 
     static {
-        cellToResourceMap = new LinkedHashMap();
+        cellToResourceMap = new LinkedHashMap<String, String>();
         cellToResourceMap.put("AND2", LUT);
         cellToResourceMap.put("AND2B1", LUT);
         cellToResourceMap.put("AND2B2", LUT);
@@ -953,10 +953,12 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("OBUFTDS_LVPECL_25", IO);
         cellToResourceMap.put("OBUFTDS_LVPECL_33", IO);
         cellToResourceMap.put("OBUFTDS_ULVDS_25", IO);
-        cellToResourceMap.put("OFDDRCPE", "");
-        cellToResourceMap.put("OFDDRRSE", "");
-        cellToResourceMap.put("OFDDRTCPE", "");
-        cellToResourceMap.put("OFDDRTRSE", "");
+
+        cellToResourceMap.put("OFDDRCPE", "IO");
+        cellToResourceMap.put("OFDDRRSE", "IO");
+        cellToResourceMap.put("OFDDRTCPE", "IO");
+        cellToResourceMap.put("OFDDRTRSE", "IO");
+
         cellToResourceMap.put("OPT_OFF", "");
         cellToResourceMap.put("OPT_UIM", "");
         cellToResourceMap.put("OR2", LUT);
@@ -1217,13 +1219,14 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("GT11CLK", "");//A MUX that can select from Differential Package Input Clock, refclk from the fabric, or rxbclk to drive the two vertical reference clock buses for the column of MGTs
         cellToResourceMap.put("GT11CLK_MGT", "");//Allows differential package input to drive the two vertical reference clock buses for the column of MGTs
 
-        cellToResourceMap.put("DCIRESET", "");//IO
-        cellToResourceMap.put("IDDR", "");//IO
-        cellToResourceMap.put("IDELAY", "");//IO
-        cellToResourceMap.put("IDELAYCTRL", "");//IO
-        cellToResourceMap.put("ISERDES", "");//IO
-        cellToResourceMap.put("ODDR", "");//IO
-        cellToResourceMap.put("OSERDES", "");//IO
+        cellToResourceMap.put("DCIRESET", "");//Resets the Digitally Controlled Impedance to re-calibrate 
+        cellToResourceMap.put("IDDR", IO);//IO
+        cellToResourceMap.put("IDELAY", IO);//IO
+        cellToResourceMap.put("IDELAYCTRL", IO);//IO
+        cellToResourceMap.put("ISERDES", IO);// serial to parallel converter
+
+        cellToResourceMap.put("ODDR", IO);//IO
+        cellToResourceMap.put("OSERDES", IO);// serial to parallel converter
 
         cellToResourceMap.put("EMAC", ETHERNET);//Fully integrated Ethernet Media Access Controller! wow!
         cellToResourceMap.put("PPC405_ADV", PPC);
@@ -1235,7 +1238,7 @@ public class XilinxResourceMapper implements ResourceMapper {
     }
 
     static {
-        cellToLUTEquivalentMap = new LinkedHashMap();
+        cellToLUTEquivalentMap = new LinkedHashMap<String, Double>();
         cellToLUTEquivalentMap.put("AND2", new Double(1.0));
         cellToLUTEquivalentMap.put("AND2B1", new Double(1.0));
         cellToLUTEquivalentMap.put("AND2B2", new Double(1.0));

@@ -52,32 +52,16 @@ public abstract class AbstractIOBAnalyzer {
         String iobProperty = ((StringTypedValue) property.getValue()).getStringValue();
         if (iobProperty != null && iobProperty.equals("FALSE"))
             return true;
-        else
-            return false;
+        //else
+        return false;
     }
-
-    protected EdifCell _cell;
-
-    protected EdifCellInstanceGraph _graph;
-
-    protected Map<EdifSingleBitPort, XilinxVirtexIOB> _iobMap;
-
-    protected ArrayList<EdifCellInstanceEdge> _iobFeedbackEdges;
-
-    protected Map<EdifSingleBitPort, Collection<EdifCellInstanceEdge>> _feedbackIOBMap;
-
-    protected boolean _packInputRegs;
-
-    protected boolean _packOutputRegs;
-
-    public static final boolean _debug = false;
 
     /**
      * @return A Collection of EdifCellInstances corresponding to all of the IOB
      * instances in this EdifCell
      */
     public Collection<EdifCellInstance> getAllIOBInstances() {
-        Collection ecis = new LinkedHashSet(); // No duplicates
+        Collection<EdifCellInstance> ecis = new LinkedHashSet<EdifCellInstance>(); // No duplicates
 
         for (AbstractIOB xiob : _iobMap.values()) {
             // Get input, output, and tristate regs in each IOB
@@ -93,12 +77,12 @@ public abstract class AbstractIOBAnalyzer {
      * registers in this EdifCell
      */
     public Collection<EdifCellInstance> getAllIOBRegisters() {
-        Collection iobRegs = new LinkedHashSet(); // No duplicates
+        Collection<EdifCellInstance> iobRegs = new LinkedHashSet<EdifCellInstance>(); // No duplicates
 
         for (AbstractIOB xiob : _iobMap.values()) {
             // Get input, output, and tristate regs in each IOB
             if (xiob != null)
-                iobRegs.addAll(xiob.getRegs());
+                iobRegs.addAll(xiob.getRegisters());
         }
 
         return iobRegs;
@@ -108,7 +92,7 @@ public abstract class AbstractIOBAnalyzer {
      * @return A Collection of IOBs that may be in feedback (inout IOBs)
      */
     public Collection<EdifSingleBitPort> getFeedbackIOBs() {
-        return new ArrayList(_feedbackIOBMap.keySet());
+        return new ArrayList<EdifSingleBitPort>(_feedbackIOBMap.keySet());
     }
 
     /**
@@ -154,8 +138,8 @@ public abstract class AbstractIOBAnalyzer {
         AbstractIOB xiob = _iobMap.get(esbp);
         if (xiob != null)
             return xiob.getAllInstances();
-        else
-            return null;
+        //else
+        return null;
     }
 
     /**
@@ -163,7 +147,7 @@ public abstract class AbstractIOBAnalyzer {
      * instances associated with these EdifSingleBitPorts
      */
     public Collection<EdifCellInstance> getIOBInstances(Collection<EdifSingleBitPort> esbps) {
-        Collection ecis = new LinkedHashSet(); // No duplicates
+        Collection<EdifCellInstance> ecis = new LinkedHashSet<EdifCellInstance>(); // No duplicates
 
         for (EdifSingleBitPort esbp : esbps) {
             AbstractIOB xiob = _iobMap.get(esbp);
@@ -181,16 +165,32 @@ public abstract class AbstractIOBAnalyzer {
      * register, output register, and tristate register)
      */
     public Collection<EdifCellInstance> getIOBRegisters(EdifSingleBitPort esbp) {
-        // Get input, output, and tristate regs
+        // Get input, output, and tristate registers
         AbstractIOB xiob = _iobMap.get(esbp);
         if (xiob != null)
-            return xiob.getRegs();
-        else
-            return null;
+            return xiob.getRegisters();
+        //else
+        return null;
     }
 
     public AbstractIOBAnalyzer() {
 
     }
+
+    protected EdifCell _cell;
+
+    protected EdifCellInstanceGraph _graph;
+
+    protected Map<EdifSingleBitPort, XilinxVirtexIOB> _iobMap;
+
+    protected ArrayList<EdifCellInstanceEdge> _iobFeedbackEdges;
+
+    protected Map<EdifSingleBitPort, Collection<EdifCellInstanceEdge>> _feedbackIOBMap;
+
+    protected boolean _packInputRegs;
+
+    protected boolean _packOutputRegs;
+
+    public static final boolean _debug = false;
 
 }

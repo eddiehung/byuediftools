@@ -27,7 +27,9 @@ import java.util.Collection;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
+import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
 public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
@@ -90,8 +92,8 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
         //     
         //				 
         XilinxVirtexIOB xiob = new XilinxVirtexIOB(esbp);
-        Collection portPredecessors = graph.getPredecessors(esbp);
-        Collection portSuccessors = graph.getSuccessors(esbp);
+        Collection<?> portPredecessors = graph.getPredecessors(esbp);
+        Collection<?> portSuccessors = graph.getSuccessors(esbp);
         if (_debug)
             System.out.println("Predecessors of Port " + esbp + ": " + portPredecessors);
         if (_debug) {
@@ -113,8 +115,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                     EdifCellInstance eci = (EdifCellInstance) successor;
                     if (XilinxResourceMapper.IO.equals(XilinxResourceMapper.getResourceType(eci))) {
                         xiob.setIBUF(eci);
-                        if (_debug)
-                            System.out.println("Found IBUF: " + eci);
+                        LogFile.debug().println("Found IBUF: " + eci);
                     }
                 }
             }
@@ -132,7 +133,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 if (inReg != null)
                     xiob.setInputReg(inReg);
             }
-        }
+        }//if (port.isInput()) 
         if (port.isOutput()) {
             // Check for outBuf (using port)
             // If there is an I/O Buffer, it is a predecessor (but not necessarily
@@ -219,7 +220,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
      * null if there is none
      */
     protected static EdifCellInstance findInputIOBRegister(Object source, EdifCellInstanceGraph graph) {
-        Collection successors = null;
+        Collection<?> successors = null;
         successors = graph.getSuccessors(source);
 
         if (_debug)
@@ -267,7 +268,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
      * null if there is none
      */
     protected static EdifCellInstance findOutputIOBRegister(Object sink, EdifCellInstanceGraph graph, boolean type) {
-        Collection predecessors = null;
+        Collection<?> predecessors = null;
         // Two cases:
         // 1. FF attached directly to port
         // 2. FF attached to IOB input 'I'    - type = true
@@ -347,7 +348,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                     // Type 2: IBUF and OBUF. Cut input ('I' port) connection on IBUF.
                     // Type 3: No BUF instances. Cut connection(s) driven by top-level port.
                     // (Type 4: Only one of IBUF and OBUF but still has both connections?)
-                    Collection outputEdges = null;
+                    Collection<EdifCellInstanceEdge> outputEdges = null;
                     if (xiob.getIOBUF() != null) {
                         outputEdges = _graph.getOutputEdges(xiob.getIOBUF(), "O");
                     } else if (xiob.getIBUF() != null && xiob.getOBUF() != null) {
