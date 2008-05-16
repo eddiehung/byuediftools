@@ -105,7 +105,7 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
             return;
         HashSet<EdifCellInstance> cachedCurrentInstances = (HashSet<EdifCellInstance>) _currentInstances.clone();
         cacheCurrentUtilizationNumbers();
-        for (EdifCellInstance eci : (Collection<EdifCellInstance>) ecis) {
+        for (EdifCellInstance eci : ecis) {
             try {
                 addSingleInstance(eci);
             } catch (OverutilizationEstimatedStopException m) {
@@ -322,7 +322,7 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     public boolean removeSingleInstances(Collection<EdifCellInstance> ecis) throws UnsupportedResourceTypeException {
         HashSet<EdifCellInstance> cachedCurrentInstances = (HashSet<EdifCellInstance>) _currentInstances.clone();
         cacheCurrentUtilizationNumbers();
-        for (EdifCellInstance eci : (Collection<EdifCellInstance>) ecis) {
+        for (EdifCellInstance eci : ecis) {
             if (removeSingleInstance(eci) == false) {
                 _currentInstances = cachedCurrentInstances;
                 revertToCachedUtilizationNumbers();

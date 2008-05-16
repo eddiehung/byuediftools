@@ -107,7 +107,7 @@ public abstract class AbstractIOB {
         return _resistor;
     }
 
-    public Collection<EdifCellInstance> getRegs() {
+    public Collection<EdifCellInstance> getRegisters() {
         Collection<EdifCellInstance> regs = new ArrayList<EdifCellInstance>();
         if (_inReg != null)
             regs.add(_inReg);
@@ -121,7 +121,7 @@ public abstract class AbstractIOB {
 
     public Collection<EdifCellInstance> getAllInstances() {
         Collection<EdifCellInstance> ecis = new ArrayList<EdifCellInstance>();
-        ecis.addAll(getRegs());
+        ecis.addAll(getRegisters());
         if (_ibuf != null)
             ecis.add(_ibuf);
         if (_obuf != null)

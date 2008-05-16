@@ -22,6 +22,29 @@
  */
 package edu.byu.ece.edif.util.iob;
 
-public class XilinxVirtex4IOB extends XilinxIOB {
+import edu.byu.ece.edif.core.EdifCellInstance;
+import edu.byu.ece.edif.core.EdifSingleBitPort;
+
+public class XilinxVirtex4IOB extends XilinxVirtexIOB {
+
+    public XilinxVirtex4IOB(EdifSingleBitPort esbp) {
+        super(esbp);
+    }
+
+    //    Inheirited members: 
+    //    protected EdifCellInstance _ibuf = null;
+    //    protected EdifCellInstance _obuf = null;
+    //    protected EdifCellInstance _iobuf = null;
+    //    protected EdifCellInstance _inReg = null;
+    //    protected EdifCellInstance _outReg = null;
+    //    protected EdifCellInstance _triReg = null;//obuft
+    //    protected EdifCellInstance _resistor = null;
+    protected EdifCellInstance _ibufDS;
+
+    protected EdifCellInstance _obufDS;
+
+    protected EdifCellInstance _iobufDS;
+
+    protected EdifCellInstance _obufTriDS;
 
 }
