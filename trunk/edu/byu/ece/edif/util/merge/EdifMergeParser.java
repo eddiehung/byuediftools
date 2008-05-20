@@ -82,23 +82,32 @@ import edu.byu.ece.edif.util.parse.ParseException;
  */
 public class EdifMergeParser {
 
-    /**
-     * Recursively copy an EdifCell from one EdifLibraryManager to another.
-     * During the copy, cells (instanced by the cell to be copied) may be added
-     * to other libraries within the EdifLibraryManager.
-     * 
-     * @param cellToCopy the EdifCell object to copy
-     * @param targetLib the EdifLibrary to copy the cell into. If no EdifLibrary
-     * is specified (null), the EdifCell will be placed in an EdifLibrary with
-     * the same name (or a new unique name if there is a clash) as it's old
-     * EdifLibrary
-     * @param elm the EdifLibraryManager to copy the cell into
-     * @return a reference to the new copy of the EdifCell object
-     */
-    public static EdifCell copyCellDeep(EdifCell cellToCopy, EdifLibrary targetLib, EdifLibraryManager elm,
-            EdifMergingPolicy mergingPolicy) {
-        if (targetLib != null && !elm.containsLibrary(targetLib))
-            throw new EdifRuntimeException("Bad library");
+	/**
+	 * Recursively copy an EdifCell from one EdifLibraryManager to another.
+	 * During the copy, cells (instanced by the cell to be copied) may be added
+	 * to other libraries within the EdifLibraryManager.
+	 *
+	 * This method is not placed in EdifCell because of its need to manage
+	 * libraries. This method is probably best placed in EdifLibrary
+	 * or EdifLibraryManager.
+	 * 
+	 * @param cellToCopy
+	 *            the EdifCell object to copy
+	 * @param targetLib
+	 *            the EdifLibrary to copy the cell into. If no EdifLibrary is
+	 *            specified (null), the EdifCell will be placed in an
+	 *            EdifLibrary with the same name (or a new unique name if there
+	 *            is a clash) as it's old EdifLibrary
+	 * @param elm
+	 *            the EdifLibraryManager to copy the cell into
+	 * @return a reference to the new copy of the EdifCell object
+	 */
+	public static EdifCell copyCellDeep(EdifCell cellToCopy,
+			EdifLibrary targetLib, EdifLibraryManager elm,
+			EdifMergingPolicy mergingPolicy) {
+
+		if (targetLib != null && !elm.containsLibrary(targetLib))
+			throw new EdifRuntimeException("Bad library");
 
         if (targetLib == null) // determine where to put the cell
             targetLib = mergingPolicy.findLibraryForCell(cellToCopy, elm);
@@ -111,25 +120,23 @@ public class EdifMergeParser {
                 return possibleMatch;
         }
 
-        EdifCell newCell = null;
-        try {
-            newCell = new EdifCell(targetLib, cellToCopy.getName());
-        } catch (EdifNameConflictException e) {
-            e.toRuntime();
-        } catch (InvalidEdifNameException e) {
-            e.toRuntime();
-        }
+		// Create new empty cell with the same name as the original cell
+		// and add it to the target library. 
+		EdifCell newCell = null;
+		try {
+			newCell = new EdifCell(targetLib, cellToCopy.getName());
+		} catch (EdifNameConflictException e) {
+			e.toRuntime();
+		} catch (InvalidEdifNameException e) {
+			e.toRuntime();
+		}
 
-        if (cellToCopy.isPrimitive())
-            newCell.setPrimitive();
+		// Copy primitive flag
+		if (cellToCopy.isPrimitive())
+			newCell.setPrimitive();
 
-        // copy properties
-        if (cellToCopy.getPropertyList() != null) {
-            for (Iterator it = cellToCopy.getPropertyList().values().iterator(); it.hasNext();) {
-                Property p = (Property) it.next();
-                newCell.addProperty((Property) p.clone());
-            }
-        }
+		// copy properties
+		newCell.copyProperties(cellToCopy);
 
         // copy cell instances
         Map<EdifPort, EdifPort> oldToNewPorts = new LinkedHashMap<EdifPort, EdifPort>();
@@ -163,38 +170,47 @@ public class EdifMergeParser {
 
             EdifCellInstance newInstance = new EdifCellInstance(oldEci.getEdifNameable(), newCell, newCellRef);
 
-            // copy instance properties
-            if (oldEci.getPropertyList() != null) {
-                for (Iterator it = oldEci.getPropertyList().values().iterator(); it.hasNext();) {
-                    Property p = (Property) it.next();
-                    newInstance.addProperty((Property) p.clone());
-                }
-            }
-            oldToNewInstances.put(oldEci, newInstance);
-            try {
-                newCell.addSubCell(newInstance);
-            } catch (EdifNameConflictException e) {
-                e.toRuntime();
-            }
-        }
+			// copy instance properties
+			newInstance.copyProperties(oldEci);
+			/*
+			if (oldEci.getPropertyList() != null) {
+				for (Iterator it = oldEci.getPropertyList().values().iterator(); it
+						.hasNext();) {
+					Property p = (Property) it.next();
+					newInstance.addProperty((Property) p.clone());
+				}
+			}
+			*/
+			oldToNewInstances.put(oldEci, newInstance);
+			try {
+				newCell.addSubCell(newInstance);
+			} catch (EdifNameConflictException e) {
+				e.toRuntime();
+			}
+		}
 
-        // copy cell interface
-        for (EdifPort oldPort : cellToCopy.getPortList()) {
-            EdifPort newPort = null;
-            try {
-                newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection());
-            } catch (EdifNameConflictException e) {
-                e.toRuntime();
-            }
-            oldToNewPorts.put(oldPort, newPort);
-            // copy port properties
-            if (oldPort.getPropertyList() != null) {
-                for (Iterator it = oldPort.getPropertyList().values().iterator(); it.hasNext();) {
-                    Property p = (Property) it.next();
-                    newPort.addProperty((Property) p.clone());
-                }
-            }
-        }
+		// copy cell interface
+		for (EdifPort oldPort : cellToCopy.getPortList()) {
+			EdifPort newPort = null;
+			try {
+				newPort = newCell.addPort(oldPort.getEdifNameable(),
+						oldPort.getWidth(), oldPort.getDirection());
+			} catch (EdifNameConflictException e) {
+				e.toRuntime();
+			}
+			oldToNewPorts.put(oldPort, newPort);
+			// copy port properties
+			newPort.copyProperties(oldPort);
+			/*
+			if (oldPort.getPropertyList() != null) {
+				for (Iterator it = oldPort.getPropertyList().values()
+						.iterator(); it.hasNext();) {
+					Property p = (Property) it.next();
+					newPort.addProperty((Property) p.clone());
+				}
+			}
+			*/
+		}
 
         // copy nets
         for (Iterator<EdifNet> netIterator = (Iterator<EdifNet>) cellToCopy.netListIterator(); netIterator.hasNext();) {
@@ -214,21 +230,25 @@ public class EdifMergeParser {
                 newNet.addPortConnection(newEpr);
             }
 
-            // copy net properties
-            if (oldNet.getPropertyList() != null) {
-                for (Iterator it = oldNet.getPropertyList().values().iterator(); it.hasNext();) {
-                    Property p = (Property) it.next();
-                    newNet.addProperty((Property) p.clone());
-                }
-            }
-            try {
-                newCell.addNet(newNet);
-            } catch (EdifNameConflictException e) {
-                e.toRuntime();
-            }
-        }
-        return newCell;
-    }
+			// copy net properties
+			newNet.copyProperties(oldNet);
+			/*
+			if (oldNet.getPropertyList() != null) {
+				for (Iterator it = oldNet.getPropertyList().values().iterator(); it
+						.hasNext();) {
+					Property p = (Property) it.next();
+					newNet.addProperty((Property) p.clone());
+				}
+			}
+			*/
+			try {
+				newCell.addNet(newNet);
+			} catch (EdifNameConflictException e) {
+				e.toRuntime();
+			}
+		}
+		return newCell;
+	}
 
     /**
      * Returns a Map between matching ports in the two different EdifCell
