@@ -25,13 +25,27 @@ package edu.byu.ece.edif.core;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an EDIF comment.
+ * <p>
+ * 
+ * EdifEnvironment (status)
+ * EdifLibrary
+ * EdifCell
+ * EdifCellInterface
+ * EdifPort
+ * EdifDesign
+ * EdifNet
+ * Property
+ * 
+ **/
 public class EdifComment implements EdifOut {
 
     public EdifComment() {
-        _comments = new ArrayList();
+        _comments = new ArrayList<String>();
     }
 
-    public EdifComment(List commentLines) {
+    public EdifComment(List<String> commentLines) {
         this();
         _comments.addAll(commentLines);
     }
@@ -68,6 +82,6 @@ public class EdifComment implements EdifOut {
     /**
      * A list of String objects that represent the comment.
      */
-    protected List _comments;
+    protected List<String> _comments;
 
 }
