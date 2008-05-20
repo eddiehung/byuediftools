@@ -1,5 +1,7 @@
 /*
- * TODO: Insert class description here.
+ * This class facilitates the replication of a design in which
+ * there will be more than one replication factor in the same design (i.e
+ * mixing triplication and duplication in the same design). 
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -49,7 +51,14 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.RenamedObject;
 
-public abstract class MMREdifCell extends EdifCell {
+/**
+ * The purpose of this class is to facilitate replication of a design in which
+ * there will be more than one replication factor in the same design (i.e
+ * mixing triplication and duplication in the same design). 
+ * @author jonjohn
+ *
+ */
+public abstract class IJMREdifCell extends EdifCell {
 
     /**
      * Construct a replicated EDIF cell with the elements replicated according
@@ -62,7 +71,7 @@ public abstract class MMREdifCell extends EdifCell {
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public MMREdifCell(EdifLibrary lib, String name, EdifCell origCell, Map<Integer, List<String>> replicationSuffixes)
+    public IJMREdifCell(EdifLibrary lib, String name, EdifCell origCell, Map<Integer, List<String>> replicationSuffixes)
             throws EdifNameConflictException, InvalidEdifNameException {
         super(lib, name);
         _replicationSuffixes = replicationSuffixes;
@@ -82,7 +91,7 @@ public abstract class MMREdifCell extends EdifCell {
         _instanceDomainMap = new LinkedHashMap<Integer, Map<Integer, List<EdifCellInstance>>>(); // HashMap<replicationFactor, Map<domain, List<instance>>>
         // First add the instances that will be replicated, each according to
         // its replication factor
-        for (Integer factor : instancesToReplicate.keySet()) {
+        for (int factor : instancesToReplicate.keySet()) {
             Map<Integer, List<EdifCellInstance>> factorDomainMap = new LinkedHashMap<Integer, List<EdifCellInstance>>();
             _instanceDomainMap.put(factor, factorDomainMap);
             for (EdifCellInstance origInstance : instancesToReplicate.get(factor)) {
@@ -150,7 +159,7 @@ public abstract class MMREdifCell extends EdifCell {
 
         // First add the ports that will be replicated, each according to its
         // replication factor
-        for (Integer factor : portsToReplicate.keySet()) {
+        for (int factor : portsToReplicate.keySet()) {
             for (EdifPort origPort : portsToReplicate.get(factor)) {
                 List<EdifPort> replicationList = new ArrayList<EdifPort>(factor);
                 for (int domain = 0; domain < factor; domain++) {
@@ -293,9 +302,9 @@ public abstract class MMREdifCell extends EdifCell {
         PrintWriter pw = new PrintWriter(new FileOutputStream(domainReportFilename));
         System.out.println("domainreport=" + domainReportFilename);
 
-        for (Integer replicationFactor : _instanceDomainMap.keySet()) {
+        for (int replicationFactor : _instanceDomainMap.keySet()) {
             pw.println("Replication Factor: " + replicationFactor);
-            for (Integer domain : _instanceDomainMap.get(replicationFactor).keySet()) {
+            for (int domain : _instanceDomainMap.get(replicationFactor).keySet()) {
                 pw.println("\tDomain: " + domain);
                 for (EdifCellInstance eci : _instanceDomainMap.get(replicationFactor).get(domain)) {
                     pw.println("\t\t" + eci.getName() + "\t" + eci.getCellType().getName());
@@ -540,7 +549,7 @@ public abstract class MMREdifCell extends EdifCell {
      * @return the replication suffix
      */
     protected String replicationSuffix(int factor, int domain) {
-        return _replicationSuffixes.get(new Integer(factor)).get(domain);
+        return _replicationSuffixes.get(factor).get(domain);
     }
 
     /**

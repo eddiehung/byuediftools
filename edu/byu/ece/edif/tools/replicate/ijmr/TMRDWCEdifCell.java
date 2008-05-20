@@ -1,5 +1,6 @@
 /*
- * TODO: Insert class description here.
+ * This class facilitates applying a mixture of triplication and duplication
+ * to a single design.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -52,7 +53,11 @@ import edu.byu.ece.edif.util.iob.AbstractIOB;
 import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
 
-public class TMRDWCEdifCell extends MMREdifCell {
+/**
+ * This class facilitates applying a mixture of triplication and duplication
+ * to a single design.
+ */
+public class TMRDWCEdifCell extends IJMREdifCell {
 
     public static Map<Integer, List<String>> DEFAULT_SUFFIXES;
     static {
@@ -66,8 +71,8 @@ public class TMRDWCEdifCell extends MMREdifCell {
         dwcSuffixes.add("_DWC_0");
         dwcSuffixes.add("_DWC_1");
 
-        DEFAULT_SUFFIXES.put(new Integer(3), tmrSuffixes);
-        DEFAULT_SUFFIXES.put(new Integer(2), dwcSuffixes);
+        DEFAULT_SUFFIXES.put(3, tmrSuffixes);
+        DEFAULT_SUFFIXES.put(2, dwcSuffixes);
     }
 
     public static String VOTER_SUFFIX = "_VOTER";
