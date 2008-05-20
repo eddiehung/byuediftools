@@ -178,6 +178,9 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
         this(lib, cell, cell.getName());
     }
 
+    /**
+     * @deprecated Only called by the constructor below.
+     */
     public EdifCell(EdifLibrary lib, EdifCell cell, String name) throws EdifNameConflictException,
             InvalidEdifNameException {
         this(lib, name);
@@ -187,6 +190,11 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
         copyCellInternals(cell);
     }
 
+    /**
+     * @deprecated This method is only used by the old HalfLatchEdifCell
+     * constructor and the old lut replacement. This method should be
+     * removed once these old methods and classes are removed.
+     */
     public EdifCell(EdifLibrary lib, EdifCell cell, EdifNameable name) throws EdifNameConflictException,
             InvalidEdifNameException {
         this(lib, name);
@@ -1353,6 +1361,9 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
     ////                  package private methods                  ////
 
     /**
+     * @deprecated Only used by deprecated methods. Do not use in new
+     * methods. 
+     * 
      * @param cell
      * @throws EdifNameConflictException
      */
@@ -1569,6 +1580,8 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
         return differences;
     }
 
+    
+    
     /**
      * This List is used to hold all of the instanced children within the cell
      * (EdifCellInstance). No space is initially allocated for this list since
