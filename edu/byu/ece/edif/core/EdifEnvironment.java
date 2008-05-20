@@ -209,7 +209,38 @@ public class EdifEnvironment extends NamedPropertyObject implements EdifOut, Tri
         return _topDesign;
     }
 
+    public String getAuthor() {
+    	return _author;
+    }
+
+    public void setAuthor(String author) {
+		_author = author;
+	}
+
+    public java.util.Date getDate() {
+    	return _date;
+    }
+    
+    public void setDate(java.util.Date date) {
+    	_date = date;
+    }
+
     /**
+     * Set the date tag with the current time.
+     */
+    public void setDateWithCurrentTime() {
+    	_date = new java.util.Date();
+    }
+    
+    public String getProgram() {
+    	return _program;
+    }
+    
+	public void setProgram(String program) {
+		_program = program;
+	}
+
+	/**
      * Set the top design.
      * 
      * @param design The object that will become the new design for this
@@ -241,7 +272,15 @@ public class EdifEnvironment extends NamedPropertyObject implements EdifOut, Tri
 
     }
 
-    /**
+    public String getVersion() {
+    	return _version;
+    }
+    
+    public void setVersion(String version) {
+		_version = version;
+	}
+
+	/**
      * Convert this Object to EDIF format and prints it to the passed in
      * EdifPrintWriter. defaults to tool "BYU EDIF tools" and version "version
      * 0.3.0"
@@ -249,21 +288,16 @@ public class EdifEnvironment extends NamedPropertyObject implements EdifOut, Tri
      * @param epw The EdifPrintWriter that the EDIF data will be written to
      */
     public void toEdif(EdifPrintWriter epw) {
-        toEdif(epw, "BYU EDIF tools", "version 0.3.0");
+        toEdif(epw, true);
     }
 
-    /**
-     * Convert this Object to EDIF format and prints it to the passed in
-     * EdifPrintWriter.
-     * 
-     * @param epw The EdifPrintWriter that the EDIF data will be
-     * @param tool String toolname
-     * @param version String version string written to
-     */
-    public void toEdif(EdifPrintWriter epw, String tool, String version) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy MM dd HH mm ss");
-        java.util.Date date = new java.util.Date();
-        String timeStamp = (dateFormat.format(date));
+    public void toEdif(EdifPrintWriter epw, boolean useCurrDate) {
+    	
+    	DateFormat dateFormat = new SimpleDateFormat("yyyy MM dd HH mm ss");
+        
+        if (useCurrDate)
+        	setDateWithCurrentTime();
+        String timeStamp = (dateFormat.format(_date));
 
         epw.print("(edif ");
         getEdifNameable().toEdif(epw);
@@ -279,26 +313,14 @@ public class EdifEnvironment extends NamedPropertyObject implements EdifOut, Tri
         epw.printlnIndent("(written");
         epw.incrIndent();
         epw.printlnIndent("(timeStamp " + timeStamp + ")");
-        epw.printlnIndent("(author \"" + tool + "\")");
-        epw.printlnIndent("(program \"" + tool + "\" (version \"" + version + "\"))");
+        epw.printlnIndent("(author \"" + _author + "\")");
+        epw.printlnIndent("(program \"" + _program + "\" (version \"" + _version + "\"))");
         epw.decrIndent();
         epw.printlnIndent(")");//close written
         epw.decrIndent();
         epw.printlnIndent(")");//close status
 
-        //          (status
-        //          (written
-        //          (timeStamp 2007 5 2 10 50 53)
-        //          (author "Synplicity, Inc.")
-        //          (program "Synplify" (version "7.3.5, Build 256R")) )
-
         _libraries.toEdif(epw);
-
-        //        Iterator it = getLibraryManager().iterator();
-        //        while (it.hasNext()) {
-        //            EdifLibrary el = (EdifLibrary) it.next();
-        //            el.toEdif(epw);
-        //        }
 
         if (_topDesign != null)
             _topDesign.toEdif(epw);
@@ -328,18 +350,35 @@ public class EdifEnvironment extends NamedPropertyObject implements EdifOut, Tri
         _libraries.trimToSize();
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ////                         private variables                 ////
-
     /**
      * The EdifLibraryManager object representing the environment libraries. An
      * empty manager is created during construction.
      */
-    private EdifLibraryManager _libraries = new EdifLibraryManager(this);
+    protected EdifLibraryManager _libraries = new EdifLibraryManager(this);
 
     /**
      * The top-level design associated with this environment.
      */
-    private EdifDesign _topDesign;
+    protected EdifDesign _topDesign;
 
+    /**
+     * The date timestamp associated with this environment. 
+     */
+    protected java.util.Date _date;
+    
+    /**
+     * Author string to be printed in final EDIF output. 
+     */
+    protected String _author = "BYU CCL (AUTHOR NOT SET)";
+    
+    /**
+     * Program string to be printed in final EDIF output.
+     */
+    protected String _program = "PROGRAM NOT SET";
+
+    /**
+     * Version string to be printed in final EDIF output.
+     */
+    protected String _version = "VERSION NOT SET";
+    
 }
