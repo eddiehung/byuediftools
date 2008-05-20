@@ -53,7 +53,7 @@ import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
-import edu.byu.ece.edif.tools.replicate.ijmr.MMREdifCell;
+import edu.byu.ece.edif.tools.replicate.ijmr.IJMREdifCell;
 import edu.byu.ece.edif.tools.replicate.ijmr.TMRDWCEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceParser;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceUtilizationTracker;
@@ -98,7 +98,7 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * <li> Identify cuts
  * </ol>
  * 
- * @see MMREdifCell
+ * @see IJMREdifCell
  * @see TMRDWCEdifCell
  * @see FlattenTMR
  * @version 0.0.1 - 30 July 2007
