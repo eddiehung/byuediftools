@@ -117,7 +117,11 @@ public class JEdifNetlist extends EDIFMain {
         }
 
         EdifPrintWriter epw = new EdifPrintWriter(new FileOutputStream(outputFileName));
-        top.toEdif(epw, tool, version);
+    	top.setVersion(version);
+    	top.setProgram(tool);
+    	top.setAuthor(DEFAULT_AUTHOR_STRING);
+        //top.toEdif(epw, tool, version);
+        top.toEdif(epw);
         epw.close();
         return outputFileName;
     }
