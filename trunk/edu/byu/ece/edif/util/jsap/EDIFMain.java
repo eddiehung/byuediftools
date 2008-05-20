@@ -45,6 +45,8 @@ public class EDIFMain {
 
     public static String COPYRIGHT_STRING = "Copyright (c) 2005-2007 Brigham Young University, All rights reserved.";
 
+    public static String DEFAULT_AUTHOR_STRING = "BYU Configurable Computing Laboratory";
+
     public static String TOOL_SUMMARY_STRING = "Generic main function that does not actually do anything";
 
     public static void printProgramExecutableString(PrintStream out) {
