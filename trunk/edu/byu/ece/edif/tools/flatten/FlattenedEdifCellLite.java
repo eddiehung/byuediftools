@@ -65,8 +65,8 @@ import edu.byu.ece.edif.util.merge.EdifMergeParser;
  * more intuitive method names for use (this is difficult code to follow).
  * <li> Create an interface for a hierarchical instance object. This interface
  * would contain many of the methods described in the
- * edu.byu.ece.edif.arch.xilinx.InstanceHierarchy class. "InstanceHierachical"
- * (or whatever)
+ * edu.byu.ece.edif.arch.xilinx.InstanceHierarchy class. "InstanceHierachical" (or
+ * whatever)
  * <ul>
  * <li> public Collection<InstanceHierarchical> getChildren
  * <li> public EdifCellInstance getInstance
@@ -92,16 +92,16 @@ import edu.byu.ece.edif.util.merge.EdifMergeParser;
  * </ul>
  * </ul>
  * 
- * @version $Id:FlattenedEdifCell.java 130 2008-03-31 16:23:42Z jamesfcarroll $
+ * @version $Id:FlattenedEdifCellLite.java 130 2008-03-31 16:23:42Z jamesfcarroll $
  * @author Mike Wirthlin
  */
-public class FlattenedEdifCell extends EdifCell {
+public class FlattenedEdifCellLite extends EdifCell {
 
-    public FlattenedEdifCell(EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
+    public FlattenedEdifCellLite(EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
         this(cell.getLibrary(), cell);
     }
 
-    public FlattenedEdifCell(EdifLibrary lib, EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
+    public FlattenedEdifCellLite(EdifLibrary lib, EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
 
         // 1. Create a new unique name for the flattened cell. This
         // name will be based on a unique name in the library holding
@@ -564,12 +564,12 @@ public class FlattenedEdifCell extends EdifCell {
 
     private static boolean debug = false;
 
-    public static FlattenedEdifCell getFlatCell(String[] args) {
+    public static FlattenedEdifCellLite getFlatCell(String[] args) {
         /***********************************************************************
          * The value of the string printed out when there is a problem with the
          * argument string.
          **********************************************************************/
-        String usageString = "Usage: java FlattenedEdifCell <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
+        String usageString = "Usage: java FlattenedEdifCellLite <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
 
         if (args.length < 1) {
             System.out.println(usageString);
@@ -581,9 +581,9 @@ public class FlattenedEdifCell extends EdifCell {
 
         System.out.println("Flattening . . .");
         EdifCell cell = top.getTopCell();
-        FlattenedEdifCell flat_cell = null;
+        FlattenedEdifCellLite flat_cell = null;
         try {
-            flat_cell = new FlattenedEdifCell(cell);
+            flat_cell = new FlattenedEdifCellLite(cell);
         } catch (EdifNameConflictException e) {
             e.toRuntime();
         } catch (InvalidEdifNameException e) {
@@ -595,7 +595,7 @@ public class FlattenedEdifCell extends EdifCell {
 
     public static void main(String[] args) throws IOException {
 
-        FlattenedEdifCell flat_cell = getFlatCell(args);
+        FlattenedEdifCellLite flat_cell = getFlatCell(args);
         EdifCell cell = flat_cell.getOriginalCell();
         EdifEnvironment top = cell.getLibrary().getLibraryManager().getEdifEnvironment();
 
@@ -633,8 +633,8 @@ public class FlattenedEdifCell extends EdifCell {
         }
 
         System.out.println("Done");
-        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell)
-                + " flat=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
+        System.out.println("Instances: orig=" + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(cell) + " flat="
+                + edu.byu.ece.edif.core.EdifUtils.countRecursivePrimitives(flat_cell));
         System.out.println("Port Refs: orig=" + edu.byu.ece.edif.core.EdifUtils.countPortRefs(cell, true) + " flat="
                 + edu.byu.ece.edif.core.EdifUtils.countPortRefs(flat_cell, true));
 
