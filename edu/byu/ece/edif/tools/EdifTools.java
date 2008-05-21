@@ -28,7 +28,7 @@ import java.util.Collection;
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -62,9 +62,9 @@ public class EdifTools {
      * circuit. The circuit must be flattened to get an accurate count.
      * 
      * @return The number of flip-flops in the persistent sections of the given
-     * NewFlattenedEdifCell
+     * FlattenedEdifCell
      */
-    public static int countXilinxPersistentFlipFlops(NewFlattenedEdifCell flatCell) {
+    public static int countXilinxPersistentFlipFlops(FlattenedEdifCell flatCell) {
         int count = 0;
 
         // Build graph
@@ -108,7 +108,7 @@ public class EdifTools {
         System.out.println("done.");
 
         System.out.print("Flattening top cell...");
-        NewFlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
+        FlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
 
         System.out.print("Counting flip-flops...");
         int ffCount = countXilinxPersistentFlipFlops(flatCell);

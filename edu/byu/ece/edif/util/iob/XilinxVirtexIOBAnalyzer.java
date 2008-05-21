@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 
 import edu.byu.ece.edif.core.EdifSingleBitPort;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
@@ -37,17 +37,17 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
  */
 public class XilinxVirtexIOBAnalyzer extends XilinxIOBAnalyzer {
 
-    public XilinxVirtexIOBAnalyzer(NewFlattenedEdifCell flatCell) {
+    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell) {
         this(flatCell, null);
     }
 
     // Pack all registers by default
-    public XilinxVirtexIOBAnalyzer(NewFlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
+    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
         this(flatCell, graph, true, true);
     }
 
     // TODO: Check for same clock on all FF Regs
-    public XilinxVirtexIOBAnalyzer(NewFlattenedEdifCell flatCell, EdifCellInstanceGraph graph,
+    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell, EdifCellInstanceGraph graph,
             boolean packInputRegisters, boolean packOutputRegisters) {
         _cell = flatCell;
 

@@ -34,7 +34,7 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
 import edu.byu.ece.edif.tools.replicate.ReplicationException;
@@ -129,12 +129,12 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         TechnologyCommandGroup.getPartFromEDIF(result, top);
 
         EdifCell cell = top.getTopCell();
-        if (!(cell instanceof NewFlattenedEdifCell)) {
+        if (!(cell instanceof FlattenedEdifCell)) {
             // Report error and exit
             err.println("ERROR: JEdif file does not contain a Flattened EdifCell as the top cell.");
             System.exit(1);
         }
-        NewFlattenedEdifCell flatCell = (NewFlattenedEdifCell) cell;
+        FlattenedEdifCell flatCell = (FlattenedEdifCell) cell;
 
         // Create graph
         EdifCellInstanceGraph graph = new EdifCellInstanceGraph(flatCell);
@@ -212,14 +212,14 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
      * @return
      */
     protected static Collection<EdifPortRef> getVoterEPRsFromInstanceNames(Collection<String> voterLocations,
-            NewFlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
+            FlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
         // Find voter locations from instance names
         Collection<FlattenedEdifCellInstance> voterInstances = new ArrayList<FlattenedEdifCellInstance>();
         // a. Get EdifCellInstances that correspond to these Strings
         for (String instanceName : voterLocations) {
             LogFile.out().println("Adding voter at the output(s) of instance " + instanceName);
             // Get the  corresponding instance
-            FlattenedEdifCellInstance instance = ((NewFlattenedEdifCell) flatCell).getFlatInstance(instanceName);
+            FlattenedEdifCellInstance instance = ((FlattenedEdifCell) flatCell).getFlatInstance(instanceName);
             // Give user warning if no match was found
             if (instance == null)
                 LogFile.err().println("\tWARNING: No match for instance " + instanceName);

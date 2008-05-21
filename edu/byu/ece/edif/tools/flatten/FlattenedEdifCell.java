@@ -65,7 +65,7 @@ import edu.byu.ece.edif.util.merge.EdifMergeParser;
  * map is also maintained from original EdifNets to their corresponding new
  * EdifNets (more than one original net will map to the same new net).
  */
-public class NewFlattenedEdifCell extends EdifCell {
+public class FlattenedEdifCell extends EdifCell {
 
     /**
      * Construct a new FlattenedEdifCell based on the given EdifCell and in the
@@ -74,7 +74,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws InvalidEdifNameException
      * @throws EdifNameConflictException
      */
-    public NewFlattenedEdifCell(EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
+    public FlattenedEdifCell(EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
         this(cell.getLibrary(), cell, BasicHierarchyNaming.DEFAULT_BACKSLASH_NAMING);
     }
 
@@ -86,7 +86,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws InvalidEdifNameException
      * @throws EdifNameConflictException
      */
-    public NewFlattenedEdifCell(EdifCell cell, String suffix) throws EdifNameConflictException,
+    public FlattenedEdifCell(EdifCell cell, String suffix) throws EdifNameConflictException,
             InvalidEdifNameException {
         this(cell.getLibrary(), cell, suffix, BasicHierarchyNaming.DEFAULT_BACKSLASH_NAMING);
 
@@ -101,7 +101,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public NewFlattenedEdifCell(EdifCell cell, HierarchyNaming naming) throws EdifNameConflictException,
+    public FlattenedEdifCell(EdifCell cell, HierarchyNaming naming) throws EdifNameConflictException,
             InvalidEdifNameException {
         this(cell.getLibrary(), cell, naming);
     }
@@ -116,7 +116,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public NewFlattenedEdifCell(EdifLibrary lib, EdifCell cell, HierarchyNaming naming)
+    public FlattenedEdifCell(EdifLibrary lib, EdifCell cell, HierarchyNaming naming)
             throws EdifNameConflictException, InvalidEdifNameException {
         super(lib, lib.getUniqueEdifCellNameable(new NamedObject(cell.getName() + "_flat")).getName(), cell
                 .getInterface());
@@ -135,7 +135,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public NewFlattenedEdifCell(EdifLibrary lib, EdifCell cell, String suffix, HierarchyNaming naming)
+    public FlattenedEdifCell(EdifLibrary lib, EdifCell cell, String suffix, HierarchyNaming naming)
             throws EdifNameConflictException, InvalidEdifNameException {
         super(lib, lib.getUniqueEdifCellNameable(new NamedObject(cell.getName() + suffix)).getName(), cell
                 .getInterface());
@@ -157,7 +157,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    protected NewFlattenedEdifCell(EdifLibrary lib, String cellName, EdifCellInterface cellInterface)
+    protected FlattenedEdifCell(EdifLibrary lib, String cellName, EdifCellInterface cellInterface)
             throws EdifNameConflictException, InvalidEdifNameException {
         super(lib, lib.getUniqueEdifCellNameable(new NamedObject(cellName)).getName(), cellInterface);
     }
@@ -178,7 +178,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      * 
      * @return a FlattenedEdifCell based on the top cell of the specified file
      */
-    public static NewFlattenedEdifCell getFlatCell(String[] args) {
+    public static FlattenedEdifCell getFlatCell(String[] args) {
         // The value of the string printed out when there is a problem
         // with the argument string.
         String usageString = "Usage: java FlattenedEdifCell <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
@@ -193,9 +193,9 @@ public class NewFlattenedEdifCell extends EdifCell {
 
         System.out.println("Flattening . . .");
         EdifCell cell = top.getTopCell();
-        NewFlattenedEdifCell flat_cell = null;
+        FlattenedEdifCell flat_cell = null;
         try {
-            flat_cell = new NewFlattenedEdifCell(cell);
+            flat_cell = new FlattenedEdifCell(cell);
         } catch (EdifNameConflictException e) {
             e.toRuntime();
         } catch (InvalidEdifNameException e) {
@@ -313,7 +313,7 @@ public class NewFlattenedEdifCell extends EdifCell {
      */
     public static void main(String[] args) throws IOException {
 
-        NewFlattenedEdifCell flat_cell = getFlatCell(args);
+        FlattenedEdifCell flat_cell = getFlatCell(args);
         EdifCell cell = flat_cell.getOriginalCell();
         EdifEnvironment top = cell.getLibrary().getLibraryManager().getEdifEnvironment();
         top.getLibraryManager().pruneNonReferencedCells(flat_cell);

@@ -37,7 +37,7 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRGraphUtilities;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
@@ -253,7 +253,7 @@ public class EdifOutputPortRefGraph extends AbstractEdifGraph {
         System.out.println("Starting Flattening . . .");
         EdifCell flat_cell = null;
         try {
-            flat_cell = new NewFlattenedEdifCell(cell);
+            flat_cell = new FlattenedEdifCell(cell);
         } catch (EdifNameConflictException e1) {
             e1.toRuntime();
         } catch (InvalidEdifNameException e1) {

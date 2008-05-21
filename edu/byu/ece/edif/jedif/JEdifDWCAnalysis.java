@@ -42,7 +42,7 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.Duplication;
 import edu.byu.ece.edif.tools.replicate.Feedback;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
@@ -178,7 +178,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
         // Step 3: Account for ports/instances to triplicate/exclude from DWC	
         // Set up necessary data structures
         EdifCellInstanceGraph eciConnectivityGraph = new EdifCellInstanceGraph(flatCell, true, true);
-        AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((NewFlattenedEdifCell) flatCell,
+        AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) flatCell,
                 eciConnectivityGraph);
 
         // Delete the source-to-source Edges. We don't need them after the
@@ -572,7 +572,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
             for (String instanceName : JEdifDWCAnalysisCommandGroup.getNoDWCi(global_result)) {
                 out.println("Excluding instance " + instanceName + " from DWC");
                 // Get Collection of instances
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithin(instanceName);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
@@ -591,7 +591,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
                 Collection<String> excludeCellTypeColl = new ArrayList<String>(1);
                 excludeCellTypeColl.add(excludeCellType);
 
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithinCellTypes(excludeCellTypeColl);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
@@ -653,7 +653,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
         for (String instanceName : forceInstanceStrings) {
             out.println("Forcing triplication of instance " + instanceName);
             // Get Collection of instances
-            Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+            Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                     .getInstancesWithin(instanceName);
             // Give user warning if no match was found
             if (instances == null || instances.isEmpty())
@@ -670,7 +670,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
                 Collection<String> forceCellTypeColl = new ArrayList<String>(1);
                 forceCellTypeColl.add(forceCellType);
 
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithinCellTypes(forceCellTypes);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())

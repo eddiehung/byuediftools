@@ -40,7 +40,7 @@ import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.DuplicateNMRRequestException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
@@ -1132,7 +1132,7 @@ public class PartialInputOutputFeedForwardTMR {
         System.out.println("Flattening Cell...");
         EdifCell flatCell = null;
         try {
-            flatCell = new NewFlattenedEdifCell(cell);
+            flatCell = new FlattenedEdifCell(cell);
         } catch (EdifNameConflictException e1) {
             e1.toRuntime();
         } catch (InvalidEdifNameException e1) {

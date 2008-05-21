@@ -30,7 +30,7 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceParser;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.DuplicateNMRRequestException;
@@ -174,7 +174,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         // Flatten the cell...
         System.out.println("Flattening the cell...");
         try {
-            topCell = new NewFlattenedEdifCell(topCell);
+            topCell = new FlattenedEdifCell(topCell);
         } catch (EdifNameConflictException e5) {
             e5.toRuntime();
         } catch (InvalidEdifNameException e5) {

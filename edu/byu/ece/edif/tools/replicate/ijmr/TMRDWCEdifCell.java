@@ -44,7 +44,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.dwc.XilinxDWCArchitecture;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
@@ -142,7 +142,7 @@ public class TMRDWCEdifCell extends IJMREdifCell {
     protected void cleanUp() {
         // Add output comparators
         EdifCellInstanceGraph ecic = new EdifCellInstanceGraph(_origCell);
-        AbstractIOBAnalyzer iob = new XilinxVirtexIOBAnalyzer((NewFlattenedEdifCell) _origCell, ecic);
+        AbstractIOBAnalyzer iob = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _origCell, ecic);
         List<EdifNet> netsToCompare = new ArrayList<EdifNet>();
         for (EdifPort port : _portReplicationMap.keySet()) {
             if (port.getDirection() == EdifPort.OUT || port.getDirection() == EdifPort.INOUT) {

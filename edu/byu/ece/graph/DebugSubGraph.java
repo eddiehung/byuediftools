@@ -31,7 +31,7 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.graph.AbstractEdifGraph;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
@@ -97,7 +97,7 @@ public class DebugSubGraph {
                 System.out.println("Flattening top level EdifCell...");
             EdifCell flat_cell = null;
             try {
-                flat_cell = new NewFlattenedEdifCell(cell);
+                flat_cell = new FlattenedEdifCell(cell);
             } catch (EdifNameConflictException e) {
                 e.toRuntime();
             } catch (InvalidEdifNameException e) {

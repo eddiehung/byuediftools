@@ -49,7 +49,7 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
 import edu.byu.ece.edif.tools.replicate.ReplicationException;
@@ -190,7 +190,7 @@ public class JEdifDWC extends EDIFMain {
         EdifCellInstanceGraph graph = new EdifCellInstanceGraph(topCell);
         ClockDomainParser cdp = null;
         try {
-            cdp = new ClockDomainParser((NewFlattenedEdifCell) topCell, graph);
+            cdp = new ClockDomainParser((FlattenedEdifCell) topCell, graph);
         } catch (InvalidEdifNameException e4) {
             e4.toRuntime();
         }

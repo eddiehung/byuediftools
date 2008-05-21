@@ -50,7 +50,7 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.EdifTools;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.AbstractDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceParser;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceUtilizationTracker;
@@ -195,7 +195,7 @@ public class FlattenTMR {
         /*
          * 6. Flatten design
          */
-        NewFlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
+        FlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
         if (_debug)
             NMRUtilities.createOutputFile("flat.edf", flatCell);
         if (reportTiming)
@@ -879,7 +879,7 @@ public class FlattenTMR {
             for (String instanceName : _commands.getStringArray(TMRCommandParser.NO_TMR_I)) {
                 println("Excluding instance " + instanceName + " from TMR");
                 // Get Collection of instances
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithin(instanceName);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
@@ -898,7 +898,7 @@ public class FlattenTMR {
                 Collection excludeCellTypeColl = new ArrayList(1);
                 excludeCellTypeColl.add(excludeCellType);
 
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithinCellTypes(excludeCellTypeColl);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
@@ -914,7 +914,7 @@ public class FlattenTMR {
             Collection<String> excludeClockDomains = Arrays.asList(_commands
                     .getStringArray(TMRCommandParser.NO_TMR_CLK));
             try {
-                domainParser = new ClockDomainParser((NewFlattenedEdifCell) flatCell);
+                domainParser = new ClockDomainParser((FlattenedEdifCell) flatCell);
             }
 
             catch (InvalidEdifNameException e) {
@@ -1010,7 +1010,7 @@ public class FlattenTMR {
         for (String instanceName : forceInstanceStrings) {
             println("Forcing triplication of instance " + instanceName);
             // Get Collection of instances
-            Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+            Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                     .getInstancesWithin(instanceName);
             // Give user warning if no match was found
             if (instances == null || instances.isEmpty())
@@ -1027,7 +1027,7 @@ public class FlattenTMR {
                 Collection forceCellTypeColl = new ArrayList(1);
                 forceCellTypeColl.add(forceCellType);
 
-                Collection<FlattenedEdifCellInstance> instances = ((NewFlattenedEdifCell) flatCell)
+                Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithinCellTypes(forceCellTypes);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
@@ -1042,7 +1042,7 @@ public class FlattenTMR {
             ClockDomainParser domainParser = null;
             Collection<String> forceClockDomains = Arrays.asList(_commands.getStringArray(TMRCommandParser.TMR_CLK));
             try {
-                domainParser = new ClockDomainParser((NewFlattenedEdifCell) flatCell);
+                domainParser = new ClockDomainParser((FlattenedEdifCell) flatCell);
             }
 
             catch (InvalidEdifNameException e) {

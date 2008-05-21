@@ -41,7 +41,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceCollectionLink;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
@@ -121,15 +121,15 @@ public abstract class NMRUtilities {
      * @param out A PrintStream to which a summary of the flattened cell will be
      * printed.
      * @return The flattened EdifCell.
-     * @see NewFlattenedEdifCell
+     * @see FlattenedEdifCell
      */
-    public static NewFlattenedEdifCell flattenCell(EdifCell origCell, PrintStream out) {
+    public static FlattenedEdifCell flattenCell(EdifCell origCell, PrintStream out) {
         // 8. Perform design flattening
         out.println("Flattening");
-        NewFlattenedEdifCell flatCell = null;
+        FlattenedEdifCell flatCell = null;
 
         try {
-            flatCell = new NewFlattenedEdifCell(origCell);
+            flatCell = new FlattenedEdifCell(origCell);
         } catch (EdifNameConflictException e) {
             e.toRuntime();
         } catch (InvalidEdifNameException e) {
