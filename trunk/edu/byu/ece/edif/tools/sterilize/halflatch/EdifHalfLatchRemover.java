@@ -44,7 +44,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.merge.DuplicateMergingPolicy;
 import edu.byu.ece.edif.util.merge.EdifMergeParser;
 import edu.byu.ece.edif.util.merge.EdifMergingPolicy;
@@ -78,7 +78,7 @@ public abstract class EdifHalfLatchRemover {
         _topLevelSafePortName = safeConstantPortName;
     }
 
-    public HalfLatchFlattenedEdifCell removeHalfLatches(NewFlattenedEdifCell flatCell) {
+    public HalfLatchFlattenedEdifCell removeHalfLatches(FlattenedEdifCell flatCell) {
         // Create the copy of the flatCell with half-latches removed
         HalfLatchFlattenedEdifCell hlFlatCell = null;
         try {

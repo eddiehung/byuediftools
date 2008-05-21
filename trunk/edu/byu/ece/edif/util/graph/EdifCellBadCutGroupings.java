@@ -33,7 +33,7 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
 import edu.byu.ece.graph.Edge;
@@ -279,7 +279,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
         EdifCell top_cell = XilinxMergeParser.parseAndMergeXilinx(args);
         EdifCell flat_top_cell = null;
         try {
-            flat_top_cell = new NewFlattenedEdifCell(top_cell);
+            flat_top_cell = new FlattenedEdifCell(top_cell);
         } catch (EdifNameConflictException e) {
             e.toRuntime();
         } catch (InvalidEdifNameException e) {

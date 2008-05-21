@@ -37,7 +37,7 @@ import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.tools.EdifTools;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 
@@ -388,8 +388,8 @@ public class JEdifQuery extends EDIFMain {
         out.println();
         out.println(BAR + "\nPersistent Flip-Flops\n" + BAR);
         EdifCell cell = env.getTopCell();
-        if (cell instanceof NewFlattenedEdifCell) {
-            int persFF = EdifTools.countXilinxPersistentFlipFlops((NewFlattenedEdifCell) cell);
+        if (cell instanceof FlattenedEdifCell) {
+            int persFF = EdifTools.countXilinxPersistentFlipFlops((FlattenedEdifCell) cell);
             out.println("Design contains " + persFF + " flip-flops in persistent sections.");
         } else {
             out.println(cell.getName() + " has not been flattened.");

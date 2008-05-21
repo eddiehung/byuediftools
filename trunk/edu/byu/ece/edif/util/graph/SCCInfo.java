@@ -37,7 +37,7 @@ import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
@@ -86,7 +86,7 @@ public class SCCInfo implements Serializable {
      * @param The FlattenedEdifCell this SCCInfo object is based on
      * @return
      */
-    public List<Collection<EdifCellInstance>> convertToInstances(NewFlattenedEdifCell flatCell) {
+    public List<Collection<EdifCellInstance>> convertToInstances(FlattenedEdifCell flatCell) {
         List instanceSCCs = new ArrayList<Collection<EdifCellInstance>>(_SCCs.size());
 
         for (Collection<String> scc : _SCCs) {

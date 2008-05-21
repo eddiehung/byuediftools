@@ -52,7 +52,7 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.ijmr.IJMREdifCell;
 import edu.byu.ece.edif.tools.replicate.ijmr.TMRDWCEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceParser;
@@ -172,7 +172,7 @@ public class DWCPersistence {
         /*
          * 6. Flatten design
          */
-        NewFlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
+        FlattenedEdifCell flatCell = NMRUtilities.flattenCell(cell, System.out);
 
         /*
          * 7. Create the cell connectivity data structure Include top-level

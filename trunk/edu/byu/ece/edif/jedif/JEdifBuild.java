@@ -35,7 +35,7 @@ import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.logicLutRam.Replace.replaceLutRam;
 import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
@@ -96,10 +96,10 @@ public class JEdifBuild extends EDIFMain {
         // Flatten netlist if necessary
         if (MergeParserCommandGroup.performFlatten(result)) {
             out.print("Flattening . . .");
-            NewFlattenedEdifCell flatCell = null;
+            FlattenedEdifCell flatCell = null;
             EdifCell oldCell = top.getTopCell();
             try {
-                flatCell = new NewFlattenedEdifCell(oldCell);
+                flatCell = new FlattenedEdifCell(oldCell);
             } catch (EdifNameConflictException e) {
                 e.toRuntime();
             } catch (InvalidEdifNameException e) {

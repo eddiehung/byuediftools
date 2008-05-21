@@ -34,7 +34,7 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.tools.sterilize.fmap.FmapRemover;
 import edu.byu.ece.edif.tools.sterilize.halflatch.EdifHalfLatchRemover;
@@ -118,15 +118,15 @@ public class JEdifSterilize extends EDIFMain {
     public static void flatten_sterilize(JSAPResult result, EdifEnvironment myEnv) {
         boolean debug = false;
         EdifCell myCell = null;
-        NewFlattenedEdifCell flatCell = null;
+        FlattenedEdifCell flatCell = null;
         try {
             myCell = myEnv.getTopCell();
 
-            if (myCell instanceof NewFlattenedEdifCell) {
-                flatCell = (NewFlattenedEdifCell) myCell;
+            if (myCell instanceof FlattenedEdifCell) {
+                flatCell = (FlattenedEdifCell) myCell;
             } else {
                 LogFile.out().print("Flattening... ");
-                flatCell = new NewFlattenedEdifCell(myCell, "_flat");
+                flatCell = new FlattenedEdifCell(myCell, "_flat");
                 LogFile.out().println("Done");
                 flatCell.getLibrary().getLibraryManager().deleteCell(myCell, true);
             }
@@ -141,7 +141,7 @@ public class JEdifSterilize extends EDIFMain {
         EdifCellInstanceGraph eciConnectivityGraph = new EdifCellInstanceGraph(flatCell);
         if (!result.success())
             System.exit(1);
-        EdifCell sterilizeCell = sterilize(flatCell, //NewFlattenedEdifCell, 
+        EdifCell sterilizeCell = sterilize(flatCell, //FlattenedEdifCell, 
                 eciConnectivityGraph, //EdifCellInstanceGraph,
                 false, //boolean reportTiming,
                 debug, //boolean _debug,
@@ -180,7 +180,7 @@ public class JEdifSterilize extends EDIFMain {
      * @param _debug is an option for debugging.
      * @param args is args.
      */
-    public static NewFlattenedEdifCell sterilize(NewFlattenedEdifCell flatCell,
+    public static FlattenedEdifCell sterilize(FlattenedEdifCell flatCell,
             EdifCellInstanceGraph eciConnectivityGraph, boolean reportTiming, boolean debug, JSAPResult result) {
         /*
          * 5. Remove fmaps.

@@ -48,7 +48,7 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -492,7 +492,7 @@ public class JEdifClockDomain extends EDIFMain {
         SCCDepthFirstSearch scc = new SCCDepthFirstSearch(_ecic);
 
         if (noIOBFB) {
-            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((NewFlattenedEdifCell) _top.getTopCell(),
+            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(),
                     _ecic);
             Collection<EdifCellInstanceEdge> possibleIOBFeedbackEdges = iobAnalyzer.getIOBFeedbackEdges();
 

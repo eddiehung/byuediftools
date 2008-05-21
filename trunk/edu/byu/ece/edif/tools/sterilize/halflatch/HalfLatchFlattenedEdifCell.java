@@ -46,20 +46,20 @@ import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.flatten.HierarchicalInstance;
 import edu.byu.ece.edif.tools.flatten.InstanceNode;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 
-public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
+public class HalfLatchFlattenedEdifCell extends FlattenedEdifCell {
 
     /**
      * Construct a new HalfLatchFlattenedEdifCell based on the given
-     * NewFlattenedEdifCell and in the same library as the original. The new
+     * FlattenedEdifCell and in the same library as the original. The new
      * Cell will have the suffix "_hl" to prevent name conflicts.
      * 
-     * @param flatCell the NewFlattenedEdifCell to remove half-latches from
+     * @param flatCell the FlattenedEdifCell to remove half-latches from
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public HalfLatchFlattenedEdifCell(NewFlattenedEdifCell flatCell, HalfLatchArchitecture hlArchitecture,
+    public HalfLatchFlattenedEdifCell(FlattenedEdifCell flatCell, HalfLatchArchitecture hlArchitecture,
             int safeConstantPolarity) throws EdifNameConflictException, InvalidEdifNameException {
         super(flatCell.getLibrary(), flatCell.getName() + "_hl", flatCell.getInterface());
         _originalCell = flatCell.getOriginalCell();
@@ -73,14 +73,14 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
 
     /**
      * Construct a new HalfLatchFlattenedEdifCell based on the given
-     * NewFlattenedEdifCell and in the given library
+     * FlattenedEdifCell and in the given library
      * 
      * @param lib the library to construct the HalfLatchFlattenedEdifCell in
-     * @param flatCell the NewFlattenedEdifCell to remove half-latches from
+     * @param flatCell the FlattenedEdifCell to remove half-latches from
      * @throws EdifNameConflictException
      * @throws InvalidEdifNameException
      */
-    public HalfLatchFlattenedEdifCell(EdifLibrary lib, NewFlattenedEdifCell flatCell,
+    public HalfLatchFlattenedEdifCell(EdifLibrary lib, FlattenedEdifCell flatCell,
             HalfLatchArchitecture hlArchitecture, int safeConstantPolarity) throws EdifNameConflictException,
             InvalidEdifNameException {
         super(lib, flatCell.getName(), flatCell.getInterface());
@@ -125,7 +125,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
      */
     public boolean addSubCell(EdifCellInstance cellInstance) throws EdifNameConflictException {
         // This super call must be to EdifCell's version of addSubCell (not
-        //   NewFlattenedEdifCell's)
+        //   FlattenedEdifCell's)
         boolean success = super.addSubCell(cellInstance);
         if (success == true) {
             // Must use addChildNoCheck since the original Cell has been modified
@@ -274,8 +274,8 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         return _safeConstantPort;
     }
 
-    protected void copyCellAndRemoveHalfLatches(NewFlattenedEdifCell flatCell) {
-        // Copy all EdifCellInternals as well as the NewFlattenedEdifCell
+    protected void copyCellAndRemoveHalfLatches(FlattenedEdifCell flatCell) {
+        // Copy all EdifCellInternals as well as the FlattenedEdifCell
         //   structures, removing half-latches along the way
         // 1. Copy the cell properties
         // 2. Copy the Instances
@@ -288,7 +288,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         // 3. Copy the Nets
         //    a. Use the instance mapping to wire up the nets correctly
         //    b. All PortRefs must be re-created
-        // 4. Copy the NewFlattenedEdifCell properties
+        // 4. Copy the FlattenedEdifCell properties
         //    a. Copy _oldToNewNets Map
 
         // 4a. The top level HierarchicalInstance - Make a copy
@@ -328,7 +328,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         //    b. All PortRefs must be re-created
         copyNets(flatCell, oldToNewPorts, oldToNewInstances, oldToNewNets);
 
-        // 4. Copy the NewFlattenedEdifCell properties
+        // 4. Copy the FlattenedEdifCell properties
         //    a. Copy _oldToNewNets Map
 
         // 4a. Make a copy of the _oldToNewNets Map, substituting in the new
@@ -344,7 +344,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
 
     }
 
-    private void copyNets(NewFlattenedEdifCell flatCell, Map<EdifPort, EdifPort> oldToNewPorts,
+    private void copyNets(FlattenedEdifCell flatCell, Map<EdifPort, EdifPort> oldToNewPorts,
             Map<FlattenedEdifCellInstance, FlattenedEdifCellInstance> oldToNewInstances,
             Map<EdifNet, EdifNet> oldToNewNets) {
         List<EdifPortRef> badCutPorts = new ArrayList<EdifPortRef>();
@@ -446,7 +446,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         }
     }
 
-    private void copyInstances(NewFlattenedEdifCell flatCell, Map<EdifPort, EdifPort> oldToNewPorts,
+    private void copyInstances(FlattenedEdifCell flatCell, Map<EdifPort, EdifPort> oldToNewPorts,
             Map<FlattenedEdifCellInstance, FlattenedEdifCellInstance> oldToNewInstances) {
         for (Iterator<EdifCellInstance> instanceIterator = (Iterator<EdifCellInstance>) flatCell.cellInstanceIterator(); instanceIterator
                 .hasNext();) {
@@ -827,9 +827,9 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         args[0] = inputEdifFilename;
         EdifCell top_cell = XilinxMergeParser.parseAndMergeXilinx(args);
 
-        NewFlattenedEdifCell flatCell = null;
+        FlattenedEdifCell flatCell = null;
         try {
-            flatCell = new NewFlattenedEdifCell(top_cell);
+            flatCell = new FlattenedEdifCell(top_cell);
         } catch (EdifNameConflictException e) {
             e.toRuntime();
         } catch (InvalidEdifNameException e) {
@@ -842,7 +842,7 @@ public class HalfLatchFlattenedEdifCell extends NewFlattenedEdifCell {
         //SequentialEdifHalfLatchRemover sequentialEdifHalfLatchRemover = new SequentialEdifHalfLatchRemover(new XilinxHalfLatchArchitecture(), safeConstantPolarity, true);
         SequentialEdifHalfLatchRemover sequentialEdifHalfLatchRemover = new SequentialEdifHalfLatchRemover(
                 hlArchitecture, safeConstantPolarity, false);
-        NewFlattenedEdifCell hlFlatCell = sequentialEdifHalfLatchRemover.removeHalfLatches(flatCell);
+        FlattenedEdifCell hlFlatCell = sequentialEdifHalfLatchRemover.removeHalfLatches(flatCell);
 
         // Now we make all of our checks
 

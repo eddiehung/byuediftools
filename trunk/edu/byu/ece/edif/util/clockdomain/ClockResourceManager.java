@@ -30,7 +30,7 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifException;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.parse.ParseException;
 
@@ -51,7 +51,7 @@ public class ClockResourceManager {
         identifyClocks();
     }
 
-    public ClockResourceManager(NewFlattenedEdifCell flatCell, EdifCellInstanceGraph ecic) throws EdifException,
+    public ClockResourceManager(FlattenedEdifCell flatCell, EdifCellInstanceGraph ecic) throws EdifException,
             ParseException, FileNotFoundException {
         _cdp = new ClockDomainParser(flatCell, ecic);
         _clockResourceSet = new LinkedHashSet<ClockResource>();

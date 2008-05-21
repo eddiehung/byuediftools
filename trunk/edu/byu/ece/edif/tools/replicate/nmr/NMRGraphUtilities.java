@@ -36,7 +36,7 @@ import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;
@@ -80,7 +80,7 @@ public class NMRGraphUtilities {
         System.out.println("Starting Flattening . . .");
         EdifCell flat_cell = null;
         try {
-            flat_cell = new NewFlattenedEdifCell(cell);
+            flat_cell = new FlattenedEdifCell(cell);
         } catch (EdifNameConflictException e1) {
             e1.toRuntime();
         } catch (InvalidEdifNameException e1) {

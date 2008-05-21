@@ -54,7 +54,7 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.flatten.NewFlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -142,7 +142,7 @@ public class ClockDomainParser {
      * @param flatCell The FlattenedEdifCell to analyze
      * @throws InvalidEdifNameException
      */
-    public ClockDomainParser(NewFlattenedEdifCell flatCell) throws InvalidEdifNameException {
+    public ClockDomainParser(FlattenedEdifCell flatCell) throws InvalidEdifNameException {
         init(flatCell);
 
         System.out.print("Generating EdifCellInstanceGraph Graph...");
@@ -159,7 +159,7 @@ public class ClockDomainParser {
      * having to do it again
      * @throws InvalidEdifNameException
      */
-    public ClockDomainParser(NewFlattenedEdifCell flatCell, EdifCellInstanceGraph ecic) throws InvalidEdifNameException {
+    public ClockDomainParser(FlattenedEdifCell flatCell, EdifCellInstanceGraph ecic) throws InvalidEdifNameException {
         init(flatCell);
         _ecic = ecic;
     }
@@ -184,7 +184,7 @@ public class ClockDomainParser {
 
         EdifEnvironment edif_file = edu.byu.ece.edif.util.merge.EdifMergeParser.parseAndMergeEdif(fileName, Arrays
                 .asList(dirs), Arrays.asList(files), xilinxLib);
-        init(new NewFlattenedEdifCell(edif_file.getTopCell()));
+        init(new FlattenedEdifCell(edif_file.getTopCell()));
 
         System.out.print("Generating EdifCellInstanceGraph Graph...");
         _ecic = new EdifCellInstanceGraph(_top.getTopCell(), true);
@@ -199,7 +199,7 @@ public class ClockDomainParser {
      * @param flatCell The FlattenedEdifCell to analyze.
      * @throws InvalidEdifNameException
      */
-    private void init(NewFlattenedEdifCell flatCell) throws InvalidEdifNameException {
+    private void init(FlattenedEdifCell flatCell) throws InvalidEdifNameException {
         EdifCell cell = flatCell.getOriginalCell();
         _top = flatCell.getLibrary().getLibraryManager().getEdifEnvironment();
         EdifDesign new_design = new EdifDesign("ROOT");
@@ -404,7 +404,7 @@ public class ClockDomainParser {
         SCCDepthFirstSearch scc = new SCCDepthFirstSearch(_ecic);
 
         if (noIOBFB) {
-            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((NewFlattenedEdifCell) _top.getTopCell(),
+            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(),
                     _ecic);
             Collection<EdifCellInstanceEdge> possibleIOBFeedbackEdges = iobAnalyzer.getIOBFeedbackEdges();
 
