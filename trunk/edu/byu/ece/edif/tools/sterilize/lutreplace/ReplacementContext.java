@@ -59,4 +59,19 @@ public interface ReplacementContext {
      * single bit port (i.e. the port in the old cell, not the new cell).
      */
     public EdifNet getNewNetToConnect(EdifSingleBitPort oldPort);
+    
+	/** This method will provide the "new" net that was created in the new EdifCell
+	 * that would have otherwise been hooked up to the given port. The port list
+	 * of the old cell type will be searched using the given port name. The bit
+	 * number of the port will be determined by the bitNum parameter. If a
+	 * port does not exist with the given name or there is no single bit port
+	 * with the given bit number then method will return a null.
+	 **/
+	public EdifNet getNewNetToConnect(String portName, int bitNum);
+	
+	/** Return the new net. Assumes a "0" bit number. Will return a null
+	 * if the string does not exist.
+	 **/
+	public EdifNet getNewNetToConnect(String portName);
+    
 }
