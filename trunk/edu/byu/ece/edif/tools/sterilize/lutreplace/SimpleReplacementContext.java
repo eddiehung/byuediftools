@@ -1,5 +1,4 @@
 /*
- * TODO: Insert class description here.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -27,8 +26,12 @@ import java.util.HashMap;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
+import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 
+/** A simple implementation of the ReplacementContext interface.
+ * 
+ */
 public class SimpleReplacementContext implements ReplacementContext {
 
     public SimpleReplacementContext(EdifCell matchCell, EdifCell newParent, EdifCellInstance oldInstance) {
@@ -45,28 +48,43 @@ public class SimpleReplacementContext implements ReplacementContext {
         return _newParentCell;
     }
 
-    public EdifCellInstance getOldInstanceToReplace() {
-        return _oldInstanceToReplace;
-    }
+	public EdifNet getNewNetToConnect(EdifSingleBitPort oldPort) {
+		return _oldSBPortNewNetMap.get(oldPort);
+	}
+	
+	public void addOldSPBortNewNetAssociation(EdifSingleBitPort oldSBPort, EdifNet newNet) {
+		_oldSBPortNewNetMap.put(oldSBPort,newNet);		
+	}
 
-    public EdifCell getOldCellToReplace() {
-        return _oldInstanceToReplace.getCellType();
-    }
+	public EdifNet getNewNetToConnect(String portName, int bitNum) {
+		EdifSingleBitPort esbp = getOldSingleBitPort(portName, bitNum);
+		if (esbp != null)
+			return getNewNetToConnect(esbp);
+		return null;
+	}
+	public EdifCell getOldCellToReplace() {
+		return _oldInstanceToReplace.getCellType();
+	}
 
-    public EdifNet getNewNetToConnect(EdifSingleBitPort oldPort) {
-        return _oldSBPortNewNetMap.get(oldPort);
-    }
+	public EdifCellInstance getOldInstanceToReplace() {
+		return _oldInstanceToReplace;
+	}
 
-    public void addOldSPBortNewNetAssociation(EdifSingleBitPort oldSBPort, EdifNet newNet) {
-        _oldSBPortNewNetMap.put(oldSBPort, newNet);
-    }
+	public EdifNet getNewNetToConnect(String portName) {
+		return getNewNetToConnect(portName, 0);
+	}
 
-    EdifCell _matchingTemplateCell;
+	protected EdifSingleBitPort getOldSingleBitPort(String portName, int bitNum) {
+		EdifCell oldCellType = _oldInstanceToReplace.getCellType();
+		EdifPort oldPort = oldCellType.getPort(portName);
+		if (oldPort == null)
+			return null;
+		return oldPort.getSingleBitPort(bitNum);		
+	}
 
-    EdifCell _newParentCell;
-
-    EdifCellInstance _oldInstanceToReplace;
-
-    HashMap<EdifSingleBitPort, EdifNet> _oldSBPortNewNetMap = new HashMap<EdifSingleBitPort, EdifNet>();
-
+	EdifCell _matchingTemplateCell;
+	EdifCell _newParentCell;
+	EdifCellInstance _oldInstanceToReplace;
+	HashMap<EdifSingleBitPort,EdifNet> _oldSBPortNewNetMap = new HashMap<EdifSingleBitPort,EdifNet>(); 
+	
 }
