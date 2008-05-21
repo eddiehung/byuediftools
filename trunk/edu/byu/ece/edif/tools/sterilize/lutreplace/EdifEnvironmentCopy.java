@@ -106,10 +106,10 @@ public class EdifEnvironmentCopy {
     protected void setEdifEnvironmentDateAuthorProgramVersion() {
         // Copy all of the date, author, etc. This can always be changed at a
         // later time.
-        // _newEnv.setDate(_origEnv.getDate());
-        // _newEnv.setAuthor(_origEnv.getAuthor());
-        // _newEnv.setProgram(_origEnv.getProgram());
-        // _newEnv.setVersion(_origEnv.getVersion());
+        _newEnv.setDate(_origEnv.getDate());
+        _newEnv.setAuthor(_origEnv.getAuthor());
+        _newEnv.setProgram(_origEnv.getProgram());
+        _newEnv.setVersion(_origEnv.getVersion());
     }
 
     /**
