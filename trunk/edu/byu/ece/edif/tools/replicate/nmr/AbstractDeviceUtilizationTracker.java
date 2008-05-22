@@ -426,27 +426,46 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
         //          System.out.println ("WARNING: In ResourceTracker->addInstance, non-primitive leaf cell being added.  No utilization information will be added for this cell instance.");
         //      }           
         else
-            nmrInstances(eci.getCellType().getSubCellList(), replicationFactor);
+            nmrInstancesAtomic(eci.getCellType().getSubCellList(), replicationFactor);
         // We get here if the instance fits in the device,
         _currentNMRInstances.add(eci);
     }
 
     /**
-     * Adds all instances in the collection ecis for replication.
+     * Adds all instances in the collection ecis for replication. IMPORTANT:
+     * Will only replicate all instances if it can, otherwise it will not
+     * replicate any of them.
      * 
      * @param ecis Collection of instances to be added for replication.
      * @param replicationFactor N factor for NMR
      * @throws OverutilizationEstimatedStopException
      * @throws OverutilizationHardStopException
      */
-    public void nmrInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
+    public void nmrInstancesAtomic(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
             UnsupportedResourceTypeException, DuplicateNMRRequestException {
         nmrInstances(ecis, false, false, replicationFactor);
     }
 
     /**
-     * Adds all instances in the collection ecis for replication. Optionally
+     * Adds as many instances as it can from the collection ecis for
+     * replication, skipping instances which cause estimated stops and/or hard
+     * stops. (The logic here is that even if there are hard stops there might
+     * be soft logic that could still be added and vice-versa.)
+     * 
+     * @param ecis Collection of instances to be added for replication.
+     * @param replicationFactor N factor for NMR
+     * @throws OverutilizationEstimatedStopException
+     * @throws OverutilizationHardStopException
+     */
+    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor)
+            throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
+            UnsupportedResourceTypeException, DuplicateNMRRequestException {
+        nmrInstances(ecis, false, true, replicationFactor);
+    }
+
+    /**
+     * Adds the instances in the collection ecis for replication. Optionally
      * will ignore instances which cause estimated stops and/or hard stops.
      * 
      * @param ecis Collection of instances to be added for replication.
@@ -457,7 +476,7 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @throws OverutilizationEstimatedStopException
      * @throws OverutilizationHardStopException
      */
-    public void nmrInstances(Collection<EdifCellInstance> ecis, boolean skipEstimatedStops, boolean skipHardStops,
+    private void nmrInstances(Collection<EdifCellInstance> ecis, boolean skipEstimatedStops, boolean skipHardStops,
             int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
             UnsupportedResourceTypeException, DuplicateNMRRequestException {
         if (ecis == null)

@@ -944,7 +944,7 @@ public class NMRGraphUtilities {
 
             // Try to add the SCC.
             try {
-                capacity.nmrInstances(sccInstances, replicationFactor);
+                capacity.nmrInstancesAtomic(sccInstances, replicationFactor);
                 if (DEBUG) {
                     System.out.println(" SCC fits");
                     System.out.println(capacity.toString());
@@ -993,7 +993,7 @@ public class NMRGraphUtilities {
                 //System.out.println(e3);
                 try {
                     // Skip Hard Stops
-                    capacity.nmrInstances(sccInstances, false, true, replicationFactor);
+                    capacity.nmrInstancesAsManyAsPossible(sccInstances, replicationFactor);
                     // SCC fits - determine the location of the voter cuts    			
 
                     Collection<Edge> cuts = createDecomposeValidCutSet(graph, scc, arch);

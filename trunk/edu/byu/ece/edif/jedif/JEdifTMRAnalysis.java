@@ -469,7 +469,7 @@ public class JEdifTMRAnalysis extends EDIFMain {
         }
 
         try {
-            duTracker.nmrInstances(_iobInstancesToTriplicate, _replicationFactor);
+            duTracker.nmrInstancesAtomic(_iobInstancesToTriplicate, _replicationFactor);
         } catch (DuplicateNMRRequestException e1) {
             // Already TMR'd
             System.out.println("WARNING: Duplicate TMR Port request. Should not get here: " + e1);

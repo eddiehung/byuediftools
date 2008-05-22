@@ -68,7 +68,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         super(mergeFactor, optimizationFactor, desiredUtilizationFactor);
 
         String archName = "xc2vp";
-        //"EasyPath™ cost reduction" parts only valid on p30 and up
+        //"EasyPath cost reduction" parts only valid on p30 and up
         if (part.contains("xce2vp"))
             part = part.replace("e", "");
 
@@ -231,7 +231,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         for (Iterator i = groups.iterator(); i.hasNext();) {
             Collection group = (Collection) i.next();
             try {
-                duTracker.nmrInstances(group, _replicationFactor);
+                duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor);
             } catch (OverutilizationEstimatedStopException e1) {
                 System.out
                         .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "
@@ -248,7 +248,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
                 // This call adds everything else in the group
                 // except those instances which cause hard stops
                 try {
-                    duTracker.nmrInstances(group, false, true, _replicationFactor);
+                    duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor);
                 } catch (OverutilizationEstimatedStopException e3) {
                     System.out
                             .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "

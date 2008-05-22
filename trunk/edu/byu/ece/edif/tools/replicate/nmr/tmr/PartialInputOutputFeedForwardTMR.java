@@ -1019,7 +1019,7 @@ public class PartialInputOutputFeedForwardTMR {
                 //             - Skip instances that have already been added
                 //                 (DuplicateNMRRequestException)
                 try {
-                    resourceTracker.nmrInstances(atomicSet, _replicationFactor);
+                    resourceTracker.nmrInstancesAtomic(atomicSet, _replicationFactor);
                     // Add atomic sets of ECIs to the input/outputList if there is room 
                     if (DEBUG) {
                         if (doInput) {
