@@ -259,7 +259,7 @@ public class XilinxVirtexDeviceUtilizationTracker extends XilinxDeviceUtilizatio
         for (Iterator i = groups.iterator(); i.hasNext();) {
             Collection group = (Collection) i.next();
             try {
-                duTracker.nmrInstances(group, _replicationFactor);
+                duTracker.nmrInstancesAtomic(group, _replicationFactor);
             } catch (OverutilizationEstimatedStopException e1) {
                 System.out
                         .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "
@@ -276,7 +276,7 @@ public class XilinxVirtexDeviceUtilizationTracker extends XilinxDeviceUtilizatio
                 // This call adds everything else in the group
                 // except those instances which cause hard stops
                 try {
-                    duTracker.nmrInstances(group, false, true, _replicationFactor);
+                    duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor);
                 } catch (OverutilizationEstimatedStopException e3) {
                     System.out
                             .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "

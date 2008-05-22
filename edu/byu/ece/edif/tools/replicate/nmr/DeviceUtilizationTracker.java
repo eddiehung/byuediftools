@@ -101,12 +101,11 @@ public interface DeviceUtilizationTracker {
     public void nmrInstance(EdifCellInstance eci, int replicationFactor) throws OverutilizationEstimatedStopException,
             OverutilizationHardStopException, UnsupportedResourceTypeException, DuplicateNMRRequestException;
 
-    public void nmrInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
+    public void nmrInstancesAtomic(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
             UnsupportedResourceTypeException, DuplicateNMRRequestException;
 
-    public void nmrInstances(Collection<EdifCellInstance> ecis, boolean skipEstimatedStops, boolean skipHardStops,
-            int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
+    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
             UnsupportedResourceTypeException, DuplicateNMRRequestException;
 
     public String toString();

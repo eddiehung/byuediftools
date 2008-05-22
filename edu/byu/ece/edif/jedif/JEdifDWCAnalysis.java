@@ -484,7 +484,7 @@ public class JEdifDWCAnalysis extends EDIFMain {
         }
 
         try {
-            duTracker.nmrInstances(_iobInstancesToDuplicate, _replicationFactor);
+            duTracker.nmrInstancesAtomic(_iobInstancesToDuplicate, _replicationFactor);
         } catch (DuplicateNMRRequestException e1) {
             // Already TMR'd
             System.out.println("WARNING: Duplicate DWC Port request. Should not get here: " + e1);

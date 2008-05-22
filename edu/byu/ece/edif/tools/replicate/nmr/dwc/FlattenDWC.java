@@ -646,7 +646,7 @@ public class FlattenDWC {
         // Use the EdifCellInstanceGraph graph to find the BUFs
         _bufsToDuplicate = NMRUtilities.getPortBufs(_portsToDuplicate, graph);
         try {
-            duTracker.nmrInstances(_bufsToDuplicate, _replicationFactor);
+            duTracker.nmrInstancesAtomic(_bufsToDuplicate, _replicationFactor);
             // TODO : change this to a NMR exception
         } catch (DuplicateNMRRequestException e1) {
             // Already TMR'd
