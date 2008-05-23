@@ -1220,13 +1220,13 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("GT11CLK_MGT", "");//Allows differential package input to drive the two vertical reference clock buses for the column of MGTs
 
         cellToResourceMap.put("DCIRESET", "");//Resets the Digitally Controlled Impedance to re-calibrate 
-        cellToResourceMap.put("IDDR", IO);//IO
-        cellToResourceMap.put("IDELAY", IO);//IO
-        cellToResourceMap.put("IDELAYCTRL", IO);//IO
-        cellToResourceMap.put("ISERDES", IO);// serial to parallel converter
+        cellToResourceMap.put("IDDR", FF);//IO
+        cellToResourceMap.put("IDELAY", "");//IO
+        cellToResourceMap.put("IDELAYCTRL", "");//IO
+        cellToResourceMap.put("ISERDES", "");// serial to parallel converter
 
-        cellToResourceMap.put("ODDR", IO);//IO
-        cellToResourceMap.put("OSERDES", IO);// serial to parallel converter
+        cellToResourceMap.put("ODDR", FF);//IO
+        cellToResourceMap.put("OSERDES", "");// serial to parallel converter
 
         cellToResourceMap.put("EMAC", ETHERNET);//Fully integrated Ethernet Media Access Controller! wow!
         cellToResourceMap.put("PPC405_ADV", PPC);
