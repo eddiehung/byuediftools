@@ -455,8 +455,8 @@ public class JEdifTMRAnalysis extends EDIFMain {
 
         // Filter the set of ports to triplicate
         _portsToTriplicate = filterPortsToTriplicate(flatCell, JEdifTMRAnalysisCommandGroup.tmrInports(global_result),
-                JEdifTMRAnalysisCommandGroup.tmrOutports(global_result), JEdifTMRAnalysisCommandGroup
-                        .tmrPorts(global_result), _noTriplicatePorts);
+                JEdifTMRAnalysisCommandGroup.tmrOutports(global_result), _noTriplicatePorts,
+                JEdifTMRAnalysisCommandGroup.tmrPorts(global_result));
         // Create list of ports NOT to triplicate
         _portsNotToTriplicate = flatCell.getPortList();
         _portsNotToTriplicate.removeAll(_portsToTriplicate);
