@@ -70,10 +70,10 @@ public class BadCutConnections implements Serializable {
         String sink = _getEPRName(sinkCellType, sinkPortName);
 
         // Check if there is an entry for this source yet
-        HashSet sinkEPRSet = (HashSet) _badConnectionMap.get(source);
+        HashSet<String> sinkEPRSet = (HashSet<String>) _badConnectionMap.get(source);
         // If not, create one
         if (sinkEPRSet == null) {
-            sinkEPRSet = new LinkedHashSet();
+            sinkEPRSet = new LinkedHashSet<String>();
             _badConnectionMap.put(source, sinkEPRSet);
         }
         // Add this sink to the value Set

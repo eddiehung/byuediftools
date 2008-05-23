@@ -292,11 +292,11 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
         EdifCellInstanceGroupings badCutGroups = new EdifCellBadCutGroupings(flat_top_cell, arch, connectivity);
         long elapsed_time_sec = (System.currentTimeMillis() - begin_time) / (long) 60.0;
         System.out.println("Grouping finished in " + elapsed_time_sec + " seconds.");
-        Collection groups = badCutGroups.getInstanceGroups();
+        Collection<EdifCellInstanceCollection> groups = badCutGroups.getInstanceGroups();
         System.out.println(groups);
         int[] dist = new int[1000];
-        for (Iterator i = groups.iterator(); i.hasNext();) {
-            int size = ((EdifCellInstanceCollection) i.next()).size();
+        for (Iterator<EdifCellInstanceCollection> i = groups.iterator(); i.hasNext();) {
+            int size = (i.next()).size();
             dist[size]++;
         }
         for (int i = 0; i < dist.length; i++) {
