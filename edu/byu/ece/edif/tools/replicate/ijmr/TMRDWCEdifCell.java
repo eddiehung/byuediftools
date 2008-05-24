@@ -81,18 +81,13 @@ public class TMRDWCEdifCell extends IJMREdifCell {
 
     public static String MERGER_NAME = "DWC_MERGER";
 
-    public static String PERSISTENT_OUTPUT = "DWC_PERSISTENT";
-
-    public static String NON_PERSISTENT_OUTPUT = "DWC_NON_PERSISTENT";
-
-    // Array index constants
-    public static final int PERSISTENT_0 = 0;
-
-    public static final int PERSISTENT_1 = 1;
-
-    public static final int NON_PERSISTENT_0 = 2;
-
-    public static final int NON_PERSISTENT_1 = 3;
+    public static final String PERSISTENT_SUFFIX = "DWC_PERSISTENT";
+    public static final String NON_PERSISTENT_SUFFIX = "DWC_NON_PERSISTENT";
+    public static final String SINGLE_RAIL_SUFFIX = "";
+    public static final String DUAL_RAIL_0_SUFFIX = "_DRC0";
+    public static final String DUAL_RAIL_1_SUFFIX = "_DRC1";
+    
+    
 
     public TMRDWCEdifCell(EdifLibrary lib, String name, EdifCell origCell,
             Collection<EdifCellInstance> feedbackPlusInput, NMRArchitecture tmrArchitecture,
@@ -105,14 +100,24 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         _tmrArchitecture = tmrArchitecture;
         _dwcArchitecture = (XilinxDWCArchitecture) dwcArchitecture;
         _cutSet = cutSet;
-        _persistentErrorNets0 = new ArrayList<EdifNet>();
-        _persistentErrorNets1 = new ArrayList<EdifNet>();
-        _nonPersistentErrorNets0 = new ArrayList<EdifNet>();
-        _nonPersistentErrorNets1 = new ArrayList<EdifNet>();
-
+        
+        _errorNetManager = new ErrorNetManager();
+        _errorNetManager.setComparatorString(DWCComparatorType.PERSISTENT, PERSISTENT_SUFFIX);
+        _errorNetManager.setComparatorString(DWCComparatorType.NON_PERSISTENT, NON_PERSISTENT_SUFFIX);
+        _errorNetManager.setRailSuffix(DWCRailType.SINGLE_RAIL, SINGLE_RAIL_SUFFIX);
+        _errorNetManager.setRailSuffix(DWCRailType.DUAL_RAIL_0, DUAL_RAIL_0_SUFFIX);
+        _errorNetManager.setRailSuffix(DWCRailType.DUAL_RAIL_1, DUAL_RAIL_1_SUFFIX);
+        
+        _usedRailTypes = new ArrayList<DWCRailType>();
+        if (useDualRail) {
+        	_usedRailTypes.add(DWCRailType.DUAL_RAIL_0);
+        	_usedRailTypes.add(DWCRailType.DUAL_RAIL_1);
+        }
+        else
+        	_usedRailTypes.add(DWCRailType.SINGLE_RAIL);
+        
         _feedbackPlusInput = feedbackPlusInput;
 
-        _useDualRail = useDualRail;
         _packOutputRegs = packOutputRegs;
         _registerDetection = registerDetection;
         _clockNet = clockNet;
@@ -137,12 +142,27 @@ public class TMRDWCEdifCell extends IJMREdifCell {
 
     /**
      * Merge comparator error signals
+     * <pre>
+     * There is a tradeoff here between
+     *   1. Inserting comparators as late as possible (i.e. after final
+     *      register if there is one) but not allowing the final register
+     *      to be packed into the IOB.
+     *   and
+     *   2. Inserting comparators before the very last register (if there
+     *      is one) and allowing the output registers to be packed.
+     * </pre>
+     * It is generally expected that the user will want to allow the output
+     * registers to be packed at the expense of not comparing at the very
+     * latest location possible, but we still provide the option.
      */
     @Override
     protected void cleanUp() {
         // Add output comparators
         EdifCellInstanceGraph ecic = new EdifCellInstanceGraph(_origCell);
         AbstractIOBAnalyzer iob = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _origCell, ecic);
+        
+        // netsToCompare will hold nets from the original EdifCell (the ones
+        // that weren't actually duplicated are filtered out later)
         List<EdifNet> netsToCompare = new ArrayList<EdifNet>();
         for (EdifPort port : _portReplicationMap.keySet()) {
             if (port.getDirection() == EdifPort.OUT || port.getDirection() == EdifPort.INOUT) {
@@ -175,144 +195,96 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         }
 
         // now add the comparators in the determined locations
+        // filter out the nets that weren't actually duplicated
         for (EdifNet netToCompare : netsToCompare) {
             List<EdifNet> nets = _netReplicationMap.get(netToCompare);
             if (nets.size() == 2)
-                createComparator(nets, netToCompare, false);
+                createComparator(nets, netToCompare, DWCComparatorType.NON_PERSISTENT);
         }
 
-        // Merge error signal nets and add outputs for applicable error signals
-        EdifNameable[] outName = new EdifNameable[4];
-        EdifNameable[] portName = new EdifNameable[4];
-        EdifNameable[] netName = new EdifNameable[4];
-        EdifNameable[] ofdNetName = new EdifNameable[4];
-        EdifNet[] ofdNet = new EdifNet[4];
-        EdifNet[] mergedErrorNet = new EdifNet[4];
-        EdifNet[] outNet = new EdifNet[4];
-        String[] ofdName = new String[4];
-        String[] obufName = new String[4];
 
-        mergeAndNameErrorSignals(outName, portName, netName, ofdNetName, ofdNet, mergedErrorNet, outNet, ofdName,
-                obufName);
+        mergeAndNameErrorSignals();
 
-        // Add new nets, ports, obufs, and detection registers (if desired)
-        for (int i = 0; i < mergedErrorNet.length; i++) {
-            if (mergedErrorNet[i] != null) {
-                try {
-                    addNet(outNet[i]);
-                } catch (EdifNameConflictException e1) {
-                    // can't get here
-                    e1.toRuntime();
-                }
-
-                EdifPort portToAdd = addPortUniqueName(portName[i], 1, EdifPort.OUT);
-                EdifPortRef portRefToAdd = new EdifPortRef(outNet[i], portToAdd.getSingleBitPort(0), null);
-                outNet[i].addPortConnection(portRefToAdd);
-
-                if (!_noObufs) {
-                    if (_registerDetection) {
-                        try {
-                            addNet(ofdNet[i]);
-                        } catch (EdifNameConflictException e) {
-                            // can't get here
-                            e.toRuntime();
-                        }
-                        createOFD(this, ofdName[i], mergedErrorNet[i], ofdNet[i]);
-                        _dwcArchitecture.createOBUF(this, obufName[i], ofdNet[i], outNet[i]);
-                    } else {
-                        _dwcArchitecture.createOBUF(this, obufName[i], mergedErrorNet[i], outNet[i]);
-                    }
-                } else {
-                    if (_registerDetection) {
-                        createOFD(this, ofdName[i], mergedErrorNet[i], ofdNet[i]);
-                        for (EdifPortRef epr : ofdNet[i].getConnectedPortRefs()) {
-                            EdifPortRef newEpr = new EdifPortRef(outNet[i], epr.getSingleBitPort(), epr
-                                    .getCellInstance());
-                            outNet[i].addPortConnection(newEpr);
-                        }
-                    } else {
-                        deleteNet(mergedErrorNet[i]);
-                        for (EdifPortRef epr : mergedErrorNet[i].getConnectedPortRefs()) {
-                            EdifPortRef newEpr = new EdifPortRef(outNet[i], epr.getSingleBitPort(), epr
-                                    .getCellInstance());
-                            outNet[i].addPortConnection(newEpr);
-                        }
-                    }
-
-                }
-            }
-        }
     }
 
-    protected void mergeAndNameErrorSignals(EdifNameable[] outName, EdifNameable[] portName, EdifNameable[] netName,
-            EdifNameable[] ofdNetName, EdifNet[] ofdNet, EdifNet[] mergedErrorNet, EdifNet[] outNet, String[] ofdName,
-            String[] obufName) {
+    /**
+     * Merge comparator outputs and add related output circuitry
+     */
+    protected void mergeAndNameErrorSignals() {
 
-        if (!_persistentErrorNets0.isEmpty()) {
-            mergedErrorNet[PERSISTENT_0] = mergeNets(_persistentErrorNets0);
-            outName[PERSISTENT_0] = NamedObject.createValidEdifNameable(PERSISTENT_OUTPUT + "_0");
-            portName[PERSISTENT_0] = getInterface().getUniquePortNameable(outName[PERSISTENT_0]);
-            netName[PERSISTENT_0] = getUniqueNetNameable(outName[PERSISTENT_0]);
-            outNet[PERSISTENT_0] = new EdifNet(netName[PERSISTENT_0], this);
-            if (_registerDetection) {
-                ofdNetName[PERSISTENT_0] = getUniqueNetNameable(NamedObject.createValidEdifNameable(PERSISTENT_OUTPUT
-                        + "_OFD_0"));
-                ofdNet[PERSISTENT_0] = new EdifNet(ofdNetName[PERSISTENT_0], this);
-                ofdName[PERSISTENT_0] = PERSISTENT_OUTPUT + "_0_OFD";
-                obufName[PERSISTENT_0] = PERSISTENT_OUTPUT + "_0_OBUF";
-            }
-        } else
-            mergedErrorNet[PERSISTENT_0] = null;
+    	for (DWCComparatorType comparatorType : DWCComparatorType.values()) {
+    		String comparatorString = _errorNetManager.getComparatorString(comparatorType);
+    	  	int railNum = 0;
+    		for (DWCRailType railType : _usedRailTypes) {
+    			List<EdifNet> netsToMerge = _errorNetManager.getNetList(comparatorType, railType);
+    			if (netsToMerge.size() > 0) {
+    				EdifNet mergedErrorNet = mergeNets(netsToMerge);
+    				EdifNameable outName = NamedObject.createValidEdifNameable(comparatorString + "_" + railNum);
+    				EdifNameable portName = getInterface().getUniquePortNameable(outName);
+    				EdifNameable netName = getUniqueNetNameable(outName);
+    				EdifNet outNet = new EdifNet(netName, this);
+    				EdifNet ofdNet = null;
+    				String ofdName = null;
+    				String obufName = null;
+    				if (_registerDetection) {
+    					EdifNameable ofdNetName = getUniqueNetNameable(NamedObject.createValidEdifNameable(comparatorString
+    							+ "_OFD_" + railNum));
+    					ofdNet = new EdifNet(ofdNetName, this);
+    					ofdName = comparatorString + "_" + railNum + "_OFD";
+    					obufName = comparatorString + "_" + railNum + "_OBUF";
+    				}
 
-        if (!_persistentErrorNets1.isEmpty()) {
-            mergedErrorNet[PERSISTENT_1] = mergeNets(_persistentErrorNets1);
-            outName[PERSISTENT_1] = NamedObject.createValidEdifNameable(PERSISTENT_OUTPUT + "_1");
-            portName[PERSISTENT_1] = getInterface().getUniquePortNameable(outName[PERSISTENT_1]);
-            netName[PERSISTENT_1] = getUniqueNetNameable(outName[PERSISTENT_1]);
-            outNet[PERSISTENT_1] = new EdifNet(netName[PERSISTENT_1], this);
-            if (_registerDetection) {
-                ofdNetName[PERSISTENT_1] = getUniqueNetNameable(NamedObject.createValidEdifNameable(PERSISTENT_OUTPUT
-                        + "_OFD_1"));
-                ofdNet[PERSISTENT_1] = new EdifNet(ofdNetName[PERSISTENT_1], this);
-                ofdName[PERSISTENT_1] = PERSISTENT_OUTPUT + "_1_OFD";
-                obufName[PERSISTENT_1] = PERSISTENT_OUTPUT + "_1_OBUF";
-            }
-        } else
-            mergedErrorNet[PERSISTENT_1] = null;
+    				try {
+    					addNet(outNet);
+    				} catch (EdifNameConflictException e1) {
+    					// can't get here
+    					e1.toRuntime();
+    				}
 
-        if (!_nonPersistentErrorNets0.isEmpty()) {
-            mergedErrorNet[NON_PERSISTENT_0] = mergeNets(_nonPersistentErrorNets0);
-            outName[NON_PERSISTENT_0] = NamedObject.createValidEdifNameable(NON_PERSISTENT_OUTPUT + "_0");
-            portName[NON_PERSISTENT_0] = getInterface().getUniquePortNameable(outName[NON_PERSISTENT_0]);
-            netName[NON_PERSISTENT_0] = getUniqueNetNameable(outName[NON_PERSISTENT_0]);
-            outNet[NON_PERSISTENT_0] = new EdifNet(netName[NON_PERSISTENT_0], this);
-            if (_registerDetection) {
-                ofdNetName[NON_PERSISTENT_0] = getUniqueNetNameable(NamedObject
-                        .createValidEdifNameable(NON_PERSISTENT_OUTPUT + "_OFD_0"));
-                ofdNet[NON_PERSISTENT_0] = new EdifNet(ofdNetName[NON_PERSISTENT_0], this);
-                ofdName[NON_PERSISTENT_0] = NON_PERSISTENT_OUTPUT + "_0_OFD";
-                obufName[NON_PERSISTENT_0] = NON_PERSISTENT_OUTPUT + "_0_OBUF";
-            }
-        } else
-            mergedErrorNet[NON_PERSISTENT_0] = null;
+    				EdifPort portToAdd = addPortUniqueName(portName, 1, EdifPort.OUT);
+    				EdifPortRef portRefToAdd = new EdifPortRef(outNet, portToAdd.getSingleBitPort(0), null);
+    				outNet.addPortConnection(portRefToAdd);
 
-        if (!_nonPersistentErrorNets1.isEmpty()) {
-            mergedErrorNet[NON_PERSISTENT_1] = mergeNets(_nonPersistentErrorNets1);
-            outName[NON_PERSISTENT_1] = NamedObject.createValidEdifNameable(NON_PERSISTENT_OUTPUT + "_1");
-            portName[NON_PERSISTENT_1] = getInterface().getUniquePortNameable(outName[NON_PERSISTENT_1]);
-            netName[NON_PERSISTENT_1] = getUniqueNetNameable(outName[NON_PERSISTENT_1]);
-            outNet[NON_PERSISTENT_1] = new EdifNet(netName[NON_PERSISTENT_1], this);
-            if (_registerDetection) {
-                ofdNetName[NON_PERSISTENT_1] = getUniqueNetNameable(NamedObject
-                        .createValidEdifNameable(NON_PERSISTENT_OUTPUT + "_OFD_1"));
-                ofdNet[NON_PERSISTENT_1] = new EdifNet(ofdNetName[NON_PERSISTENT_1], this);
-                ofdName[NON_PERSISTENT_1] = NON_PERSISTENT_OUTPUT + "_1_OFD";
-                obufName[NON_PERSISTENT_1] = NON_PERSISTENT_OUTPUT + "_1_OBUF";
-            }
-        } else
-            mergedErrorNet[NON_PERSISTENT_1] = null;
+    				if (!_noObufs) {
+    					if (_registerDetection) {
+    						try {
+    							addNet(ofdNet);
+    						} catch (EdifNameConflictException e) {
+    							// can't get here
+    							e.toRuntime();
+    						}
+    						createOFD(this, ofdName, mergedErrorNet, ofdNet);
+    						_dwcArchitecture.createOBUF(this, obufName, ofdNet, outNet);
+    					} else {
+    						_dwcArchitecture.createOBUF(this, obufName, mergedErrorNet, outNet);
+    					}
+    				}
+    				else {
+    					if (_registerDetection) {
+    						createOFD(this, ofdName, mergedErrorNet, ofdNet);
+    						for (EdifPortRef epr : ofdNet.getConnectedPortRefs()) {
+    							EdifPortRef newEpr = new EdifPortRef(outNet, epr.getSingleBitPort(), epr
+    									.getCellInstance());
+    							outNet.addPortConnection(newEpr);
+    						}
+    					} else {
+    						deleteNet(mergedErrorNet);
+    						for (EdifPortRef epr : mergedErrorNet.getConnectedPortRefs()) {
+    							EdifPortRef newEpr = new EdifPortRef(outNet, epr.getSingleBitPort(), epr
+    									.getCellInstance());
+    							outNet.addPortConnection(newEpr);
+    						}
+    					}
+    				}
+    			}
+    			railNum++;
+    		}
+    	}
     }
 
+    /**
+     * Create an output register instance
+     */
     protected EdifCellInstance createOFD(EdifCell parent, String name, EdifNet input, EdifNet output) {
 
         // 1. Obtain a reference to the EdifCell voter object
@@ -339,8 +311,6 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         output.addPortConnection(ofdCellInstance, "Q");
 
         // Hook up clock net to C port
-        System.out.println("_clockNet = " + _clockNet);
-        System.out.println("_netReplicationMap.get(_clockNet) = " + _netReplicationMap.get(_clockNet));
         EdifNet newClock = _netReplicationMap.get(_clockNet).iterator().next();
         newClock.addPortConnection(ofdCellInstance, "C");
 
@@ -348,6 +318,10 @@ public class TMRDWCEdifCell extends IJMREdifCell {
 
     }
 
+    /**
+     * Get an output register cell (FD). If it is not already in a library of
+     * the EdifEnvironment, add it to one of the libraries.
+     */
     protected EdifCell getOFDCell(EdifCell parent) {
 
         /*
@@ -484,10 +458,10 @@ public class TMRDWCEdifCell extends IJMREdifCell {
             }
         } else if (driverFactor == 2) {
             if (driverOrSinkCut) {
-                createComparator(newNets, origNet, true); // persistent error output
+                createComparator(newNets, origNet, DWCComparatorType.PERSISTENT); // persistent error output
             } else {
                 if (hasSingleSink || hasTripledSink)
-                    createComparator(newNets, origNet, anySinkInFeedbackPlusInput); // mark as persistent if related to feedback
+                    createComparator(newNets, origNet, anySinkInFeedbackPlusInput ? DWCComparatorType.PERSISTENT : DWCComparatorType.NON_PERSISTENT); // mark as persistent if related to feedback
             }
             for (EdifPortRef origSink : origSinks) {
                 List<EdifNet> netsToConnect = null;
@@ -624,75 +598,68 @@ public class TMRDWCEdifCell extends IJMREdifCell {
     /**
      * Create a comparator and add the output to the list of either persistent
      * or non persistent error signals, depending on the boolean parameter
-     * persistentCut.
+     * persistent.
      * 
      * @param inputs comparator inputs (must be size 2)
      * @param origNet the original net before duplication (for getting a name)
      * @param persistent whether or not this is a persistence comparator
      */
-    protected void createComparator(List<EdifNet> inputs, EdifNet origNet, boolean persistent) {
+    protected void createComparator(List<EdifNet> inputs, EdifNet origNet, DWCComparatorType comparatorType) {
         if (inputs.size() != 2)
             throw new EdifRuntimeException("comparator must have 2 inputs, not " + inputs.size());
         EdifNet[] inputNets = new EdifNet[2];
         for (int i = 0; i < 2; i++) {
             inputNets[i] = inputs.get(i);
         }
-        String compareName0 = origNet.getName() + COMPARE_SUFFIX + "_DRC0";
-        EdifNet output0 = null;
+        
+        for (DWCRailType railType : _usedRailTypes) {
+        	EdifNet output = createComparatorOutputNet(origNet, _errorNetManager.getRailSuffix(railType));
+        	if (output != null) {
+        		_comparators.add(_dwcArchitecture.createVoter(this, output.getName(), inputNets, output));
+        		_errorNetManager.addNet(comparatorType, railType, output);
+        	}
+        }
+    }
+    
+    /**
+     * Create, name, and add to EdifCell an output net for a comparator that
+     * will be created.
+     * 
+     * This method with catch an EdifNameConflictException in the case that
+     * a persistent comparator and non-persistent comparator are being created
+     * in the same location (hopefully this doesn't happen anyway). In this case,
+     * this method will return null and the calling method should not continue
+     * creating a comparator.
+     * 
+     * @param origNet EdifNet from the original EdifCell being replicated
+     *        (before replication)
+     * @param persistent whether or not this is a persistence comparator
+     * @param suffix an extra suffix to be added onto the output net name
+     *        (typically used to indicate one of the dual-rail comparator lines)
+     * @return the created EdifNet that will be an output of the comparator
+     *         to be created
+     */
+    protected EdifNet createComparatorOutputNet(EdifNet origNet, String suffix) {
+    	String compareName = origNet.getName() + COMPARE_SUFFIX + suffix;
+        EdifNet outputNet = null;
         try {
-            output0 = new EdifNet(compareName0, this);
+            outputNet = new EdifNet(compareName, this);
         } catch (InvalidEdifNameException e1) {
             // will be valid, so won't get here
             e1.toRuntime();
         }
-        boolean create = true;
+
         try {
-            addNet(output0);
+            addNet(outputNet);
         } catch (EdifNameConflictException e1) {
             /*
              * May get here if persistents and nonpersistents both want to
              * create a comparator in the same spot - priority goes to the first
              * one, which should be a persistent comparator.
              */
-            // e1.toRuntime();
-            create = false;
+            return null;
         }
-        if (create) {
-            _comparators.add(_dwcArchitecture.createVoter(this, compareName0, inputNets, output0));
-            if (persistent) {
-                _persistentErrorNets0.add(output0);
-            } else {
-                _nonPersistentErrorNets0.add(output0);
-            }
-        }
-
-        if (_useDualRail) {
-            String compareName1 = origNet.getName() + COMPARE_SUFFIX + "_DRC1";
-            EdifNet output1 = null;
-            create = true;
-            try {
-                output1 = new EdifNet(compareName1, this);
-            } catch (InvalidEdifNameException e) {
-                // will be valid, so won't get here
-                e.toRuntime();
-            }
-            try {
-                addNet(output1);
-            } catch (EdifNameConflictException e) {
-                // May get here if persistents and nonpersistents both
-                // want to create a comparator - priority goes to the first one,
-                // which should be a persistent comparator.
-                create = false;
-            }
-            if (create) {
-                _comparators.add(_dwcArchitecture.createVoter(this, compareName1, inputNets, output1));
-                if (persistent) {
-                    _persistentErrorNets1.add(output1);
-                } else {
-                    _nonPersistentErrorNets1.add(output1);
-                }
-            }
-        }
+        return outputNet;
     }
 
     /**
@@ -742,15 +709,17 @@ public class TMRDWCEdifCell extends IJMREdifCell {
 
     public Collection<EdifNet> getPersistentErrorNets() {
         Collection<EdifNet> persNets = new ArrayList<EdifNet>();
-        persNets.addAll(_persistentErrorNets0);
-        persNets.addAll(_persistentErrorNets1);
+        for (DWCRailType railType : _usedRailTypes) {
+        	persNets.addAll(_errorNetManager.getNetList(DWCComparatorType.PERSISTENT, railType));
+        }
         return persNets;
     }
 
     public Collection<EdifNet> getNonPersistentErrorNets() {
         Collection<EdifNet> nonpersNets = new ArrayList<EdifNet>();
-        nonpersNets.addAll(_nonPersistentErrorNets0);
-        nonpersNets.addAll(_nonPersistentErrorNets1);
+        for (DWCRailType railType : _usedRailTypes) {
+        	nonpersNets.addAll(_errorNetManager.getNetList(DWCComparatorType.NON_PERSISTENT, railType));
+        }
         return nonpersNets;
     }
 
@@ -808,21 +777,19 @@ public class TMRDWCEdifCell extends IJMREdifCell {
      * The architecture for providing dwc (i.e. comparators)
      */
     private XilinxDWCArchitecture _dwcArchitecture;
+    
+    private ErrorNetManager _errorNetManager;
 
     /**
      * List of persistent comparator error outputs
      */
-    private List<EdifNet> _persistentErrorNets0;
-
-    private List<EdifNet> _persistentErrorNets1;
 
     /**
      * List of non-persistent comparator error outputs
      */
-    private List<EdifNet> _nonPersistentErrorNets0;
 
-    private List<EdifNet> _nonPersistentErrorNets1;
-
+    private List<DWCRailType> _usedRailTypes;
+    
     /**
      * List of voter instances
      */
@@ -832,11 +799,6 @@ public class TMRDWCEdifCell extends IJMREdifCell {
      * List of comparator instances
      */
     private List<EdifCellInstance> _comparators;
-
-    /**
-     * Whether or not to use dual rail checkers
-     */
-    private boolean _useDualRail;
 
     /**
      * Whether or not to take special care that insertion of output comparators
