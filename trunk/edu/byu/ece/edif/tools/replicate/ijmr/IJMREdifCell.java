@@ -569,6 +569,9 @@ public abstract class IJMREdifCell extends EdifCell {
 
     /**
      * Map of original ports to replicated ports
+     * 
+     * All original ports will be included in this map. Ports that do not get
+     * replicated are mapped to a List with only one member (a new copy of the Port).
      */
     protected Map<EdifPort, List<EdifPort>> _portReplicationMap;
 
