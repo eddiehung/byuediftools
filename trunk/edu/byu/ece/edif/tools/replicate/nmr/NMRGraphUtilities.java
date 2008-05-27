@@ -961,6 +961,10 @@ public class NMRGraphUtilities {
             // Request for same instance twice. This shouldn't happen.
             catch (DuplicateNMRRequestException e1) {
                 //throw new EdifRuntimeException(e1.toString());
+            	// TODO: What if this DOES happen? We should somehow force the
+            	//   triplication of this SCC since we don't care if another
+            	//   part of the program has asked for a piece of our SCC to be
+            	//   duplicated. -BHP
                 continue;
             }
             /*
@@ -982,6 +986,11 @@ public class NMRGraphUtilities {
              * One or more of the instances in this SCC will not fit. Add all
              * the instances that DO fit and skip those that don't.
              */
+            // TODO: Is there a difference between soft logic and hard logic
+            //   (limits) here? The new "nmrInstancesAsManyAsPossible" method
+            //   skips both soft and hard logic exceptions and replicates as
+            //   much as possible. The following code must change to reflect
+            //   this. -BHP
             catch (OverutilizationHardStopException e3) {
                 allSCCInstancesTriplicated = false;
                 if (DEBUG)
