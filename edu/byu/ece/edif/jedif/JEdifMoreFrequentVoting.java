@@ -30,11 +30,13 @@ import java.util.Collection;
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
+import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifPortRef;
+import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
 import edu.byu.ece.edif.tools.replicate.ReplicationException;
@@ -159,29 +161,35 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         // Get the voter EPRs from the user-specified voter location instances
         Collection<EdifPortRef> userCutset = getVoterEPRsFromInstanceNames(voterLocations, flatCell, graph);
 
-        //		  // BHP: HACK to remove edges from the graph that throw off my partitioning code
-        //        Collection<EdifPortRefEdge> edgesToRemove = new ArrayList<EdifPortRefEdge>();
-        //        for (EdifPortRefEdge edge : graph.getEdges()) {
-        //            EdifPortRef sourceEPR = edge.getSourceEPR();
-        //            Object source = edge.getSource();
-        //            EdifPortRef sinkEPR = edge.getSinkEPR();
-        //            //if (source instanceof EdifCellInstance && ((EdifCellInstance)source).getType().equalsIgnoreCase("BUFG"))
-        //            if (source instanceof EdifCellInstance && ((EdifCellInstance) source).getName().startsWith("clk")
-        //                    || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("clk")
-        //                    || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("reset")
-        //                    || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("rst")) {
-        //                //System.out.println("Removing edge "+edge);
-        //                edgesToRemove.add(edge);
-        //            }
-        //            // Check if bus member is "2", this is the one that jumps
-        //            // Or if this edge drives LUT input "I0"
-        //            if (sinkEPR.getSingleBitPort().getPortName().equals("I0")) {
-        //                //System.out.println("Removing edge "+edge);
-        //                edgesToRemove.add(edge);
-        //            }
-        //
-        //        }
-        //        graph.removeEdges(edgesToRemove);
+		//////////////
+		//// BHP: HACK to remove edges from the graph that throw off my partitioning code
+		//Collection<EdifPortRefEdge> edgesToRemove = new ArrayList<EdifPortRefEdge>();
+		//for (EdifPortRefEdge edge : graph.getEdges()) {
+		//    EdifPortRef sourceEPR = edge.getSourceEPR();
+		//    Object source = edge.getSource();
+		//    EdifPortRef sinkEPR = edge.getSinkEPR();
+		//    //if (source instanceof EdifCellInstance && ((EdifCellInstance)source).getType().equalsIgnoreCase("BUFG"))
+		//    if (source instanceof EdifCellInstance && ((EdifCellInstance) source).getName().startsWith("clk")
+		//    		|| source instanceof EdifCellInstance && ((EdifCellInstance) source).getName().startsWith("safeConstant")
+		//    		|| source instanceof EdifCellInstance && ((EdifCellInstance) source).getName().startsWith("HL_INV")
+		//    		|| source instanceof EdifCellInstance && ((EdifCellInstance) source).getName().startsWith("reset")
+		//            || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("xp_in")
+		//            || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("clk")
+		//            || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("reset")
+		//            || source instanceof EdifSingleBitPort && sourceEPR.getPort().getName().startsWith("rst")) {
+		//        //System.out.println("Removing edge "+edge);
+		//        edgesToRemove.add(edge);
+		//    }
+		//    // Check if bus member is "2", this is the one that jumps
+		//    // Or if this edge drives LUT input "I0"
+		//    if (sinkEPR.getSingleBitPort().getPortName().equals("I0")) {
+		//        //System.out.println("Removing edge "+edge);
+		//        edgesToRemove.add(edge);
+		//    }
+		//
+		//}
+		//graph.removeEdges(edgesToRemove);
+		///////////////
 
         // Get the cutset for More Frequent Voting and add it to the PartialTMRDescription
         addMoreFrequentVoting(nmrArch, voter_threshold, num_partitions, userCutset, graph, desc);
