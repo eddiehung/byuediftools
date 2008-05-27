@@ -461,7 +461,7 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
             UnsupportedResourceTypeException, DuplicateNMRRequestException {
-        nmrInstances(ecis, false, true, replicationFactor);
+        nmrInstances(ecis, true, true, replicationFactor);
     }
 
     /**
