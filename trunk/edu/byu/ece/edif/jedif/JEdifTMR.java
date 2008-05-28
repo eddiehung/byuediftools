@@ -45,7 +45,6 @@ import edu.byu.ece.edif.tools.replicate.ReplicationException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.TMREdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;

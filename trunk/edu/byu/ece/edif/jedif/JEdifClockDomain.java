@@ -54,7 +54,6 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.graph.AbstractGraphToDotty;
 import edu.byu.ece.graph.Edge;

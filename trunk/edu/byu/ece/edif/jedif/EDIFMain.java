@@ -20,7 +20,7 @@
  * license at <http://www.gnu.org/licenses/>.
  * 
  */
-package edu.byu.ece.edif.util.jsap;
+package edu.byu.ece.edif.jedif;
 
 import java.io.BufferedReader;
 import java.io.IOException;

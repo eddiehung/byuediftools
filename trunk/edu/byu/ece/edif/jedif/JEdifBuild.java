@@ -37,7 +37,6 @@ import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.logicLutRam.Replace.replaceLutRam;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.JEdifOutputCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;

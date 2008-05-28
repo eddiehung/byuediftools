@@ -28,7 +28,7 @@ import java.util.List;
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifEnvironment;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
+import edu.byu.ece.edif.jedif.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.JEdifOutputCommandGroup;
 import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;

@@ -60,7 +60,6 @@ import edu.byu.ece.edif.tools.replicate.nmr.dwc.XilinxDWCArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
 import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
