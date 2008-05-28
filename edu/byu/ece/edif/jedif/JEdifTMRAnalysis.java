@@ -70,7 +70,6 @@ import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
 import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
 import edu.byu.ece.edif.util.jsap.ConfigFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;

@@ -46,7 +46,6 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
 import edu.byu.ece.edif.util.jsap.ConfigFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;

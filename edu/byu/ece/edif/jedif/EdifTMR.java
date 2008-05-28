@@ -35,7 +35,6 @@ import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.util.jsap.ConfigFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.CutFeedbackCommandGroup;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;

@@ -33,7 +33,6 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.util.graph.EdifOutputPortRefGraph;
-import edu.byu.ece.edif.util.jsap.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
