@@ -33,6 +33,8 @@ import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.defaultsources.PropertyDefaultSource;
 
+import edu.byu.ece.edif.jedif.EDIFMain;
+
 /**
  * A standard command line parser for the EDIF infrastructure.
  * <p>
@@ -120,7 +122,7 @@ public class EdifCommandParser extends JSAP {
     }
 
     public static String getVersionInfo() {
-        return "BLTmr Tool version " + VERSION_STRING + ", " + RELEASE_DATE_STRING;
+        return "BYU EDIF Tools version " + EDIFMain.getExtendedVersionString() + ", " + EDIFMain.VERSION_DATE;
     }
 
     public void addCommands(CommandGroup group) {
@@ -144,9 +146,5 @@ public class EdifCommandParser extends JSAP {
     static final String HELP = "help";
 
     static final String VERSION = "version";
-
-    public static final String VERSION_STRING = "0.3.0";
-
-    public static final String RELEASE_DATE_STRING = "16 July 2007";
 
 }

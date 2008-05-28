@@ -53,6 +53,10 @@ public class EDIFMain {
         out.print(EXECUTABLE_NAME + " - " + VERSION_STRING + getSVNversion() + newLine + TOOL_SUMMARY_STRING + newLine
                 + COPYRIGHT_STRING + newLine);
     }
+    
+    public static String getExtendedVersionString() {
+    	return VERSION_STRING + getSVNversion();
+    }
 
     public static void main(String args[]) {
         printProgramExecutableString(System.out);
@@ -84,7 +88,7 @@ public class EDIFMain {
     private static String getSVNversion() {
         String str = "$Revision$";
         str = str.replace("$Revision: ", ".svn");
-        str = str.replace(" $", "L ");
+        str = str.replace(" $", "L");
         //System.out.println (Thread.currentThread ().getContextClassLoader ().getResource ("edu/byu/ece/jarversion"));
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("edu/byu/ece/jarversion");
         try {
