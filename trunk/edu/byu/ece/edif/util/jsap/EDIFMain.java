@@ -43,7 +43,7 @@ public class EDIFMain {
 
     public static String VERSION_DATE = "17 Apr 2008";
 
-    public static String COPYRIGHT_STRING = "Copyright (c) 2005-2008 Brigham Young University, All rights reserved.";
+    public static String COPYRIGHT_STRING = "Copyright (c) 2005-2008 Brigham Young University";
 
     public static String DEFAULT_AUTHOR_STRING = "BYU Configurable Computing Laboratory";
 
