@@ -579,10 +579,14 @@ public class NMRCommandParser extends JSAPCommandParser {
             System.out.println("Report bugs to " + _EMAIL_ADDRESS + ".");
             System.exit(0);
             // Check for --version switch.
-        } else if (_result.getBoolean(VERSION)) {
-            System.out.println(FlattenTMR.getVersionInfo());
-            System.out.println();
-            System.exit(0);
+            // Version switch unnecessary. The version prints out every time with the JEdif methods.
+            // We don't want to have to keep an extra version number here in NMRCommandParser for
+            //   the NMR tools.
+            // Just ignore this switch for now.
+//        } else if (_result.getBoolean(VERSION)) {
+//            System.out.println(FlattenTMR.getVersionInfo());
+//            System.out.println();
+//            System.exit(0);
             // Check for --writeConfig Option.
         } else if (_result.userSpecified(WRITE_CONFIG)) {
             createConfigFile(_result.getString(WRITE_CONFIG));
