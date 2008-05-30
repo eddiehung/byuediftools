@@ -226,11 +226,11 @@ public class TMRCommandParser extends NMRCommandParser {
 
     protected String _EMAIL_ADDRESS = "<brianpratt@byu.edu> or <jcarroll@byu.net>";
 
-    protected String DEFAULT_DOMAIN_REPORT_FILENAME = "BL-TMR_domain_report.txt";
+    protected String DEFAULT_DOMAIN_REPORT_FILENAME = "bltmr_domain_report.txt";
 
-    protected String DEFAULT_LOG_FILENAME = "BL-TMR.log";
+    protected String DEFAULT_LOG_FILENAME = "bltmr.log";
 
-    protected String DEFAULT_OUTPUT_FILENAME = "BL-TMR.edf";
+    protected String DEFAULT_OUTPUT_FILENAME = "bltmr.edf";
 
     /*
      * The following exist so that FlattenTMR can refer to these strings as

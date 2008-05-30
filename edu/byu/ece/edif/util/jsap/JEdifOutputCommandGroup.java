@@ -45,7 +45,7 @@ public class JEdifOutputCommandGroup extends OutputFileCommandGroup {
         _deleteOldCells.setHelp("don't delete old cells from the edif environment");
         this.addCommand(_deleteOldCells);
 
-        _output_file.setDefault("BL-TMR.jedif");
+        _output_file.setDefault("bltmr.jedif");
         // New flags
     }
 

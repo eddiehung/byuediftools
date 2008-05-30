@@ -397,7 +397,7 @@ public class NMRCommandParser extends JSAPCommandParser {
         q = (QualifiedSwitch) getByID(WRITE_CONFIG);
         unregisterParameter(q);
         _parameters.remove(q);
-        _NMRParameters.add(q.setDefault("BL-TMR.conf"));
+        _NMRParameters.add(q.setDefault("bltmr.conf"));
 
         /*
          * Help and Version Information: Add short flags -h and -v
@@ -809,7 +809,7 @@ public class NMRCommandParser extends JSAPCommandParser {
     /**
      * Primary configuration file
      */
-    public static final String CONF_FILENAME = "BL-TMR.conf";
+    public static final String CONF_FILENAME = "bltmr.conf";
 
     public static final String DIR = "dir";
 
@@ -834,7 +834,7 @@ public class NMRCommandParser extends JSAPCommandParser {
     /**
      * Secondary configuration file
      */
-    public static final String ETC_FILENAME = "/etc/BL-TMR/BL-TMR.conf";
+    public static final String ETC_FILENAME = "/etc/bltmr/bltmr.conf";
 
     public static final String FACTOR_TYPE = "factorType";
 

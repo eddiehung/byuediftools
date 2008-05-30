@@ -71,7 +71,7 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         iob_input_file = new FlaggedOption(IOB_INPUT_FILE);
         iob_input_file.setStringParser(JSAP.STRING_PARSER);
         iob_input_file.setRequired(JSAP.NOT_REQUIRED);
-        iob_input_file.addDefault("BL-TMR");
+        iob_input_file.addDefault("bltmr");
         iob_input_file.setShortFlag(JSAP.NO_SHORTFLAG);
         iob_input_file.setLongFlag(IOB_INPUT_FILE);
         iob_input_file.setUsageName("input_file");

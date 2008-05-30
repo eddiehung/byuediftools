@@ -68,7 +68,7 @@ public class JEdifBuild extends EDIFMain {
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new MergeParserCommandGroup());
-        parser.addCommands(new LogFileCommandGroup("BL-TMR.log"));
+        parser.addCommands(new LogFileCommandGroup("bltmr.log"));
         parser.addCommands(new JEdifOutputCommandGroup());
         parser.addCommands(new TechnologyCommandGroup());
         JSAPResult result = parser.parse(args, System.err);
