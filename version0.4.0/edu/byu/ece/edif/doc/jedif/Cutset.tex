@@ -1,0 +1,65 @@
+\section{JEdifCutset}
+\begin{verbatim}
+
+>java edu.byu.ece.edif.jedif.JEdifCutset 
+[-h|--help] 
+[-v|--version] 
+<input_file> 
+[(-o|--output) <output_file>] 
+[--ptmr <ptmr_input_file>] 
+[--iob_input <input_file>] 
+
+[--highest_fanout_cutset] 
+[--highest_ff_fanout_cutset] 
+
+[(-p|--part) <part>] 
+
+
+[--log <logfile>] 
+[--debug[:<debug_log>]] 
+[(-V|--verbose) <{1|2|3|4|5}>] 
+[--append_log]
+
+\end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be
+sterilized. This is the only required parameter.
+
+\subsubsection{\texttt{--ptmr <ptmr\_input\_file>}}
+Filename and path to the tmr data file created by TMRAnalysis
+
+Default: \texttt{<inputfile>.ptmr} in the current working directory.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the tmr data file appended by this tool
+
+Default: \texttt{<inputfile>.ptmr} in the current working directory.
+
+\subsubsection{\texttt{--iob\_input <input\_file>}}
+Filename and path to the iob analysis file created by TMRAnyalysis.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Cutset Algorithms}
+This tools can use several different algoriths to determine where to place
+voters so that the voters block all the feed back in the design. 
+
+\subsubsection{Default}
+The default to to use the algorithm from previous releases
+
+\subsubsection{\texttt{--highest\_fanout\_cutset}}
+This algorithm finds the instance with the highest fanout in each SCC.
+It then places a voter on this output. This algorithm has proven worse 
+at reducing the number of voters between flipflops.
+
+\subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
+This algorighm finds the flipflop with the highest fanout in each SCC, and 
+places a voter on the output. This algorithm has proven very good and reducing 
+the number of paths that have more than one voter between flipflops.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{option_Technology}
+\input{option_Logfile}

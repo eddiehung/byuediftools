@@ -1,0 +1,131 @@
+\section{JEdifBuild Options}
+Options can be specified on the command line or in a configuration file in any 
+order. This section describes each of these options in detail, which are 
+summarized below:\footnote{This list is obtainable with the \texttt{--help} 
+option. Here, newlines have been inserted to separate the options into 
+categories.}
+
+\begin{verbatim}
+> java edu.byu.ece.edif.jedif.JEdifBuild --help
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  <input_file>
+  [(-o|--output) <output_file>]
+
+  [(-d|--dir) dir1,dir2,...,dirN ]
+  [(-f|--include_file) include_file1,include_file2,...,include_fileN ]
+
+  [--no_flatten]
+  [--no_open_pins]
+  [--blackboxes]
+  [--no_delete_cells]
+  [--replace_srls]
+  [--remove_rlocs]
+
+  [(-p|--part) <part>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
+
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File options: input, output, etc.}
+The following options specify the top-level input EDIF file, any auxiliary EDIF
+files, and the destination EDIF file.
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the EDIF source file containing the top-level cell to be 
+converted. This is the only required parameter.
+
+Allowed filename extensions are:
+\begin{itemize}
+  \item Parsable Edif: edn,edf,ndf
+  \item Binary Edif (Blackboxes): ngc,ngo
+  \item Blackbox Utilization: bb
+\end{itemize}
+
+Parsable EDIF files will be parsed and included in the algorithms.
+Binary EDIF files are not parsable, but the program recognizes them as
+blackboxes, and will not complain about not finding the entity.
+Blackbox utilization files allow the user to specify the resource use
+of the blackboxes to help in the utilization estimate and partial tmr
+algorithms.  The file format is ``Resource:Number''.  Below is an
+example:
+
+myblackbox.bb:\\
+\begin{verbatim}
+  BRAM:1
+  FF:400
+  LUT:100
+\end{verbatim}
+
+This entity, named myblackbox uses 1 BRAM, 400 Flipflops and 100 LUTS
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the jedif output file.
+
+Default: \texttt{BL-TMR.edf} in the current working directory.
+
+\subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
+Comma-separated list of directories containing external EDIF files referenced 
+by the top-level EDIF file. The current working directory is included by 
+default and need not be specified. There can be multiple \texttt{-d} options.
+
+Example: \texttt{-d aux\_files,/usr/share/edif/common -d
+  moreEdifFiles/}
+
+\subsubsection{\texttt{(-f|--file) file1,file2,\ldots,fileN}}
+Similar to the previous option, but rather than specifying directories to 
+search, each external EDIF file is named explicitly---including the path to the 
+file. There can be multiple \texttt{-f} options. 
+
+Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
+
+\subsection{Maintenance Commands}
+The following options allow some control over that happens during the 
+conversion process
+  
+\subsubsection{\texttt{--no\_flatten}}
+By default JEdifBuild will flatten the EDIF files. Flattening is required by the 
+TMR tools, but other applications my wish to have retail the hierarchical
+design. 
+
+\subsubsection{\texttt{--no\_open\_pins}}
+Do not allow parser to infer open pins.
+
+\subsubsection{\texttt{--blackboxes}}
+Allow parser to continue if blackbox definitions are not found
+
+\subsubsection{\texttt{--no\_delete\_cells}}
+By default JEdifBuild will remove unused cells, to reduce the size of the final
+.jedif file. However, the user can request that these cells be retained for 
+future use.
+
+\subsubsection{\texttt{--replace\_srls}}
+By default JEdifBuild will not remove LUT RAMs acting as SRLs in the design.  These
+LUT RAMs can cause problems as they are not scrubbable.  This option tells the 
+tool to replace these LUT RAMs with actual SRLs.
+
+\subsubsection{\texttt{--remove\_rlocs}}
+Setting this option will tell JEdifBuild to remove ALL RLOCS in the design.  Some
+RLOCS can be problems for different versions of the hardware.
+
+\subsubsection{\texttt{(-p|--part) <part>}}
+Target architecture for the triplicated design. Valid parts include all
+parts from the Virtex, Virtex2, and Virtex4 product lines. Not
+case-sensitive.
+
+%
+% Words to be ignored by the spell-checker:
+%
+
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
+% LocalWords:  OBUFs logfile INOUT TMR'd tmr txt JEdifBuild jedif edn edf dir
+
+

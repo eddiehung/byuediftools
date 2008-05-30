@@ -1,0 +1,276 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id$
+%
+% Documentation file for the BYU-LANL Triple Modular Redundancy (BL-TMR) Tool.
+%
+% Author: Brian Pratt <bhpratt@gmail.com>
+%         James Carroll <jcarroll@byu.net>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[english]{article}
+%\usepackage[T1]{fontenc}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\usepackage{graphicx}
+%\usepackage[latin1]{inputenc}
+\IfFileExists{url.sty}{\usepackage{url}}
+                      {\newcommand{\url}{\texttt}}
+% use this instead of pdfgraphcompat
+% Check for PDFLaTeX
+\newif\ifpdf 
+\ifx\pdfoutput\undefined 
+   \pdffalse % we are not running PDFLaTeX 
+\else 
+   \pdfoutput=1 % we are running PDFLaTeX 
+   \pdftrue 
+\fi
+
+
+% This processes the file using the 'hyperref.sty' package when
+% PDFLaTeX is used.  This adds internal hyperlinks throughout the
+% document in the generated PDF.
+\ifpdf
+   \usepackage[colorlinks={true},
+     urlcolor=rltblue,       % \href{...}{...} external (URL)
+     filecolor=rltgreen,     % \href{...} local file
+     linkcolor=rltred,       % \ref{...} and \pageref{...}
+     pdftitle={BYU-LANL Clock Domain Parser Usage Guide Version 0.1 -  20 Feb
+     2006},% pdfauthor={BYU Configurable Computing Lab},%
+     pdfproducer={pdfLaTeX},%
+     %pdfadjustspacing=1,
+     pdftex]{hyperref}
+\fi
+
+% Define colors used by hyperref
+\usepackage{color}
+\definecolor{rltred}{rgb}{0.75,0,0}
+\definecolor{rltgreen}{rgb}{0,0.5,0}
+\definecolor{rltblue}{rgb}{0,0,0.75}
+
+
+\vfuzz2pt % Don't report over-full v-boxes if over-edge is small
+\hfuzz2pt % Don't report over-full h-boxes if over-edge is small
+
+% 1: label, 2: path, 3: filename except extension (minus .png or .eps), 4: caption
+\newcommand\figurecaption[4]{
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=1.0\linewidth]{#2/#3}
+  \parbox{1.0\linewidth}{\caption{\label{#1}#4}}
+\end{figure}
+}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Bold symbol macro for standard LaTeX users
+\providecommand{\boldsymbol}[1]{\mbox{\boldmath $#1$}}
+
+\usepackage{babel}
+\makeatother
+
+\title{BYU-LANL Clock Domain Parser \\ Usage Guide \\ ~ \\
+  Version 0.1 - 20 Feb 2007}
+  
+\author{Brigham Young University \\ Configurable Computing Lab}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+The BYU-LANL Clock Domain Parser is an EDIF-based tool to parse FPGA designs to
+obtain information about the clock(s). The parser first identifies all clocks
+in a design. This information is then used to optionally display other
+information, such as classifying Xilinx primitives into one or more domains,
+showing clock crossings, etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Clock Domain Parser Options}
+Several different options can be specified on the command line in any order.
+This section describes each of these options in detail, which are 
+summarized below:\footnote{This list is obtainable with the \texttt{--help} 
+option.}
+
+\begin{verbatim}
+> java byucc.edif.clockdomain.ClockDomainParser --help
+Usage:
+
+  java byucc.edif.clockdomain.ClockDomainParser INPUT_FILE [OPTIONS]
+
+  java byucc.edif.clockdomain.ClockDomainParser <input_file>
+   [(-o|--output) <output_file>]
+   [(-d|--dir) dir1,dir2,...,dirN ]
+   [(-f|--file) file1,file2,...,fileN ]
+   [--domain domain1,domain2,...,domainN ]
+   [--show_no_domain]
+   [--show_clock_crossings show_clock_crossings1,show_clock_crossings2,...,show_clock_crossingsN ]
+   [--create_dotty_graph create_dotty_graph1,create_dotty_graph2,...,create_dotty_graphN ]
+   [--show_cells]
+   [--show_nets]
+   [--show_synchronous]
+   [--show_asynchronous]
+   [--show_gated_clocks]
+   [--show_asynchronous_resets]
+   [--show_asynchronous_reset_cells]
+   [--do_scc_analysis]
+   [--no_iob_feedback]
+   [-h|--help]
+   [-v|--version]
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File options: input, output, etc.}
+The following options specify the top-level input EDIF file, any auxiliary EDIF
+files, and the destination output file.
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the EDIF source file containing the top-level cell to be
+analyzed. This is the only required parameter.
+
+\subsubsection{\texttt{(-o) <output\_file>}}
+Filename and path for the output of the parser.
+
+Default: stdout
+
+\subsubsection{\texttt{(-d) dir1,dir2,\ldots,dir3}}
+Comma-separated list of directories containing external EDIF files referenced 
+by the top-level EDIF file. There can be multiple \texttt{-d} options.
+
+Example: \texttt{-d aux\_files,/usr/share/edif/common -d moreEdifFiles/}
+
+\subsubsection{\texttt{(-f|--file) file1,file2,\ldots,fileN}}
+Similar to the previous option, but rather than specifying directories to 
+search, each external EDIF file is named explicitly---including the path to the 
+file. There can be multiple \texttt{-f} options. 
+
+Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Display Options}
+By default, all clocks in the design are displayed and nothing else. The
+following options determine which additional information to display (if any).
+For example, if the option  \texttt{--do\_scc\_analysis} is not specified, the
+SCC algorithms will not run, decresing runtime.
+
+\subsubsection{\texttt{--domain}}
+This option allows the user to specify which domain(s) to display.  This option
+alone doesn't display any information, but acts as a filter for other options. 
+The options affected by the value of this option are:
+\texttt{--show\_cells, --show\_nets, --show\_synchronous, --show\_asynchronous}.
+If any of these options are specified, only information for items in the
+specified domain(s) is displayed. The clock domain names are case-insensitive.
+
+For example, if the design conatined 2 clocks (clkA and clkB) and the user wants
+to display all cells in domain clkA, the following should be run:
+
+java byucc.edif.clockdomain.ClockDomainParser myDesign.edf \texttt{--domain clka
+--show\_cells}
+
+\subsubsection{\texttt{--show\_no\_domain}}
+This option is used to include those items which don't belong to a domain. As
+with the previous option, this option applies only to the following options:
+\texttt{--show\_cells, --show\_nets, --show\_synchronous, --show\_asynchronous}.
+An example of a cell not in a domain is an IBUF, since it is not driven by
+sequential logic.
+
+\subsubsection{\texttt{--show\_clock\_crossings clk1,clk2}}
+Display all clk1 to clk2 clock crossings in the design.  A clock crossing is
+defined as a net driving an input port of a sequential cell (e.g. flip-flop), 
+where the net's domain differs from the sequential cell's domain.  The string
+`all' can be used as a wildcard for all domains.  For example,
+\texttt{--show\_clock\_crossings} all,clk1 will display all clock crossing from
+any domain to clk1.  Likewise, \texttt{--show\_clock\_crossings} clk1,all will
+display all clock crossings from clk1 to any other domain.  Also,
+\texttt{--show\_clock\_crossings} all,all can be used to show all clock
+crossings of all domains.  More than one set of clock domains can be specified,
+but the number of domains given must be a multiple of two.  For example,
+\texttt{--show\_clock\_crossings} clk1,clk2,clk2,clk1 would show all crossings
+from clk1 to clk2 and from clk2 to clk1.
+
+Example output from using this option is below:
+\begin{verbatim}
+clk1 to clk2 (1 crossings)
+  RAM(RAMB4_S1_S1) [rsta] Net:rstZ0 Driver:[rst (FD)]
+\end{verbatim}
+The interpretation of this output is that the `rsta' port of a cell named RAM of
+type RAMB4\_S1\_S1 is driven by a cell named `rst' of type FD.  The net
+connecting the cells is rstZ0. Since this is a clk1 to clk2 crossing, the RAM is
+in the clk2 domain and the FD is in the clk1 domain.
+
+\subsubsection{\texttt{--create\_dotty\_graph cell,port}}
+Generate a dotty graph representation of ``cell'' and it's predecessors.  This
+may be of particular interest when a clock crossing occurs that is not flip-flop
+to flip-flop. This option creates a graph starting at the cell given as a
+parameter.  The graph contains predecessors only through the specified port. 
+For example, if port ``d'' is chosen for a flip-flop, the clock resource will
+not be shown in the graph.  The graph extends back until another synchronous
+element is found, or until no predecessors remain.
+
+\subsubsection{\texttt{--show\_cells}}
+Show all primitives in the design grouped by domain. Only cells in the domains
+specified by --domain are shown. Flip-flops only fall into the domain of the net
+driving their clock ports.  Non-sequential cells such as LUTs may belong to
+multiple domains.
+
+\subsubsection{\texttt{--show\_nets}}
+Show all nets in the design grouped by domain. Only nets in the domains 
+specified by --domain are shown. Nets may fall into multiple domains.
+
+\subsubsection{\texttt{--show\_synchronous}}
+Show all synchronous primitives in the design grouped by domain. Only cells in
+the domains specified by --domain are shown. Synchronous cells include
+flip-flops and BRAMs.  Dual-ported BRAMs may fall into multiple domains.
+
+\subsubsection{\texttt{--show\_asynchronous}}
+Show all asynchronous primitives in the design grouped by domain. Only cells in
+the domains specified by --domain are shown. Asynchronous cells are all cells
+that do not have a clock input.
+
+\subsubsection{\texttt{--show\_gated\_clocks}}
+Identify all clocks (if any) that are not driven by a BUFG, DCM or DLL.
+
+\subsubsection{\texttt{--show\_asynchronous\_resets}}
+Show all flip-flops in the design that have asynchronus reset/set ports, along
+with the nets driving those ports.
+
+\subsubsection{\texttt{--do\_scc\_analysis}}
+Show report of SCCs in design.  This option will show the number of SCCs in the
+design, as well as the size of each one and the domains contained in the SCC.
+
+\subsubsection{\texttt{--no\_iob\_feedback}}
+Use this option to exclude IOBs from the feedback analysis. This is useful when
+a top-level inout port is involved in feedback but by design will never be 
+written to and read at the same time. Thus there is no \emph{real} feedback.
+Using this option may greatly reduce the amount of feedback found in the design.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Help and Version Information}
+If either of the following options are used, the appropriate information will be
+printed and the program will exit.
+
+\subsubsection{\texttt{-h|--help}}
+Print (to \texttt{stdout}) usage and detailed help information (similar to the 
+contents of this document) and exit.
+
+\subsubsection{\texttt{-v|--version}}
+Print (to \texttt{stdout}) version information and exit.
+
+\end{document}
+
+%
+% Words to be ignored by the spell-checker:
+%
+
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
+% LocalWords:  OBUFs logfile INOUT TMR'd tmr txt 
+

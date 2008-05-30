@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  @(#)package.html	1.60 98/01/27
+
+-->
+</head>
+<body bgcolor="white">
+
+<!-- One sentence summary -->
+A tool for removing "Half Latch" structures from EDIF designs.
+
+<!-- Put more details on the package here -->
+
+This package contains the files necessary for implementing the
+EDIF-based Half-Latch removal tool. This tool, based on Xilinx
+primitive netlists, will query the netlist and find structures that
+are known to introduce half-latches into the design. This tool will
+modify the Edif to create a "half-latch" free design.
+
+<h2>Package To Dos</h2>
+
+<ul>
+<li> Figure out final half-latch structure that we are missing
+<li> Decide on half-latch approach
+<ol>
+<li> Conservative: replace all constants, replace FDCE's etc.
+<li> Aggressive: Choose sensitive ports and work backwards. This works
+but misses cells due to minimization.
+</ol>
+<li> FPGA_editor script?
+<li> Use a combination of Paul's tool and our tool to remove
+half-latches. Paul's tool would create scripts/instructions for
+half-latch tool on what exactly to remove.
+</ul>
+
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>
