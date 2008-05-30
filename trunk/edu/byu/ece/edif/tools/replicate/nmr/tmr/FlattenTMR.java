@@ -367,7 +367,7 @@ public class FlattenTMR {
                     throw new EdifRuntimeException("Unable to created directory: " + directory.toString()
                             + ". Perhaps you do not have write permission.");
                 }
-                createLogFile(directory.toString() + "/" + design + ".BL-TMR.log");
+                createLogFile(directory.toString() + "/" + design + ".bltmr.log");
                 // 1.c) Print version info
                 println(getVersionInfo());
                 // Print CVS revision number to log file only

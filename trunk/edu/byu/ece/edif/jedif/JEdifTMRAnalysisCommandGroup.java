@@ -53,7 +53,7 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
         FlaggedOption iob_output_file = new FlaggedOption(IOB_OUTPUT_FILE);
         iob_output_file.setStringParser(JSAP.STRING_PARSER);
         iob_output_file.setRequired(JSAP.NOT_REQUIRED);
-        iob_output_file.addDefault("BL-TMR.iob");
+        iob_output_file.addDefault("bltmr.iob");
         iob_output_file.setShortFlag(JSAP.NO_SHORTFLAG);
         iob_output_file.setLongFlag(IOB_OUTPUT_FILE);
         iob_output_file.setUsageName("output_file");
