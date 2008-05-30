@@ -32,8 +32,9 @@
 #
 # 1. Setup variables and command-line options
 #
-files="one_counter.edf lc2.edf shift_reg.edf counters128.edf testCountMult.edf"
-#files="synth_th1_slaac.edf"
+files="one_counter.edf lc2.edf shift_reg.edf counters128.edf testCountMult.edf synth_th1_slaac.edf"
+
+email="youremailaddress"
 
 java_opts="-Xms512M -Xmx1024M -cp "
 
@@ -44,6 +45,8 @@ TMRanalysis=" edu.byu.ece.edif.jedif.JEdifTMRAnalysis"
 cutset=" edu.byu.ece.edif.jedif.JEdifCutset"
 tmr=" edu.byu.ece.edif.jedif.JEdifTMR"
 
+sterilize_opts="--remove_fmaps"
+
 # Here, choose between the jar file and the working copy of the code.
 jar="./byuediftools.jar "
 workspace="./trunk:/fpga2/jars/JSAP-2.1.jar "
@@ -53,7 +56,7 @@ source=$workspace
 golden_dir=golden
 test_dir=test
 mkdir -p $test_dir
-
+rm -f $test_dir/*
 
 #
 #   2. Checkout SVN source and build a new JAR to test against
@@ -73,7 +76,7 @@ if [ "$?" -eq 0 ]; then
   echo "Java build succeeded"
 else
   echo "Java build failed!"
-  cat java_build.log | /bin/mail -s "EDIF Regression Test FAILED due to Java build error" brian@tiger
+  cat java_build.log | /bin/mail -s "EDIF Regression Test FAILED due to Java build error" $email
   exit
 fi
 echo "done."
@@ -107,7 +110,7 @@ build.sh: Workspace JEdif toolchain"
     java $java_opts $source $build source/$infile -o ${dir}/${build_out} 
     java $java_opts $source $netlist ${dir}/${build_out} -o ${dir}/${netlist_build_out} 
 
-    java $java_opts $source $sterilize ${dir}/${build_out} -o ${dir}/${sterilize_out}
+    java $java_opts $source $sterilize ${dir}/${build_out} $sterilize_opts -o ${dir}/${sterilize_out}
     java $java_opts $source $netlist ${dir}/${sterilize_out} -o ${dir}/${netlist_sterilize_out} 
 
     java $java_opts $source $TMRanalysis ${dir}/${sterilize_out} -o ${dir}/${TMRanalysis_ptmr_out} --iob_output ${dir}/${TMRanalysis_iob_out} 
@@ -130,14 +133,14 @@ sed -i 's/JEdifNetlist.*version.*//' $test_dir/*edf
 #echo '  ((                    test_results: detailed results                         ))'
 #echo '    ========================================================================  '
 
-diff -rs $golden_dir $test_dir > test_results.detailed.log
+diff -rs --exclude="*.jedif" $golden_dir $test_dir > test_results.detailed.log
 #diff -rs $golden_dir $test_dir
 
 #echo '    ========================================================================  '
 #echo '  ((                    test_results: summarized results                      ))'
 #echo '    ========================================================================  '
 
-diff -qrs $golden_dir $test_dir > test_results.summary.log
+diff -qrs --exclude="*.jedif" $golden_dir $test_dir > test_results.summary.log
 #diff -qrs $golden_dir $test_dir
 
 #
@@ -145,10 +148,9 @@ diff -qrs $golden_dir $test_dir > test_results.summary.log
 #
 if [ "$?" -eq 0 ]; then
   echo "Regression test passed!"
-  #echo $summary | /bin/mail -s "EDIF Regression Test PASSED" brian@tiger
 else
   echo "Regression test failed!"
-  cat test_results.summary.log | /bin/mail -s "EDIF Regression Test FAILED" brian@tiger
+  cat test_results.summary.log | /bin/mail -s "EDIF Regression Test FAILED" $email
 fi
 
 # All done!
