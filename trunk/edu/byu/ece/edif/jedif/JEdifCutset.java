@@ -60,6 +60,7 @@ import edu.byu.ece.edif.util.jsap.SharedIOBAnalysis;
 import edu.byu.ece.edif.util.jsap.TechnologyCommandGroup;
 import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
+import edu.byu.ece.graph.dfs.DepthFirstTree;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
 /**
@@ -68,7 +69,6 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * @author Derrick Gibelyou
  */
 public class JEdifCutset extends EDIFMain {
-    private static boolean DEBUG = false;
 
     public static void main(String[] args) {
 
@@ -89,7 +89,7 @@ public class JEdifCutset extends EDIFMain {
         parser.addCommands(new TechnologyCommandGroup());
         parser.addCommands(new OutputFileCommandGroup());
         parser.addCommands(new PTMRFileCommandGroup());
-        LogFileCommandGroup loggerCG = new LogFileCommandGroup();
+        LogFileCommandGroup loggerCG = new LogFileCommandGroup("JEdifCutset.log");
         parser.addCommands(loggerCG);
 
         JSAPResult result = parser.parse(args, err);
@@ -167,6 +167,7 @@ public class JEdifCutset extends EDIFMain {
 
     public static Collection<EdifPortRef> getValidCutset(JSAPResult result, EdifCell flatCell,
             SharedIOBAnalysis iobAnalysis) {
+        boolean debug = false;
 
         //get command-line options
         boolean HighestFFFanoutCutset = CutFeedbackCommandGroup.getFFFanout(result);
@@ -272,14 +273,18 @@ public class JEdifCutset extends EDIFMain {
 
             LogFile.out().println("Done. Finding Cutset");
 
-            for (Iterator i = PRGsccDFS.getTopologicallySortedTreeList().iterator(); i.hasNext();) {
+            for (Iterator<DepthFirstTree> i = PRGsccDFS.getTopologicallySortedTreeList().iterator(); i.hasNext();) {
                 BasicDepthFirstSearchTree scc = (BasicDepthFirstSearchTree) i.next();
                 cutSet.addAll(NMRGraphUtilities.createDecomposeValidCutSet(eciConnectivityGraph, scc, tmrArch));
             }
             PRGcuts = getPortRefsToCutFromEdges(cutSet, eciConnectivityGraph, tmrArch);
         }
         startTime = LogFileCommandGroup.reportTime(startTime, "finding cutset", System.out);
-
+        if (debug) {
+            for (EdifPortRef epr : PRGcuts) {
+                LogFile.debug().println("" + epr);
+            }
+        }
         return PRGcuts;
     }
 
@@ -406,7 +411,7 @@ public class JEdifCutset extends EDIFMain {
                     for (EdifCellInstanceEdge otherEdge : graph.getOutputEdges(edge.getSource(), cutEPR)) {
                         if (nmrArch.isBadCutConnection(otherEdge.getSourceEPR(), otherEdge.getSinkEPR())) {
                             if (debug)
-                                LogFile.debug().println("### ONE OF THE EDGES IS A BAD CUT!!!");
+                                LogFile.debug().println("### ONE OF THE EDGES IS A BAD CUT!!! " + noCutEPR);
                             cutEPR = noCutEPR;
                             break;
                         }
