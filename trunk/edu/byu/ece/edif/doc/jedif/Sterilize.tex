@@ -3,11 +3,11 @@ This tool determines if and how half-latch removal should be
 performed in the resulting EDIF file. Half-latches are constants found
 throughout FPGA designs which increase sensitivity but, if upset, \emph{cannot}
 be corrected through scrubbing, because they are not determined by the
-configuration bits. The BLTmr tool can remove most of the half-latches from the
+configuration bits. The BL-TMR tool can remove most of the half-latches from the
 input EDIF file, prior to performing TMR, significantly increasing reliability.
 
 \begin{verbatim}
->java byucc.edif.tools.jedif.JEdifSterilize
+>java edu.byu.ece.edif.jedif.JEdifSterilize
 Options:
   [-h|--help]
   [-v|--version]
@@ -52,7 +52,7 @@ this option and the polarity (1 or 0) specified with the \texttt{--hlConst}
 option.
 
 \subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
-By default, the BLTmr tool treats all ports on the input EdifCell as top-level
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
 ports (those that will be the inputs and outputs of the FPGA). The half-latch 
 tool must therefore treat any FFs that will be packed into the IOBs differently
 than other FFs (at least with Virtex devices). This option allows the user to

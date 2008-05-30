@@ -16,7 +16,7 @@ In this example, the design to be triplicated is specified in the file
 The part used in this case is the Virtex II XC2V1000-FG456.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif \
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myDesign.jedif \
   -o myDesign.ptmr -iob_output myDesign.iob\
   --tmr_inports --tmr_outports --full_tmr --technology Virtex2 --part xc2v1000fg456
 \end{verbatim}
@@ -36,7 +36,7 @@ clock line after the buffer from being triplicated and the entire circuit will
 use the same single clock.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif \
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myDesign.jedif \
   --tmr_inports --tmr_outports --full_tmr --no_tmr_p Clk --no_tmr_c BUFG \
   --technology  Virtex2 --part xc2v1000fg456
 \end{verbatim}
@@ -52,25 +52,25 @@ the \texttt{--technology} and \texttt{--part} options, using the default values
 for each (Virtex XCV1000-FG680).
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.jedif --full_tmr
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myDesign.jedif --full_tmr
 \end{verbatim}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Partial TMR---No I/O triplication}
-This example shows a standard usage of the BLTmr tool for partial TMR\@. In this 
+This example shows a standard usage of the BL-TMR tool for partial TMR\@. In this 
 case, the design is too large to fit in the targeted device when fully 
-triplicated. The BLTmr tool will triplicate as much logic as possible and 
+triplicated. The BL-TMR tool will triplicate as much logic as possible and 
 estimate when the target chip will be fully utilized.
 
 %This design also requires some external EDIF files that are referenced in 
 %\texttt{myLargeDesign.edf} as ``black boxes.'' These external files, which are 
 %located in the \texttt{externalSrcDir} directory, will be incorporated into the 
 %triplicated design. Thus, the external files will not be needed with the 
-%\texttt{myLargeDesign\_BLTmr.edf} output file.
+%\texttt{myLargeDesign\_BL-TMR.edf} output file.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
 \end{verbatim}
 
 
@@ -81,7 +81,7 @@ In this case, the user wishes to include parts of strongly-connected components
 merge and optimization factors.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
   -d ./externalSrcDir --doSCCDecomposition --mergeFactor 0.4 --optimizationFactor 0.85
 \end{verbatim}
 
@@ -97,7 +97,7 @@ input design when half of the target chip is utilized, according to the
 estimate made with the merge optimization factors.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
   --factor_type DUF --factor_value 0.5
 \end{verbatim}
 
@@ -118,7 +118,7 @@ utilization factor of 1.5, which will stop triplication when an estimated 150\%
 of the target part is utilized.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif \
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myLargeDesign.jedif \
   --factor_type DUF --factor_value 1.5
 \end{verbatim}
 
@@ -134,7 +134,7 @@ target chip, this will stop triplication when 70\% ($40 + (100-40)*0.75$) of
 the target chip is utilized.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myLargeDesign.jedif 
    --factor_type DUF --factor_value 0.5
 \end{verbatim}
 
@@ -143,7 +143,7 @@ the target chip is utilized.
 \subsection{Using Configuration Files}
 \label{using config}
 Configuration files can greatly simplify the use of any of the
- BLTmr tools.  The following examples show how to create and use
+ BL-TMR tools.  The following examples show how to create and use
  configuration files. (See section \ref{config options},
  ``Configuration File Options'' for more information.)
 
@@ -152,7 +152,7 @@ The following will write the current command-line arguments to the file
 \texttt{myConfig.conf}:
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myDesign.edf -o myDesign_BLTmr.edf -f \ 
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myDesign.edf -o myDesign_BL-TMR.edf -f \ 
 subcell.edf,/usr/share/edifFiles/subcell2.edf, -d /usr/share/edif/common/ \ 
 --tmr_inports --tmr_outports --tmr_c DLL,fdc,clk_buf --tmr_i clk,fifo_output \ 
 --no_tmr_p clk_port,data_in --no_tmr_c bufg --no_tmr_i mux2,and24 \ 
@@ -165,7 +165,7 @@ The previous command creates the following output, stored in
 \texttt{myConfig.conf}:
 
 \begin{verbatim}
-#myConfig.conf, created by byucc.edif.tools.jsap.NMRCommandParser
+#myConfig.conf, created by edu.byu.ece.edif.util.jsap.NMRCommandParser
 #Sat Jul 22 19:51:14 MDT 2006
 hlUsePort=hl_port
 availableSpaceUtilizationFactor=0.85
@@ -174,7 +174,7 @@ summary=true
 optimizationFactor=0.9
 log=myLogFile.log
 notmrFeedForward=true
-output=myDesign_BLTmr.edf
+output=myDesign_BL-TMR.edf
 hlConst=0
 input=myDesign.edf
 outputAdditionType=2
@@ -199,7 +199,7 @@ Configuration files are defined by the \texttt{java.util.Properties} class.
 However, the format is simple enough that configuration files can easily be 
 created by hand or by other programs. As seen above, the format is simply 
 \texttt{key=value}. A hash mark (pound sign) (\texttt{\#}) at the beginning of 
-a line marks that line as a comment. BLTmr options are given just as they would 
+a line marks that line as a comment. BL-TMR options are given just as they would 
 be on the command-line, with the exception that command-line options with no 
 arguments (e.g. \texttt{--tmr\_inports}, \texttt{--summary}, 
 \texttt{--doSCCDecomposition}, etc.) are specified as either \texttt{true} or 
@@ -211,18 +211,18 @@ The following example shows how to load \texttt{myConfig.conf} as a configuratio
 file:
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis --useConfig myConfig.conf
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis --useConfig myConfig.conf
 \end{verbatim}
 
 \subsubsection{Combining Configuration Files and Command-line Arguments}
-Configuration files provide default values of BLTmr options. Any options 
+Configuration files provide default values of BL-TMR options. Any options 
 specified on the command-line will take precedence. (See section 
 \ref{useConfig}, ``\texttt{--useConfig}'' for detailed precedence information.)
 The following example uses the same options specified by myConfig.conf, but
 changes the input and output files:
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis myOtherDesign.edf -o myOtherDesign_BLTmr.edf \
+> java edu.byu.ece.edif.jedif.JEdifTMRAnalysis myOtherDesign.edf -o myOtherDesign_BL-TMR.edf \
  --useConfig myConfig.conf
 \end{verbatim}
 

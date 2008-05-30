@@ -6,7 +6,7 @@ option. Here, newlines have been inserted to separate the options into
 categories.}
 
 \begin{verbatim}
-> java byucc.edif.tools.merge.JEdifBuild --help
+> java edu.byu.ece.edif.jedif.JEdifBuild --help
 Options:
   [-h|--help]
   [-v|--version]
@@ -18,9 +18,18 @@ Options:
   [(-f|--include_file) include_file1,include_file2,...,include_fileN ]
 
   [--no_flatten]
+  [--no_open_pins]
+  [--blackboxes]
   [--no_delete_cells]
   [--replace_srls]
   [--remove_rlocs]
+
+  [(-p|--part) <part>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
 
 \end{verbatim}
 
@@ -60,7 +69,7 @@ This entity, named myblackbox uses 1 BRAM, 400 Flipflops and 100 LUTS
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
 Filename and path to the jedif output file.
 
-Default: \texttt{BLTmr.edf} in the current working directory.
+Default: \texttt{BL-TMR.edf} in the current working directory.
 
 \subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
 Comma-separated list of directories containing external EDIF files referenced 
@@ -80,10 +89,17 @@ Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
 \subsection{Maintenance Commands}
 The following options allow some control over that happens during the 
 conversion process
-
+  
 \subsubsection{\texttt{--no\_flatten}}
 By default JEdifBuild will flatten the EDIF files. Flattening is required by the 
-TMR tools, but other applications my wish to have retail the hierarchical design.
+TMR tools, but other applications my wish to have retail the hierarchical
+design. 
+
+\subsubsection{\texttt{--no\_open\_pins}}
+Do not allow parser to infer open pins.
+
+\subsubsection{\texttt{--blackboxes}}
+Allow parser to continue if blackbox definitions are not found
 
 \subsubsection{\texttt{--no\_delete\_cells}}
 By default JEdifBuild will remove unused cells, to reduce the size of the final
@@ -99,11 +115,16 @@ tool to replace these LUT RAMs with actual SRLs.
 Setting this option will tell JEdifBuild to remove ALL RLOCS in the design.  Some
 RLOCS can be problems for different versions of the hardware.
 
+\subsubsection{\texttt{(-p|--part) <part>}}
+Target architecture for the triplicated design. Valid parts include all
+parts from the Virtex, Virtex2, and Virtex4 product lines. Not
+case-sensitive.
+
 %
 % Words to be ignored by the spell-checker:
 %
 
-% LocalWords:  BYU LANL BLTmr EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
 % LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
 % LocalWords:  OBUFs logfile INOUT TMR'd tmr txt JEdifBuild jedif edn edf dir
 

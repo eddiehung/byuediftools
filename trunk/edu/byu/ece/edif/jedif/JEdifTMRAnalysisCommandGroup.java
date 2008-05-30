@@ -53,7 +53,7 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
         FlaggedOption iob_output_file = new FlaggedOption(IOB_OUTPUT_FILE);
         iob_output_file.setStringParser(JSAP.STRING_PARSER);
         iob_output_file.setRequired(JSAP.NOT_REQUIRED);
-        iob_output_file.addDefault("BLTmr.iob");
+        iob_output_file.addDefault("BL-TMR.iob");
         iob_output_file.setShortFlag(JSAP.NO_SHORTFLAG);
         iob_output_file.setLongFlag(IOB_OUTPUT_FILE);
         iob_output_file.setUsageName("output_file");
@@ -231,7 +231,7 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
         scc_sort_type.setUsageName("{1|2|3}");
         scc_sort_type.setDefault("3");
         scc_sort_type
-                .setHelp("Choose the method the BLTmr tool uses to triplicate logic in the \"feedback\" section of the design. Option 1 chooses the largest SCCs first. Option 2 chooses the smallest first. Option 3 adds the SCCs in topological order.");
+                .setHelp("Choose the method the BL-TMR tool uses to triplicate logic in the \"feedback\" section of the design. Option 1 chooses the largest SCCs first. Option 2 chooses the smallest first. Option 3 adds the SCCs in topological order.");
         this.addCommand(scc_sort_type);
 
         Switch doSCCDecomp = new Switch(DO_SCC_DECOMPOSITION);
@@ -306,13 +306,13 @@ public class JEdifTMRAnalysisCommandGroup extends AbstractCommandGroup {
         Switch ignore_hard_resource_utilization = new Switch(IGNORE_HARD_UTILIZATION_LIMITS);
         ignore_hard_resource_utilization.setLongFlag(IGNORE_HARD_UTILIZATION_LIMITS);
         ignore_hard_resource_utilization
-                .setHelp("This option makes the BLTmr tool ignore all hard resource utilization limits when "
+                .setHelp("This option makes the BL-TMR tool ignore all hard resource utilization limits when "
                         + "triplicating the design. ");
         this.addCommand(ignore_hard_resource_utilization);
 
         Switch ignore_soft_logic_utilization = new Switch(IGNORE_SOFT_UTILIZATION_LIMIT);
         ignore_soft_logic_utilization.setLongFlag(IGNORE_SOFT_UTILIZATION_LIMIT);
-        ignore_soft_logic_utilization.setHelp("This option makes the BLTmr tool ignore logic block utilization when "
+        ignore_soft_logic_utilization.setHelp("This option makes the BL-TMR tool ignore logic block utilization when "
                 + "triplicating the design. Hard resources such as BRAMs and CLKDLLs " + "will still be tracked. ");
         this.addCommand(ignore_soft_logic_utilization);
 

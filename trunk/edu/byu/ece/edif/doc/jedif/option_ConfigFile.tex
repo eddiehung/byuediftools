@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Configuration File Options}
 \label{config options}
-The BLTmr tools can use configuration files in place of command-line parameters. 
+The BL-TMR tools can use configuration files in place of command-line parameters. 
 If a parameter is specified in a configuration file, it will be passed to the 
-BLTmr tool, unless it is overridden by the same argument on the command-line. 
+BL-TMR tool, unless it is overridden by the same argument on the command-line. 
 
 \subsubsection{\texttt{--useConfig <config\_file>}}
 \label{useConfig}
@@ -11,7 +11,7 @@ Specify a configuration file from which to read parameters.
 
 \subsubsection{\texttt{--writeConfig[:<config\_file>]}}
 Write the current set of command-line parameters to a configuration file and 
-exit. The parameters will be parsed to ensure they are valid, but the BLTmr tool
+exit. The parameters will be parsed to ensure they are valid, but the BL-TMR tool
 will not run.  Note that only the parameters on the command-line are stored in
 the configuration file. When using \texttt{--writeConfig}, any use of
 \texttt{--useConfig} is ignored. This is to prevent complicated cascades
@@ -21,8 +21,8 @@ Examples:
 \begin{itemize}
   \item \texttt{--writeConfig:JonSmith.conf} will write the command-line 
   parameters to the file \texttt{JonSmith.conf} in the current directory.
-  \item \texttt{--writeConfig:/usr/lib/BLTmr/common.conf} will write the
-  command-line parameters to the file \texttt{/usr/share/BLTmr/common.conf}. 
+  \item \texttt{--writeConfig:/usr/lib/BL-TMR/common.conf} will write the
+  command-line parameters to the file \texttt{/usr/share/BL-TMR/common.conf}. 
   \item See section \ref{using config}, ``Using Configuration Files,'' for
   more information.
 \end{itemize}

@@ -152,7 +152,7 @@ public abstract class NMRUtilities {
      * <dt>ASUF</dt>
      * <dd>Available Space Utilization Factor</dd>
      * </dl>
-     * For more information, see the BLTmr documentation (BLTmr.pdf).
+     * For more information, see the BL-TMR documentation (BL-TMR.pdf).
      */
     public enum UtilizationFactor {
         DUF, UEF, ASUF, CF

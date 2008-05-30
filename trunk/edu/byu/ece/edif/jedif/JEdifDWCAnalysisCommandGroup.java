@@ -301,13 +301,13 @@ public class JEdifDWCAnalysisCommandGroup extends AbstractCommandGroup {
         Switch ignore_hard_resource_utilization = new Switch(IGNORE_HARD_UTILIZATION_LIMITS);
         ignore_hard_resource_utilization.setLongFlag(IGNORE_HARD_UTILIZATION_LIMITS);
         ignore_hard_resource_utilization
-                .setHelp("This option makes the BLTmr tool ignore all hard resource utilization limits when "
+                .setHelp("This option makes the BL-TMR tool ignore all hard resource utilization limits when "
                         + "triplicating the design. ");
         this.addCommand(ignore_hard_resource_utilization);
 
         Switch ignore_soft_logic_utilization = new Switch(IGNORE_SOFT_UTILIZATION_LIMIT);
         ignore_soft_logic_utilization.setLongFlag(IGNORE_SOFT_UTILIZATION_LIMIT);
-        ignore_soft_logic_utilization.setHelp("This option makes the BLTmr tool ignore logic block utilization when "
+        ignore_soft_logic_utilization.setHelp("This option makes the BL-TMR tool ignore logic block utilization when "
                 + "triplicating the design. Hard resources such as BRAMs and CLKDLLs " + "will still be tracked. ");
         this.addCommand(ignore_soft_logic_utilization);
 

@@ -54,7 +54,7 @@ public class InputOutputFileCommandGroup extends InputFileCommandGroup {
         output_file.setShortFlag(OUTPUT_OPTION_SHORT);
         output_file.setLongFlag(OUTPUT_OPTION);
         output_file.setUsageName("output_file");
-        output_file.setHelp("Filename and path to the triplicated EDIF output file created by the BLTmr tool.");
+        output_file.setHelp("Filename and path to the triplicated EDIF output file created by the BL-TMR tool.");
         this.addCommand(output_file);
 
     }

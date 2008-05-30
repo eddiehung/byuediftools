@@ -51,7 +51,7 @@ public class PTMRFileCommandGroup extends AbstractCommandGroup {
         _input_files_option = new FlaggedOption(INPUT2_OPTION);
         _input_files_option.setStringParser(JSAP.STRING_PARSER);
         _input_files_option.setRequired(JSAP.NOT_REQUIRED);
-        _input_files_option.addDefault("BLTmr.ptmr");
+        _input_files_option.addDefault("BL-TMR.ptmr");
         _input_files_option.setLongFlag(INPUT2_OPTION);
         _input_files_option.setUsageName("ptmr_file");
         _input_files_option.setHelp("Partial tmr Data Filename.");

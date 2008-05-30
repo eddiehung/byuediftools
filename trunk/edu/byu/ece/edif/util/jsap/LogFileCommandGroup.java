@@ -46,7 +46,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
  */
 public class LogFileCommandGroup extends AbstractCommandGroup {
     public LogFileCommandGroup() {
-        this("BLTmr.log");
+        this("BL-TMR.log");
     }
 
     public LogFileCommandGroup(String logfile) {

@@ -857,7 +857,7 @@ public class BuildWrapper extends JHDLWrapper {
      */
     private static void writeClassGuts(PrintWriter fp, EdifCell topcell, String technologyName, String className,
             String topFileName, Collection subFiles) {
-        fp.println("\t\tbyucc.edif.EdifEnvironment edif_file = null;");
+        fp.println("\t\tedu.byu.ece.edif.core.EdifEnvironment edif_file = null;");
 
         fp.println("\t\tString topFileName = \"" + topFileName + "\";");
         fp.print("\t\tCollection subFiles = ");
@@ -879,8 +879,8 @@ public class BuildWrapper extends JHDLWrapper {
         fp.println("\t\t\tSystem.exit(-1);");
         fp.println("\t\t}");
 
-        fp.println("\t\tbyucc.edif.EdifDesign edif_design = edif_file.getTopDesign();");
-        fp.println("\t\tbyucc.edif.EdifCellInstance topCellInstance = " + "edif_design.getTopCellInstance();");
+        fp.println("\t\tedu.byu.ece.edif.core.EdifDesign edif_design = edif_file.getTopDesign();");
+        fp.println("\t\tedu.byu.ece.edif.core.EdifCellInstance topCellInstance = " + "edif_design.getTopCellInstance();");
         fp.println("\t\tEdi2JHDL jhdl_gen = new Edi2JHDL(" + "\"" + technologyName + "\");");
         fp.println("\t\tCell cel = jhdl_gen.toJHDLCircuit(this, topCellInstance, portWires);");
         fp.println("\t} //End constructor");
@@ -900,7 +900,7 @@ public class BuildWrapper extends JHDLWrapper {
         fp.println();
         fp.println();
         fp.println();
-        fp.println("import byucc.edif.*;");
+        fp.println("import edu.byu.ece.edif.core.*;");
         fp.println("import edu.byu.ece.edif.util.export.jhdl.*;");
         fp.println("import edu.byu.ece.edif.util.parse.*;");
         fp.println("import edu.byu.ece.edif.util.merge.*;");

@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % $Id$
 %
-% Documentation file for the BYU-LANL Triple Modular Redundancy (BLTmr) Tool.
+% Documentation file for the BYU-LANL Triple Modular Redundancy (BL-TMR) Tool.
 %
 % Author: Brian Pratt <bhpratt@gmail.com>
 %         James Carroll <jcarroll@byu.net>
@@ -37,8 +37,8 @@
      urlcolor=rltblue,       % \href{...}{...} external (URL)
      filecolor=rltgreen,     % \href{...} local file
      linkcolor=rltred,       % \ref{...} and \pageref{...}
-     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.3.3 -  15 Jan 2008},%
-     pdfauthor={BYU Configurable Computing Lab},%
+     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.4.0 - 30
+     May2008}, % pdfauthor={BYU Configurable Computing Lab},%
      pdfproducer={pdfLaTeX},%
      %pdfadjustspacing=1,
      pdftex]{hyperref}
@@ -73,7 +73,7 @@
 \makeatother
 
 \title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\ ~ \\
-  Version 0.3.3 - 15 Jan 2008 \\  }
+  Version 0.4.0 - 30 May 2008 \\  }
   
 \author{Brigham Young University \\ Configurable Computing Lab}
 
@@ -89,7 +89,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-The BYU-LANL Triple Modular Redundancy (BLTmr) Tool is an EDIF-based tool to 
+The BYU-LANL Triple Modular Redundancy (BL-TMR) Tool is an EDIF-based tool to 
 insert redundancy in an FPGA design in order to increase reliability. Triple 
 modular redundancy (TMR) is applied to the EDIF input file according to the 
 options chosen by the user. Partial TMR focuses on ``persistent'' components of 
@@ -187,7 +187,7 @@ It is analagous to the EDIF-based Clock Domain Parser.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Naming Conventions}
 \label{naming conventions}
-The BLTmr tool alters the names of triplicated signals, cell instances, and 
+The BL-TMR tool alters the names of triplicated signals, cell instances, and 
 ports. Be aware of this when using placement (or other) constraints. An output 
 port named \texttt{myOutport} in the original EDIF file will, when triplicated, 
 become \texttt{myOutport\_TMR\_0, myOutport\_TMR\_1, and myOutport\_TMR\_2}. 
@@ -212,7 +212,7 @@ heap space for the JVM:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{RLOC Constraints}
-The BLTmr tool does not support RLOC constraints at this time. RLOC constraints 
+The BL-TMR tool does not support RLOC constraints at this time. RLOC constraints 
 must therefore be removed before processing the resulting EDIF file. RLOCs may 
 be removed from the either the source EDIF files (including any external EDIF 
 files) or from the triplicated output file. Automated RLOC removal may be added 
@@ -220,16 +220,16 @@ to the tool in a later release.
 
 To remove RLOC constraints from an EDIF file, you can use the UNIX 
 \texttt{grep} tool. The following example uses \texttt{grep} to find all lines 
-in the source EDIF file \texttt{myDesign\_BLTmr.edf} that do \emph{not} contain 
+in the source EDIF file \texttt{myDesign\_BL-TMR.edf} that do \emph{not} contain 
 the string \texttt{RLOC} and copy them to the destination EDIF file 
 \texttt{myDesign\_tmr\_noRLOCs.edf.} Note that you may \emph{not} use the same 
 file for the source and destination.
 
 \begin{verbatim}
-> grep -v RLOC myDesign_BLTmr.edf > myDesign_BLTmr_noRLOCs.edf
+> grep -v RLOC myDesign_BL-TMR.edf > myDesign_BL-TMR_noRLOCs.edf
 \end{verbatim}
 
-This trick is guaranteed to work for EDIF files created by the BLTmr tool as 
+This trick is guaranteed to work for EDIF files created by the BL-TMR tool as 
 well as all Xilinx CoreGen EDIF files. It is \emph{not} guaranteed to work for 
 all EDIF files in general since it relies on the fact that each RLOC constraint 
 with its associated parentheses do not spread across multiple lines (which is 
@@ -239,11 +239,19 @@ files created with the JHDL netlister.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Change Log}
 
-\subsection*{Version 0.3.4 - ?? ??? 2008}
+\subsection*{Version 0.4.0 - 30 May 2008}
+\begin{itemize}
+\item Moved ChangeLog out of this file. Please see the file
+edu.byu.ece.edif.doc.CHANGE\_LOG.txt for more information.
+\end{itemize}
+
+\subsection*{Version 0.3.4 - No official release date}
 \begin{itemize}
 \item Fixed --hl\_use\_port option on JEdifSterilize (was --hl\_port\_name)
 \item Rearranged and added sections of this document
-\item 
+\item Made –remove\_fmaps option to default to false
+\item Fixed bug in EdifCell.deleteSubCell(EdifCellInstance, boolean) in 
+which referenced EdifNets were not removed when requested
 \end{itemize}
 
 \subsection*{Version 0.3.3 - 15 Jan 2008}
@@ -300,7 +308,7 @@ removal
 \begin{itemize}
 \item Fixed bug when writing config files
 \item Fixed bug in SCC code that could cause a ConcurrentModificationException
-\item Fixed bug in which BLTmr could produce an invalid design due to too many
+\item Fixed bug in which BL-TMR could produce an invalid design due to too many
   connections to a MUXF6 input
 \end{itemize}
 
@@ -328,7 +336,7 @@ removal
 
 \subsection*{Version 0.2.0 - 25 Jul 2006}
 \begin{itemize}
-\item New command-line parser\footnote{The BLTmr tool uses \emph{JSAP: the 
+\item New command-line parser\footnote{The BL-TMR tool uses \emph{JSAP: the 
 Java-based Simple Argument Parser} by Martian Software, Inc.\ for parsing 
 command-line arguments.  JSAP and its source code can be found at 
 \url{http://www.martiansoftware.com/jsap/index.html}.} (not backwards 
@@ -415,7 +423,7 @@ the released JAR file.
 % Words to be ignored by the spell-checker:
 %
 
-% LocalWords:  BYU LANL BLTmr EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
 % LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
 % LocalWords:  OBUFs logfile INOUT TMR'd tmr txt 
 

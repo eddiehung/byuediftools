@@ -1,7 +1,18 @@
 
  Release Notes for BYU EDIF Tools
 
-Electron Release (16 April 2008)
+
+Electron Release - Version 0.4.0 (30 May 2008)
+
+This is the official "electon" release. This release is a slightly more
+polished version than the electron pre-release in April. The API is slightly
+different than the pre-release due to some source re-organization. The 
+functionality is mostly identical.
+
+Please see the previous release notes for more information.
+
+
+Electron Pre-Release (16 April 2008)
 
 To whom it may concern:
 
@@ -14,9 +25,9 @@ analysis and manipulation activities.
 
 http://sourceforge.net/projects/byuediftools/
 
-This release is named "electron" and is our first public offering of
-the source code.  For a brief orientation on BYU EDIF Tools, please
-see the project's public website:
+This is a pre-release of the first major public release named "electron".
+For a brief orientation on BYU EDIF Tools, please see the project's 
+public website:
 
 http://reliability.ee.byu.edu/edif/
 
