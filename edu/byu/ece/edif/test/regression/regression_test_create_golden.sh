@@ -101,4 +101,4 @@ sed -i 's/JEdifNetlist.*version.*//' $golden_dir/*edf
 echo "
 Creation of golden files for regression testing is complete."
 
-echo "Created golden files for regression testing of EDIF tools on " `date` > $golden_dir/log.txt
+echo "Created golden files for regression testing of EDIF tools on " `date` > golden_log.txt
