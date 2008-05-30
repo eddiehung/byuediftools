@@ -1,0 +1,349 @@
+\section{JEdifTMRAnalysis}
+
+The following options control the manner in which the BL-TMR tool performs
+triplication: whether to do full or partial TMR; what specific ports, cell
+types, and cell instances to be triplicated; and how to handle strongly
+connected components (SCCs).
+
+\begin{verbatim}
+>java edu.byu.ece.edif.jedif.JEdifTMRAnalysis
+[-h|--help] 
+[-v|--version] 
+
+<input_file> 
+[(-o|--output) <output_file>] 
+[--iob_output <output_file>] 
+
+[--full_tmr] 
+
+[--tmr_p Port name1,Port name2,...,Port nameN ]
+[--tmr_inports] 
+[--tmr_outports] 
+[--no_tmr_p port1,port2,...,portN ] 
+
+[--tmr_c cell_type1,cell_type2,...,cell_typeN ] 
+[--tmr_clk clock_domain1,clock_domain2,...,clock_domainN ] 
+[--tmr_i cell_instance1,cell_instance2,...,cell_instanceN ] 
+
+[--no_tmr_c cell_type1,cell_type2,...,cell_typeN ] 
+[--no_tmr_clk clock_domain1,clock_domain2,...,clock_domainN ] 
+[--no_tmr_i cell_instance1,cell_instance2,...,cell_instanceN ] 
+
+[--no_tmr_feedback] 
+[--no_tmr_input_to_feedback] 
+[--no_tmr_feedback_output] 
+[--no_tmr_feed_forward] 
+[--no_iob_feedback] 
+
+[--scc_sort_type <{1|2|3}>] 
+[--do_scc_decomposition] 
+[--input_addition_type <{1|2|3}>] 
+[--output_addition_type <{1|2|3}>] 
+
+[--merge_factor <merge_factor>] 
+[--optimization_factor <optimization_factor>] 
+[--factor_type <{DUF|UEF|ASUF}>] 
+[--factor_value <factor_value>]
+
+[--ignore_hard_resource_utilization_limits]
+[--ignore_soft_logic_utilization_limit]
+
+[--use_bad_cut_conn] 
+
+[(-p|--part) <part>] 
+
+[--write_config <config_file>]
+[--use_config <config_file>]
+
+[--log <logfile>]
+[--debug[:<debug_log>]]
+[(-V|--verbose) <{1|2|3|4|5}>]
+[--append_log]
+
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be
+triplicated. This is the only required parameter.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the tmr data file.
+
+Default: \texttt{<inputfile>.ptmr} in the current working directory
+
+\subsubsection{\texttt{--iob\_output <output\_file>}}
+Filename and path to the iob analysis file.
+
+Default: \texttt{<inputfile>.iob} in the current working directory
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR Options}
+
+\subsubsection{\texttt{--full\_tmr}}
+Fully triplicate the design, skipping all partial TMR analysis. This method is 
+preferred only if the design is expected to fit in the target part with full 
+triplication of every resource since some time-consuming algorithms are skipped.
+Resource utilization estimates will still function, stopping triplication and 
+warning the user if the full triplicated design is not expected to fit in the 
+target part. In this case, the partially-triplicated design will still be 
+written out to file, but the user would most likely benefit from the partial 
+TMR algorithms.
+
+Note: \texttt{--full\_tmr} will triplicate all logic within the design; however, 
+top-level ports are not triplicated by default. To triplicate top-level ports,
+use the \texttt{--tmr\_in\-ports} and \texttt{--tmr\_outports} options.
+
+\subsubsection{\texttt{--tmr\_inports}}
+Force triplication of all top-level input ports. The resulting EDIF file will
+have three input ports for every input port in the original design, with names
+such as \texttt{inputPort\_tmrInstance\_0}, \texttt{inputPort\_tmrInstance\_1},
+and \texttt{inputPort\_tmrInstance\_2}.
+
+\subsubsection{\texttt{--tmr\_outports}}
+Force triplication of all top-level output ports. The resulting EDIF file will
+have three output ports for every output port in the original design, with names 
+such as \texttt{outputPort\_tmrInstance\_0}, 
+\texttt{output\-Port\_tmr\-Instance\_1}, and 
+\texttt{outputPort\_tmrInstance\_2}.
+
+\subsubsection{\texttt{--no\_tmr\_p port1,port2,\ldots,portN}}
+Prevent triplication of specific top-level port(s), specified as a 
+comma-separated list. Used in conjunction with \texttt{--tmr\_inports} and 
+\texttt{--tmr\_outports}. For example, the following will triplicate all input 
+ports except the clock and reset ports, assuming \texttt{Clk} and \texttt{rst} 
+are the (case-sensitive) names of the clock and reset input ports, respectively:
+
+\texttt{--tmr\_inports --no\_tmr\_p Clk,rst} 
+
+\subsubsection{\texttt{--tmr\_c cell\_type1,cell\_type2,\ldots,cell\_typeN}}
+Force triplication of specific cell type(s), specified as a comma-separated list. 
+All instances of the types specified will be triplicated. \texttt{--tmr\_c}
+takes precedence over \texttt{--no\_tmr\_c}. There can be multiple 
+\texttt{--tmr} options.
+
+Examples: 
+\begin{itemize}
+\item \texttt{--tmr\_c bufg,ibufg,fdc}
+\item \texttt{--tmr\_c bufg,ibufg --tmr\_c fdc}
+\end{itemize}
+
+\subsubsection{\texttt{--tmr\_clk clock\_domain1,clock\_domain2,
+\ldots,clock\_domainN}}
+Force tripliction of the specified clock domain(s), specified as a comma-separated
+list. Each clock domain whould be specified with it's full path, not including
+the top level instance name, each level being separated by '/' Note:
+\texttt{--no\_tmr\_clk} takes precedence over \texttt{--tmr\_clk}. There can be
+multiple \texttt{--tmr\_clk} options.
+
+
+
+\subsubsection{\texttt{--tmr\_i cell\_instance1,cell\_instance2,
+\ldots,cell\_instanceN}}
+Force triplication of specific cell instance(s), specified as a comma-separated
+list. 
+Note: \texttt{--no\_tmr\_i} takes precedence over \texttt{--tmr\_i}. There can be
+multiple \texttt{--tmr\_i} options.
+ 
+Example: \texttt{--tmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
+
+\subsubsection{\texttt{--no\_tmr\_c cell\_type1,cell\_type2,\ldots,cell\_typeN}}
+Prevent triplication of specific cell type(s), specified as a comma-separated 
+list. There can be multiple \texttt{--no\_tmr\_c} options.
+
+Example: \texttt{--no\_tmr\_c bufg,ibufg,fdc}
+
+\subsubsection{\texttt{--no\_tmr\_clkclock\_domain1,
+clock\_domain2,\ldots,clock\_domainN}}
+Prevent triplication of specified clock domain(s), specified as a comma-separated 
+list. There can be multiple \texttt{--no\_tmr\_c} options.
+
+Example: \texttt{--no\_tmr\_clk clk\_c}
+
+
+\subsubsection{\texttt{--no\_tmr\_i cell\_instance1,
+cell\_instance2,\ldots,cell\_instanceN}}
+Prevent triplication of specific cell instance(s), specified as a 
+comma-separated list. There can be multiple \texttt{--no\_tmr\_i} options.
+
+Example: \texttt{--no\_tmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
+
+\subsubsection{\texttt{--no\_tmr\_feedback}}
+Skip triplication of the feedback section of the design. 
+Is it \emph{not} recommended to skip triplication of the feedback section, as 
+it is the most critical section for SEU mitigation.
+
+\subsubsection{\texttt{--no\_tmr\_input\_to\_feedback}}
+Skip triplication of the portions of the design that ``feed into'' the feedback 
+sections. These portions also contribute to the ``persistence'' of the design 
+and should be included in triplication, when possible.
+
+\subsubsection{\texttt{--no\_tmr\_feedback\_output}}
+Skip triplication of the portions of the design which are driven by the 
+feedback sections of the design.
+
+\subsubsection{\texttt{--no\_tmr\_feed\_forward}}
+Skip triplication of the portions of the design which are not related to 
+feedback sections (neither drive nor are driven by the feedback sections).
+
+\subsubsection{\texttt{--no\_iob\_feedback}}
+Use this option to exclude IOBs from the feedback analysis. This is useful when
+a top-level inout port is involved in feedback but by design will never be 
+written to and read at the same time. Thus there is no \emph{real} feedback.
+Using this option may greatly reduce the amount of feedback found in the design
+and thus reduce the number of voters inserted.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SCC Options}
+The following options control how BL-TMR handles strongly connected components 
+(SCCs) and related logic. An SCC, by definition, is a set of circuit components 
+that are mutually reachable. That is, following the flow of data, every 
+component in the SCC can be reached from every other. In an SCC, each component 
+is related to every other component. The feedback section is defined as the 
+combination of all the strongly-connected components (SCCs). The following 
+options determine the order in which SCCs and related logic are triplicated as 
+well as whether or not SCCs can be partitioned into smaller components.
+
+\subsubsection{\texttt{--ssc\_sort\_type} $\{1,2,3\}$}
+Choose the method the BL-TMR tool uses to partially triplicate logic in the 
+``feedback'' section of the design.  Option 1 triplicates the largest SCCs 
+first. Option 2 triplicates the smallest first. Option 3 triplicates the SCCs 
+in topological order.
+
+This option only affects the resulting circuit if only some of the feedback 
+section is triplicated. If all or none of the ``feedback'' section is 
+triplicated, the three options produce identical results. The difference lies 
+in what \emph{order} the logic in this section is added and thus what part of 
+it is triplicated if there are not enough resources available to triplicate the 
+entire section.
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3}
+(topological order).
+
+\subsubsection{\texttt{--do\_scc\_decomposition}}
+Allow portions of strongly-connected components (SCCs) to be included for 
+triplication. 
+
+By default, if a single SCC is so large that it cannot be triplicated for the 
+target part, it is skipped. This option allows large SCCs to be broken up into 
+smaller pieces, some of which may fit in the part. This is only useful if there 
+are not enough resources to triplicate the entire set of SCCs.
+
+\subsubsection{\texttt{--input\_addition\_type} $\{1,2,3\}$}
+Select between three different algorithms to partially triplicate logic in the 
+``input to feedback'' section of the design. Option 1 uses a depth-first search 
+starting from the inputs to the feedback section. Option 3 uses a breadth-first 
+search. Option 2 uses a combination of the two.
+
+This option only affects the resulting circuit if only some of the input
+to feedback section is triplicated. If all or none of the input to feedback 
+section is triplicated, the three options produce identical results. The 
+difference is in what \emph{order} the logic in this section is added and thus 
+what part of it is triplicated if there are not enough resources available to 
+triplicate the entire section.
+
+Results may differ between the three addition types depending on the input 
+design. It is yet not clear if one method is superior to the others in general. 
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3} 
+(breadth-first search).
+
+\subsubsection{\texttt{--output\_addition\_type} $\{1,2,3\}$}
+Similar to \texttt{--inputAdditionType}, this option applies to the logic 
+in the ``feedback output'' section, that is, logic that is driven by the
+feedback section.
+
+This option only affects the resulting circuit if only some of the feedback 
+output section is triplicated. It has no effect if all or none of the feedback 
+output section is triplicated. As with \texttt{--inputAdditionType}, it is yet
+not clear if one method is superior to the others in general.
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3} 
+(breadth-first search).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Merge Factor and Optimization Factor}
+The following factors are used by the utilization tracker, which estimates the 
+anticipated usage of the target chip after performing (partial) TMR\@. All factors
+in this section have the precision of a Java \texttt{double}. 
+
+\subsubsection{\texttt{--merge\_factor} $\{ 0 \leq n \leq 1 \}$ }
+Used to fine-tune the estimation of logic resources in the target chip. Each 
+technology has an internal, default ``merge factor'' which estimates the 
+percentage of LUTs and flip-flops that will share the same slice. As this 
+factor is both technology and design dependent, this option allows the user to 
+specify his/her own merge factor. 
+
+The total number of logic blocks (without taking into account optimization) is 
+given by the following equation:
+\begin{equation*}
+\mathrm{total~logic~blocks} = FFs + LUTs - (mergeFactor * FFs)
+\end{equation*}
+
+If you need to calculate a custom mergeFactor for a specific design, use the 
+following equation:
+\begin{equation*}
+mergeFactor = \frac{(FFs + LUTs - 2 * slices)}{FFs}
+\end{equation*}
+
+Must be between 0 and 1, inclusive. Default: 0.5.
+
+\subsubsection{\texttt{--optimization\_factor} $\{ 0 \leq n \leq 1 \}$}
+The ``optimization factor'' is used to scale down the estimate of LUTs and 
+flip-flops used to account for logic optimization performed during mapping. For 
+example, an optimization factor of 0.90 would assume that logic optimization 
+techniques would reduce the required number of LUTs and FFs by 10\%.
+
+We define the optimization factor to be the number of logic blocks after 
+optimization divided by the number of logic blocks before optimization.  So the 
+final equation for the total number of logic blocks is as follows:
+\begin{equation*}
+\mathrm{Estimate} = optimization\_factor * (FFs + LUTs -  mergeFactor * FFs)
+\end{equation*}
+
+Must be between 0 and 1, inclusive. Default: 0.95.
+
+\subsubsection{\texttt{--factor\_type} $\{ \mathtt{ASUF},\mathtt{UEF},\mathtt{DUF} \}$ }
+Specify the Utilization Factor Type to be used. Valid Factor Types are:
+
+\begin{itemize}
+\item ASUF 
+
+Available Space Utilization Factor: The maximum utilization of the target part,
+expressed as a percentage of the unused space on the part after the original
+(non-TMR'd) design has been considered.
+
+\item UEF 
+
+Utilization Expansion Factor: The maximum increase in utilization of the target
+part, expressed as a percentage of the utilization of the original (non-TMR'd)
+design.
+
+\item DUF 
+
+Desired Utilization Factor: The maximum percentage of the target chip to be
+utilized after performing Partial TMR.
+\end{itemize}
+
+Not case sensitive.
+
+\subsubsection{\texttt{--factor\_value}}
+Specify a single Factor Value.  The number has the precision of a Java 
+\texttt{double} and is interpretted based on the Factor Type as explained above.
+
+For example, if a design occupies 30\% of the target part prior to TMR, a DUF
+of 0.50 would use 50\% of the part. An UEF of 0.50 would increase the usage by
+50\%, resulting in 45\% usage of the part. An ASUF of 0.50 would use 50\% of the
+available space prior to TMR, resulting in 65\% usage.
+
+Must be greater than or equal to 0. Default: 1.0.
+
+\subsection{\texttt{--use\_bad\_cut\_conn}}
+Use bad cutgroup connectivity graph
+
+\input{option_Technology}
+\input{option_ConfigFile}
+\input{option_Logfile}
+

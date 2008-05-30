@@ -1,0 +1,14 @@
+\subsection{Target Part Options}
+
+\subsubsection{\texttt{--part <partname>}}
+Target architecture for the triplicated design. Used to take into account 
+part-specific properties, including the number of resources available 
+in each part. Valid parts include all parts from the \emph{Virtex} and 
+\emph{Virtex2} product lines, represented as a concatenation of the part name 
+and package type. For example, the ``Xilinx Virtex 1000 FG680'' is represented 
+as \texttt{XCV1000FG680}. This argument is \emph{not} case-sensitive.
+
+Default: \texttt{xcv1000fg680}.
+% TODO: Add list of all supported part numbers. All parts listed in
+% XilinxVirtexDeviceUtilizationTracker.java and
+% XilinxIIVirtexDeviceUtilizationTracker.java

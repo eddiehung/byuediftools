@@ -1,0 +1,87 @@
+\section{JEdifSterilize}
+This tool determines if and how half-latch removal should be
+performed in the resulting EDIF file. Half-latches are constants found
+throughout FPGA designs which increase sensitivity but, if upset, \emph{cannot}
+be corrected through scrubbing, because they are not determined by the
+configuration bits. The BL-TMR tool can remove most of the half-latches from the
+input EDIF file, prior to performing TMR, significantly increasing reliability.
+
+\begin{verbatim}
+>java edu.byu.ece.edif.jedif.JEdifSterilize
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  [--remove_hl]
+  [--hl_constant <{0|1}>]
+  [--hl_use_port <hl_port_name>]
+  [--pack_registers <{i|o|b|n}>]
+
+  [--remove_fmaps]
+
+  <input_file>
+  [(-o|--output) <output_file>]
+
+  [--no_delete_cells]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
+
+\end{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Half Latch removal options}
+
+\subsubsection{\texttt{--remove\_hl}}
+Remove half-latches in the input design before performing TMR.
+
+Note: Not \emph{all} half-latches can be removed at the EDIF 
+level for all architectures. Some post-processing may be necessary.
+
+\subsubsection{\texttt{--hl\_const} $\{0,1\}$}
+Sets the polarity of the half-latch constant to be used, whether an 
+internally-generated constant or a top-level port. 
+
+Valid options are \texttt{0} and \texttt{1}. Default: \texttt{0}.
+
+\subsubsection{\texttt{--hl\_use\_port <hl\_port\_name>}}
+Specify a top-level port to use in place of half-latches when 
+using half-latch removal. The top-level port will have the name specified with 
+this option and the polarity (1 or 0) specified with the \texttt{--hlConst} 
+option.
+
+\subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
+ports (those that will be the inputs and outputs of the FPGA). The half-latch 
+tool must therefore treat any FFs that will be packed into the IOBs differently
+than other FFs (at least with Virtex devices). This option allows the user to
+specify which IOBs the registers should be packed into: inputs (\emph{i}),
+outputs (\emph{o}), both (\emph{b}), or none (\emph{n}). The default is to pack
+both input and output registers.
+
+\subsubsection{\texttt{--remove\_fmaps}}
+Remove FMAPS in the input design before performing NMR.
+NOTE: Not *all* FMAPS can be removed at the EDIF level for all
+architectures. Some post-processing may be necessary.
+
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be
+sterilized. This is the only required parameter.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the sterilized jedif file. 
+
+Default: \texttt{<inputfile>.jedif} in the current working directory.
+
+
+\subsubsection{\texttt{--no\_delete\_cells}}
+By default the output jedif file will remove all unused cells, to 
+reduce the size of the final .jedif file. 
+However, the user can request that these cells be retained for 
+future use.
+
+\input{option_Logfile}
+

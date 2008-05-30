@@ -1,0 +1,1137 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id:BL-TMR.tex 151 2008-04-02 16:27:55Z jamesfcarroll $
+%
+% Documentation file for the BYU-LANL Triple Modular Redundancy (BL-TMR) Tool.
+%
+% Author: Brian Pratt <bhpratt@gmail.com>
+%         James Carroll <jcarroll@byu.net>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[english]{article}
+%\usepackage[T1]{fontenc}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{epsfig}
+\usepackage{graphicx}
+%\usepackage[latin1]{inputenc}
+\IfFileExists{url.sty}{\usepackage{url}}
+                      {\newcommand{\url}{\texttt}}
+% use this instead of pdfgraphcompat
+% Check for PDFLaTeX
+\newif\ifpdf 
+\ifx\pdfoutput\undefined 
+   \pdffalse % we are not running PDFLaTeX 
+\else 
+   \pdfoutput=1 % we are running PDFLaTeX 
+   \pdftrue 
+\fi
+
+
+% This processes the file using the 'hyperref.sty' package when
+% PDFLaTeX is used.  This adds internal hyperlinks throughout the
+% document in the generated PDF.
+\ifpdf
+   \usepackage[colorlinks={true},
+     urlcolor=rltblue,       % \href{...}{...} external (URL)
+     filecolor=rltgreen,     % \href{...} local file
+     linkcolor=rltred,       % \ref{...} and \pageref{...}
+     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.2.5 - 13 Jul 2007},%
+     pdfauthor={BYU Configurable Computing Lab},%
+     pdfproducer={pdfLaTeX},%
+     %pdfadjustspacing=1,
+     pdftex]{hyperref}
+\fi
+
+% Define colors used by hyperref
+\usepackage{color}
+\definecolor{rltred}{rgb}{0.75,0,0}
+\definecolor{rltgreen}{rgb}{0,0.5,0}
+\definecolor{rltblue}{rgb}{0,0,0.75}
+
+
+\vfuzz2pt % Don't report over-full v-boxes if over-edge is small
+\hfuzz2pt % Don't report over-full h-boxes if over-edge is small
+
+% 1: label, 2: path, 3: filename except extension (minus .png or .eps), 4: caption
+\newcommand\figurecaption[4]{
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=1.0\linewidth]{#2/#3}
+  \parbox{1.0\linewidth}{\caption{\label{#1}#4}}
+\end{figure}
+}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Bold symbol macro for standard LaTeX users
+\providecommand{\boldsymbol}[1]{\mbox{\boldmath $#1$}}
+
+\usepackage{babel}
+\makeatother
+
+\title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\ ~ \\
+  Version 0.2.5 - 13 Jul 2007}
+  
+\author{Brigham Young University \\ Configurable Computing Lab}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+The BYU-LANL Triple Modular Redundancy (BL-TMR) Tool is an EDIF-based tool to 
+insert redundancy in an FPGA design in order to increase reliability. Triple 
+modular redundancy (TMR) is applied to the EDIF input file according to the 
+options chosen by the user. Partial TMR focuses on ``persistent'' components of 
+the design in order to get the ``most bang for your buck.''
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{BL-TMR Tool Options}
+Options can be specified on the command line or in a configuration file in any 
+order. This section describes each of these options in detail, which are 
+summarized below:\footnote{This list is obtainable with the \texttt{--help} 
+option. Here, newlines have been inserted to separate the options into 
+categories.}
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR --help
+Usage:
+
+java -cp BL-TMR.jar byucc.edif.tools.tmr.FlattenTMR <input_file>
+   [(-o|--output) <output_file>]
+   [(-d|--dir) dir1,dir2,...,dirN ]
+   [(-f|--file) file1,file2,...,fileN ]
+
+   [--tmrSuffix suffix1,suffix2,...,suffixN ]
+   [--full_tmr]
+   [--tmr_inports]
+   [--tmr_outports]
+   [--no_tmr_p port1,port2,...,portN ]
+   [--tmr_c cell_type1,cell_type2,...,cell_typeN ]
+   [--tmr_clk clock_domain1,clock_domain2,...,clock_domainN ]
+   [--tmr_i cell_instance1,cell_instance2,...,cell_instanceN ]
+   [--no_tmr_c cell_type1,cell_type2,...,cell_typeN ]
+   [--no_tmr_clk clock_domain1,clock_domain2,...,clock_domainN ]
+   [--no_tmr_i cell_instance1,cell_instance2,...,cell_instanceN ]
+   [--no_tmr_feedback]
+   [--no_tmr_input_to_feedback]
+   [--no_tmr_feedback_output]
+   [--no_tmr_feed_forward]
+   [--noInoutCheck]
+   [--no_iob_feedback]
+
+   [--SCCSortType <{1|2|3}>]
+   [--doSCCDecomposition]
+   [--use_bad_cut_conn]
+   [--highest_fanout_cutset]
+   [--highest_ff_fanout_cutset]
+   [--inputAdditionType <{1|2|3}>]
+   [--outputAdditionType <{1|2|3}>]
+
+   [--mergeFactor  <mergeFactor>]
+   [--optimizationFactor <optimizationFactor>]
+
+   [--factor_type <{DUF|UEF|ASUF}>]
+   [--factor_value <factor_value>]
+   [--low <low>]
+   [--high <high>]
+   [--inc <inc>]
+
+   [--removeHL]
+   [--hlConst <{0|1}>]
+   [--hlUsePort <hlPortName>]
+   [(-r|--packRegisters) <{i|o|b|n}>]
+
+   [--technology <{virtex|virtex2|virtex4}>]
+   [(-p|--part) <part>]
+
+   [--summary]
+   [--log <logfile>]
+   [--domainReport <domainReport>]
+
+   [--useConfig <config_file>]
+   [--writeConfig[:<config_file>]]
+
+   [-h|--help]
+   [-v|--version]
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File options: input, output, etc.}
+The following options specify the top-level input EDIF file, any auxiliary EDIF
+files, and the destination EDIF file.
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the EDIF source file containing the top-level cell to be 
+triplicated. This is the only required parameter.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the triplicated EDIF output file created by the BL-TMR
+tool. 
+
+Default: \texttt{BL-TMR.edf} in the current working directory.
+
+\subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
+Comma-separated list of directories containing external EDIF files referenced 
+by the top-level EDIF file. The current working directory is included by 
+default and need not be specified. There can be multiple \texttt{-d} options.
+
+Example: \texttt{-d aux\_files,/usr/share/edif/common -d moreEdifFiles/}
+
+\subsubsection{\texttt{(-f|--file) file1,file2,\ldots,fileN}}
+Similar to the previous option, but rather than specifying directories to 
+search, each external EDIF file is named explicitly---including the path to the 
+file. There can be multiple \texttt{-f} options. 
+
+Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR Options}
+The following options control the manner in which the BL-TMR tool performs
+triplication: whether to do full or partial TMR; what specific ports, cell
+types, and cell instances to be triplicated; and how to handle strongly
+connected components (SCCs).
+
+\subsubsection{\texttt{--tmrSuffix}}
+This option allows the user to specify the suffixes that the tool adds to each
+of the replicated design elements (nets, cell instances, etc.). The user must
+specify all three suffixes (in a comma-separated list) to be used for each of
+the three TMR domains. In addition, each of the domains must be unique to avoid
+naming conflicts. One of suffixes may be left blank to signify that no suffix
+should be added to the elements of that domain.
+
+As an example, if the user specified the following list of suffixes:
+
+\texttt{--tmrSuffix \_0,\_1,\_2}
+
+a net in the original design called \texttt{reset} would be triplicated as:
+
+\texttt{reset\_0, reset\_1, and reset\_2}.
+
+The default suffixes (if the \texttt{--tmrSuffix} option is not used) are 
+\texttt{\_TMR\_0, \_TMR\_1, and \_TMR\_2}.
+
+\subsubsection{\texttt{--full\_tmr}}
+Fully triplicate the design, skipping all partial TMR analysis. This method is 
+preferred only if the design is expected to fit in the target part with full 
+triplication of every resource since some time-consuming algorithms are skipped.
+Resource utilization estimates will still function, stopping triplication and 
+warning the user if the full triplicated design is not expected to fit in the 
+target part. In this case, the partially-triplicated design will still be 
+written out to file, but the user would most likely benefit from the partial 
+TMR algorithms.
+
+Note: \texttt{--full\_tmr} will triplicate all logic within the design; however, 
+top-level ports are not triplicated by default. To triplicate top-level ports,
+use the \texttt{--tmr\_in\-ports} and \texttt{--tmr\_outports} options.
+
+\subsubsection{\texttt{--tmr\_inports}}
+Force triplication of all top-level input ports. The resulting EDIF file will
+have three input ports for every input port in the original design, with names
+such as \texttt{inputPort\_tmrInstance\_0}, \texttt{inputPort\_tmrInstance\_1},
+and \texttt{inputPort\_tmrInstance\_2}.
+
+\subsubsection{\texttt{--tmr\_outports}}
+Force triplication of all top-level output ports. The resulting EDIF file will
+have three output ports for every output port in the original design, with names 
+such as \texttt{outputPort\_tmrInstance\_0}, 
+\texttt{output\-Port\_tmr\-Instance\_1}, and 
+\texttt{outputPort\_tmrInstance\_2}.
+
+\subsubsection{\texttt{--no\_tmr\_p port1,port2,\ldots,portN}}
+Prevent triplication of specific top-level port(s), specified as a 
+comma-separated list. Used in conjunction with \texttt{--tmr\_inports} and 
+\texttt{--tmr\_outports}. For example, the following will triplicate all input 
+ports except the clock and reset ports, assuming \texttt{Clk} and \texttt{rst} 
+are the (case-sensitive) names of the clock and reset input ports, respectively:
+
+\texttt{--tmr\_inports --no\_tmr\_p Clk,rst} 
+
+\subsubsection{\texttt{--tmr\_c cell\_type1,cell\_type2,\ldots,cell\_typeN}}
+Force triplication of specific cell type(s), specified as a comma-separated list. 
+All instances of the types specified will be triplicated. \texttt{--tmr\_c}
+takes precedence over \texttt{--no\_tmr\_c}. There can be multiple 
+\texttt{--tmr\_c} options.
+
+Examples: 
+\begin{itemize}
+\item \texttt{--tmr\_c bufg,ibufg,fdc}
+\item \texttt{--tmr\_c bufg,ibufg --tmr\_c fdc}
+\end{itemize}
+
+\subsubsection{\texttt{--tmr\_clk clock\_domain1,clock\_domain2,...,clock\_domainN}}
+Force triplication of specific clock domain(s), specified as a comma-separated
+list. All instances belonging to the specified will be triplicated.
+\texttt{--tmr\_clk}
+takes precedence over \texttt{--no\_tmr\_clk}. There can be multiple 
+\texttt{--tmr\_clk} options.
+
+\subsubsection{\texttt{--tmr\_i cell\_instance1,cell\_instance2,\ldots,cell\_instanceN}}
+Force triplication of specific cell instance(s), specified as a comma-separated
+list. Each instance should be specified with its full path, not including the
+top level instance name, each level being separated by '/' Note:
+\texttt{--no\_tmr\_i} takes precedence over \texttt{--tmr\_i}. There can be
+multiple \texttt{--tmr\_i} options.
+
+Example: \texttt{--tmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
+
+\subsubsection{\texttt{--no\_tmr\_c cell\_type1,cell\_type2,\ldots,cell\_typeN}}
+Prevent triplication of specific cell type(s), specified as a comma-separated 
+list. There can be multiple \texttt{--no\_tmr\_c} options.
+
+Example: \texttt{--no\_tmr\_c bufg,ibufg,fdc}
+
+\subsubsection{\texttt{--no\_tmr\_clk clock\_domain1,clock\_domain2,...,clock\_domainN}}
+Force triplication of specific clock domain(s), specified as a comma-separated
+list. All instances belonging to the specified will be triplicated.
+\texttt{--no\_tmr\_clk} takes precedence over \texttt{--no\_tmr\_clk}. There can
+be multiple \texttt{--no\_tmr\_clk} options.
+
+\subsubsection{\texttt{--no\_tmr\_i cell\_instance1,cell\_instance2,\ldots,cell\_instanceN}}
+Prevent triplication of specific cell instance(s), specified as a 
+comma-separated list. There can be multiple \texttt{--no\_tmr\_i} options.
+
+Example: \texttt{--no\_tmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
+
+\subsubsection{\texttt{--no\_tmr\_feedback}}
+Skip triplication of the feedback section of the design. 
+Is it \emph{not} recommended to skip triplication of the feedback section, as 
+it is the most critical section for SEU mitigation.
+
+\subsubsection{\texttt{--no\_tmr\_input\_to\_feedback}}
+Skip triplication of the portions of the design that ``feed into'' the feedback 
+sections. These portions also contribute to the ``persistence'' of the design 
+and should be included in triplication, when possible.
+
+\subsubsection{\texttt{--no\_tmr\_feedback\_output}}
+Skip triplication of the portions of the design which are driven by the 
+feedback sections of the design.
+
+\subsubsection{\texttt{--no\_tmr\_feed\_forward}}
+Skip triplication of the portions of the design which are not related to 
+feedback sections (neither drive nor are driven by the feedback sections).
+
+\subsubsection{\texttt{--noInoutCheck}}
+% By default, designs with INOUT ports are not allowed, since the BL-TMR tool 
+% currently does not support all aspects of INOUT ports. This option forces the 
+% tool to allow designs with INOUT ports, which \emph{may} result in a working 
+% TMR'd design, but might not.
+\textbf{Deprecated} - The BL-TMR tool no longer checks for INOUT ports since they
+are handled correctly in most cases.
+
+\subsubsection{\texttt{--no\_iob\_feedback}}
+Use this option to exclude IOBs from the feedback analysis. This is useful when
+a top-level inout port is involved in feedback but by design will never be 
+written to and read at the same time. Thus there is no \emph{real} feedback.
+Using this option may greatly reduce the amount of feedback found in the design
+and thus reduce the number of voters inserted.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{SCC Options}
+The following options control how BL-TMR handles strongly connected components 
+(SCCs) and related logic. An SCC, by definition, is a set of circuit components 
+that are mutually reachable. That is, following the flow of data, every 
+component in the SCC can be reached from every other. In an SCC, each component 
+is related to every other component. The feedback section is defined as the 
+combination of all the strongly-connected components (SCCs). The following 
+options determine the order in which SCCs and related logic are triplicated as 
+well as whether or not SCCs can be partitioned into smaller components.
+
+\subsubsection{\texttt{--SCCSortType} $\{1,2,3\}$}
+Choose the method the BL-TMR tool uses to partially triplicate logic in the 
+``feedback'' section of the design.  Option 1 triplicates the largest SCCs 
+first. Option 2 triplicates the smallest first. Option 3 triplicates the SCCs 
+in topological order.
+
+This option only affects the resulting circuit if only some of the feedback 
+section is triplicated. If all or none of the ``feedback'' section is 
+triplicated, the three options produce identical results. The difference lies 
+in what \emph{order} the logic in this section is added and thus what part of 
+it is triplicated if there are not enough resources available to triplicate the 
+entire section.
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3}
+(topological order).
+
+\subsubsection{\texttt{--doSCCDecomposition}}
+Allow portions of strongly-connected components (SCCs) to be included for 
+triplication. 
+
+By default, if a single SCC is so large that it cannot be triplicated for the 
+target part, it is skipped. This option allows large SCCs to be broken up into 
+smaller pieces, some of which may fit in the part. This is only useful if there 
+are not enough resources to triplicate the entire set of SCCs.
+
+
+\subsubsection{\texttt{--use\_bad\_cut\_conn}}
+Instructs BL-TMR to use the ``BadCutConnectivity'' style graph to choose
+SCC elements for triplication. This may have better performance than the 
+default algorithm.
+
+\subsubsection{\texttt{--highest\_fanout\_cutset}}
+Instructs BL-TMR to try to insert voters at the outputs of the instances with 
+the highest fanout (those that drive the most sinks), when inserting voters 
+in SCCs.
+
+\subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
+Instructs BL-TMR to try to insert voters at the outputs of the flip-flops with 
+the highest fanout (those that drive the most sinks), when inserting voters 
+in SCCs.
+
+\subsubsection{\texttt{--inputAdditionType} $\{1,2,3\}$}
+Select between three different algorithms to partially triplicate logic in the 
+``input to feedback'' section of the design. Option 1 uses a depth-first search 
+starting from the inputs to the feedback section. Option 3 uses a breadth-first 
+search. Option 2 uses a combination of the two.
+
+This option only affects the resulting circuit if only some of the input
+to feedback section is triplicated. If all or none of the input to feedback 
+section is triplicated, the three options produce identical results. The 
+difference is in what \emph{order} the logic in this section is added and thus 
+what part of it is triplicated if there are not enough resources available to 
+triplicate the entire section.
+
+Results may differ between the three addition types depending on the input 
+design. It is yet not clear if one method is superior to the others in general. 
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3} 
+(breadth-first search).
+
+\subsubsection{\texttt{--outputAdditionType} $\{1,2,3\}$}
+Similar to \texttt{--inputAdditionType}, this option applies to the logic 
+in the ``feedback output'' section, that is, logic that is driven by the
+feedback section.
+
+This option only affects the resulting circuit if only some of the feedback 
+output section is triplicated. It has no effect if all or none of the feedback 
+output section is triplicated. As with \texttt{--inputAdditionType}, it is yet
+not clear if one method is superior to the others in general.
+
+Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3} 
+(breadth-first search).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Merge Factor and Optimization Factor}
+The following factors are used by the utilization tracker, which estimates the 
+anticipated usage of the target chip after performing (partial) TMR\@. All factors
+in this section have the precision of a Java \texttt{double}. 
+
+\subsubsection{\texttt{--mergeFactor} $\{ 0 \leq n \leq 1 \}$ }
+Used to fine-tune the estimation of logic resources in the target chip. Each 
+technology has an internal, default ``merge factor'' which estimates the 
+percentage of LUTs and flip-flops that will share the same slice. As this 
+factor is both technology and design dependent, this option allows the user to 
+specify his/her own merge factor. 
+
+The total number of logic blocks (without taking into account optimization) is 
+given by the following equation:
+\begin{equation*}
+\mathrm{total~logic~blocks} = FFs + LUTs - (mergeFactor * FFs)
+\end{equation*}
+
+If you need to calculate a custom mergeFactor for a specific design, use the 
+following equation:
+\begin{equation*}
+mergeFactor = \frac{(FFs + LUTs - 2 * slices)}{FFs}
+\end{equation*}
+
+Must be between 0 and 1, inclusive. Default: 0.5.
+
+\subsubsection{\texttt{--optimizationFactor} $\{ 0 \leq n \leq 1 \}$}
+The ``optimization factor'' is used to scale down the estimate of LUTs and 
+flip-flops used to account for logic optimization performed during mapping. For 
+example, an optimization factor of 0.90 would assume that logic optimization 
+techniques would reduce the required number of LUTs and FFs by 10\%.
+
+We define the optimization factor to be the number of logic blocks after 
+optimization divided by the number of logic blocks before optimization.  So the 
+final equation for the total number of logic blocks is as follows:
+\begin{equation*}
+\mathrm{Estimate} = optimization\_factor * (FFs + LUTs -  mergeFactor * FFs)
+\end{equation*}
+
+Must be between 0 and 1, inclusive. Default: 0.95.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Utilization Factors and Multiple EDIF Creation}
+Starting with version 0.2.2, BL-TMR allows the user to create either a single 
+EDIF file or multiple EDIF files, each with a different amount of partial TMR.
+In either case, the amount of partial TMR is specified with a Utilization Factor
+Type and a Utilization Factor Value.  The Factor Value is either a single value
+or a range of values specified by a lower bound, an upper bound, and an 
+incremental step size.
+
+Multiple EDIF Creation is activated by the use of both the \texttt{--low} and
+\texttt{--high} parameters.  Using one without the other will result in an error
+and BL-TMR will not run.
+
+When creating a single EDIF file, BL-TMR will place the output file in the
+current directory by default, or in the location specified by the
+\texttt{--output} option. When creating multiple EDIF files, BL-TMR will place
+each EDIF file in its own subdirectory within the current directory. Both the 
+subdirectory and the EDIF file will have a unique name that identifies the level
+of partial TMR used.  
+
+For example, given the following set of command-line parameters: 
+
+\begin{verbatim}
+> java ... --low 0.50 --high 1.0 --inc .10 --factorType asuf MyDesign.edf
+\end{verbatim} 
+BL-TMR will create six EDIF files, starting with 
+\texttt{MyDesign\_asuf\_0\_5.edf}, \texttt{MyDesign\_asuf\_0\_6.edf}, 
+\\\texttt{MyDesign\_asuf\_0\_7.edf}, and ending with 
+\texttt{MyDesign\_asuf\_1.edf}. Each EDIF file would be placed in separate 
+directories, whose names would be the same as the name of each EDIF file.
+
+\subsubsection{\texttt{--factorType} $\{ \mathtt{ASUF},\mathtt{UEF},\mathtt{DUF} \}$ }
+Specify the Utilization Factor Type to be used. Valid Factor Types are:
+
+\begin{itemize}
+\item ASUF 
+
+Available Space Utilization Factor: The maximum utilization of the target part,
+expressed as a percentage of the unused space on the part after the original
+(non-TMR'd) design has been considered.
+
+\item UEF 
+
+Utilization Expansion Factor: The maximum increase in utilization of the target
+part, expressed as a percentage of the utilization of the original (non-TMR'd)
+design.
+
+\item DUF 
+
+Desired Utilization Factor: The maximum percentage of the target chip to be
+utilized after performing Partial TMR.
+\end{itemize}
+
+
+
+Not case sensitive.
+
+\subsubsection{\texttt{--factorValue}}
+Specify a single Factor Value.  The number has the precision of a Java 
+\texttt{double} and is interpretted based on the Factor Type as explained above.
+
+For example, if a design occupies 30\% of the target part prior to TMR, a DUF
+of 0.50 would use 50\% of the part. An UEF of 0.50 would increase the usage by
+50\%, resulting in 45\% usage of the part. An ASUF of 0.50 would use 50\% of the
+available space prior to TMR, resulting in 65\% usage.
+
+Must be greater than or equal to 0. Default: 1.0.
+
+\subsubsection{\texttt{--low}}
+Specify the (inclusive) lower bound of the Factor Value for Multiple EDIF
+Creation. This value is interpreted according to the \texttt{factorType}
+specified, as described above.
+
+Must be used with \texttt{--high}.
+
+Must be greater than or equal to 0.
+
+\subsubsection{\texttt{--high}}
+Specify the (inclusive) upper bound of the Factor Value for Multiple EDIF
+Creation. This value is interpreted according to the \texttt{factorType}
+specified, as described above.
+
+Must be used with \texttt{--low}.
+
+Must be greater than or equal to 0.
+
+\subsubsection{\texttt{--inc}}
+Specify the step size of the Factor Value for Multiple EDIF Creation.
+
+For example, if the lower bound is 0.25, the upper bound is 0.75, and the step
+size is 0.15, then BL-TMR will run, starting with a Factor Value of 0.25, then
+0.40, then 0.55, and will end with 0.70.
+
+Must be between 0 and 1, inclusive. Default: 1.0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Half Latch Removal Options}
+The following options determine if and how half-latch removal should be
+performed in the resulting EDIF file. Half-latches are constants found
+throughout FPGA designs which increase sensitivity but, if upset, \emph{cannot}
+be corrected through scrubbing, because they are not determined by the
+configuration bits. The BL-TMR tool can remove most of the half-latches from the
+input EDIF file, prior to performing TMR, significantly increasing reliability.
+
+\subsubsection{\texttt{--removeHL}}
+Remove half-latches in the input design before performing TMR.
+
+Note: Not \emph{all} half-latches can be removed at the EDIF 
+level for all architectures. Some post-processing may be necessary.
+
+\subsubsection{\texttt{--hlConst} $\{0,1\}$}
+Sets the polarity of the half-latch constant to be used, whether an 
+internally-generated constant or a top-level port. 
+
+Valid options are \texttt{0} and \texttt{1}. Default: \texttt{0}.
+
+\subsubsection{\texttt{--hlUsePort <hlPortName>}}
+Specify a top-level port to use in place of half-latches when 
+using half-latch removal. The top-level port will have the name specified with 
+this option and the polarity (1 or 0) specified with the \texttt{--hlConst} 
+option.
+
+\subsubsection{\texttt{--packRegisters} \{i\textbar o\textbar b\textbar n\}}
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
+ports (those that will be the inputs and outputs of the FPGA). The half-latch 
+tool must therefore treat any FFs that will be packed into the IOBs differently
+than other FFs (at least with Virtex devices). This option allows the user to
+specify which IOBs the registers should be packed into: inputs (\emph{i}),
+outputs (\emph{o}), both (\emph{b}), or none (\emph{n}). The default is to pack
+both input and output registers.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Target Technology and Part Options}
+
+\subsubsection{\texttt{--technology <techname>}}
+Target architecture for the triplicated design. Used to take into account 
+various technology-specific properties. This argument is \emph{not} 
+case-sensitive.
+
+Valid technologies: \texttt{Virtex} and \texttt{Virtex2}. Default: 
+\texttt{Virtex}.
+
+\subsubsection{\texttt{--part <partname>}}
+Target architecture for the triplicated design. Used to take into account 
+part-specific properties, including the number of resources available 
+in each part. Valid parts include all parts from the \emph{Virtex} and 
+\emph{Virtex2} product lines, represented as a concatenation of the part name 
+and package type. For example, the ``Xilinx Virtex 1000 FG680'' is represented 
+as \texttt{XCV1000FG680}. This argument is \emph{not} case-sensitive.
+
+Default: \texttt{xcv1000fg680}.
+% TODO: Add list of all supported part numbers. All parts listed in
+% XilinxVirtexDeviceUtilizationTracker.java and
+% XilinxIIVirtexDeviceUtilizationTracker.java
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Log, Report, and Configuration File Options}
+The following options determine where the summary, log, and domain report
+information are printed.
+
+\subsubsection{\texttt{--summary}}
+\textbf{Deprecated} - TMR summary is always displayed
+
+\subsubsection{\texttt{--log <logfile>}}
+The name of the BL-TMR log file, which records the options used along with
+the runtime details and results. 
+
+Default: \texttt{BL-TMR.log}.
+
+\subsubsection{\texttt{--domainReport <domainReport>}}
+The name of the domain report file. The domain report lists the domain (0, 1, 
+or 2) of each cell instance in the resulting EDIF file. This report is used as 
+input to the LANL RadDRC half-latch removal tool. 
+
+Default: \texttt{BL-TMR\_domain\_report.txt}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Configuration File Options}
+\label{config options}
+The BL-TMR tool can use configuration files in place of command-line parameters. 
+If a parameter is specified in a configuration file, it will be passed to the 
+BL-TMR tool, unless it is overridden by the same argument on the command-line. 
+The files \texttt{BL-TMR.conf}, in the curent working directory, and 
+\texttt{/etc/BL-TMR/BL-TMR.conf}, will be used as source files for default 
+parameters. If either or both of these files do not exist, it will not cause a 
+problem. (See section \ref{using config}, ``Using Configuration Files'' for
+more information.)
+
+\subsubsection{\texttt{--useConfig <config\_file>}}
+\label{useConfig}
+Specify an additional configuration file from which to read parameters.
+
+The order of precedence for BL-TMR options:
+\begin{enumerate}
+  \item Command-line
+  \item Configuration file specified by the \texttt{--useConfig} option
+  \item Configuration file \texttt{BL-TMR.conf} in the current directory
+  \item Configuration file \texttt{/etc/BL-TMR/BL-TMR.conf}
+\end{enumerate}
+
+\subsubsection{\texttt{--writeConfig[:<config\_file>]}}
+Write the current set of command-line parameters to a configuration file and 
+exit. The parameters will be parsed to ensure they are valid, but the BL-TMR tool
+will not run.  Note that only the parameters on the command-line are stored in
+the configuration file. When using \texttt{--writeConfig}, any use of
+\texttt{--useConfig} is ignored. This is to prevent complicated cascades
+of configuration files combined with command-line options.
+
+This option can be called in two ways. First, specifying simply 
+\texttt{--writeConfig} will cause the command-line parameters to be written to 
+the configuration file \texttt{BL-TMR.conf} in the current working directory. 
+Second, if followed with a colon and a filename, the command-line parameters 
+will be written to the specified file. 
+
+Examples:
+\begin{itemize}
+  \item \texttt{--writeConfig} will write the command-line parameters to the
+  file \texttt{BL-TMR.conf}.
+  \item \texttt{--writeConfig:JonSmith.conf} will write the command-line 
+  parameters to the file \texttt{JonSmith.conf}.
+  \item \texttt{--writeConfig:/usr/lib/BL-TMR/common.conf} will write the
+  command-line pa\-ram\-e\-ters to the file \texttt{/usr/share/BL-TMR/common.conf}. 
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Help and Version Information}
+If either of the following options are used, the appropriate information will be
+printed and the program will exit.
+
+\subsubsection{\texttt{-h|--help}}
+Print (to \texttt{stdout}) usage and detailed help information (similar to the 
+contents of this document) and exit.
+
+\subsubsection{\texttt{-v|--version}}
+Print (to \texttt{stdout}) version and copyright information and exit.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Common Usage}
+This section describes a few sample scenarios and explains which combination of
+command line options should be used for each.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR}
+\label{subsec:fulltmr}
+This example shows how to perform ``full'' TMR (triplication of all components) 
+on a design. For larger designs, this may result in a TMR'd version of the 
+design that does not fit in the desired chip. If this is the case, some form of 
+``partial'' TMR should be used.
+
+In this example, the design to be triplicated is specified in the file 
+\texttt{myDesign.edf} and the triplicated design will be written to 
+\texttt{myDesign\_tmr.edf}. Both input ports and output ports are triplicated. 
+The part used in this case is the Virtex II XC2V1000-FG456.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_tmr.edf \
+  --tmr_inports --tmr_outports --full_tmr --technology Virtex2 --part xc2v1000fg456
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR---Clock not triplicated}
+Some systems do not support triplicated clock lines. This example shows how to 
+triplicate everything but the clock line.
+
+This example is almost identical to the example in section 
+\ref{subsec:fulltmr}. The \texttt{--no\_tmr\_p} option specifies that the 
+top-level port named \texttt{Clk} (case-sensitive) should not be triplicated. 
+The \texttt{--no\_tmr\_c} option indicates that all cells of the global clock 
+buffer type \texttt{BUFG} should also not be triplicated. This prevents the 
+clock line after the buffer from being triplicated and the entire circuit will 
+use the same single clock.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_tmr_singleClock.edf \
+ --tmr_inports --tmr_outports --full_tmr --no_tmr_p Clk --no_tmr_c BUFG --technology \
+ Virtex2 --part xc2v1000fg456
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Full TMR---No I/O triplication}
+Many FPGA applications are port-limited. This example shows how to prevent all 
+inputs and outputs from being triplicated. In this example, the user must leave 
+out the \texttt{--tmr\_inports} and \texttt{--tmr\_outports} parameters so that 
+top level ports are not included in triplication. This example also leaves out 
+the \texttt{--technology} and \texttt{--part} options, using the default values 
+for each (Virtex XCV1000-FG680).
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_tmr_singleIO.edf \
+ --full_tmr
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---No I/O triplication, External EDIF files}
+This example shows a standard usage of the BL-TMR tool for partial TMR\@. In this 
+case, the design is too large to fit in the targeted device when fully 
+triplicated. The BL-TMR tool will triplicate as much logic as possible and 
+estimate when the target chip will be fully utilized.
+
+This design also requires some external EDIF files that are referenced in 
+\texttt{myLargeDesign.edf} as ``black boxes.'' These external files, which are 
+located in the \texttt{externalSrcDir} directory, will be incorporated into the 
+triplicated design. Thus, the external files will not be needed with the 
+\texttt{myLargeDesign\_BL-TMR.edf} output file.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BL-TMR.edf \
+  -d ./externalSrcDir
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---SCC Decomposition, custom estimation factors}
+In this case, the user wishes to include parts of strongly-connected components 
+(SCCs) for triplication. This example also shows how to override the default
+merge and optimization factors.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BL-TMR.edf \
+  -d ./externalSrcDir --doSCCDecomposition --mergeFactor 0.4 --optimizationFactor 0.85
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Fill 50\% of target device}
+In some cases, the user may wish to use the triplicated design on the same chip 
+as another design. In this example the user knows that a separate design will 
+require half of the target chip. To fill as much of the left-over 50\% as 
+possible, the user specifies a \texttt{--factor\_type} of \texttt{DUF} and a 
+\texttt{factor\_value} of \texttt{0.5}. This will stop triplication of the 
+input design when half of the target chip is utilized, according to the 
+estimate made with the merge optimization factors.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_ptmr_50pc.edf \
+  -d ./externalSrcDir --factor_type DUF --factor_value 0.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Push utilization past 100\%}
+Due to the way mapping tools are implemented, the user may be able to fit more 
+logic onto the target chip than estimated by the utilization tracker. The 
+Xilinx \texttt{map} program, for example, does not map unrelated logic into the 
+same slice until slice utilization reaches 99\%. This means that much more 
+logic can be added after this point, though the place and route step will 
+become increasingly more difficult for the tools to perform.
+
+With this in mind, to achieve the maximum capacity on the target chip, it may 
+be necessary to specify a desired utilization factor greater than 1.0 (more 
+than 100\% estimated utilization). The following example uses a device 
+utilization factor of 1.5, which will stop triplication when an estimated 150\% 
+of the target part is utilized.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o \
+ myLargeDesign_ptmr_150pc.edf -d ./externalSrcDir --factor_type DUF --factor_value 1.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Partial TMR---Use 75\% of available space on target device}
+The available space utilization factor can be used to specify the amount of
+space on the target device left after the unmitigated circuit is mapped. To
+fill the chip up to 75\% of the left-over space, the user specifies a 
+\texttt{--factor\_type} of \texttt{ASUF} and a \texttt{factor\_value} of 
+\texttt{0.75}. If the original design size is estimated at using 40\% of the
+target chip, this will stop triplication when 70\% ($40 + (100-40)*0.75$) of
+the target chip is utilized.
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_ptmr_50pc.edf \
+  -d ./externalSrcDir --factor_type DUF --factor_value 0.5
+\end{verbatim}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Using Configuration Files}
+\label{using config}
+Configuration files can greatly simplify the use of the BL-TMR tool. The following 
+examples show how to create and use configuration files. (See section
+\ref{config options}, ``Configuration File Options'' for more information.)
+
+\subsubsection{Create a Configuration File}
+The following will write the current command-line arguments to the file
+\texttt{myConfig.conf}:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_BL-TMR.edf -f \ 
+subcell.edf,/usr/share/edifFiles/subcell2.edf, -d /usr/share/edif/common/ \ 
+--tmr_inports --tmr_outports --tmr_c DLL,fdc,clk_buf --tmr_i clk,fifo_output \ 
+--no_tmr_p clk_port,data_in --no_tmr_c bufg --no_tmr_i mux2,and24 \ 
+--notmrFeedForward --inputAdditionType 1 --outputAdditionType 2 --mergeFactor \ 
+0.85 --optimizationFactor 0.90 --availableSpaceUtilizationFactor 0.85 \
+--removeHL --hlConst 0 --hlUsePort hl_port --technology Virtex2 --part \
+XCV1000FG680 --summary --log myLogFile.log --domainReport myDomainReport.txt \
+--writeConfig:myConfig.conf
+\end{verbatim}
+
+The previous command creates the following output, stored in 
+\texttt{myConfig.conf}:
+
+\begin{verbatim}
+#myConfig.conf, created by byucc.edif.tools.jsap.NMRCommandParser
+#Sat Jul 22 19:51:14 MDT 2006
+hlUsePort=hl_port
+availableSpaceUtilizationFactor=0.85
+tmr_c=DLL,fdc,clk_buf
+summary=true
+optimizationFactor=0.9
+log=myLogFile.log
+notmrFeedForward=true
+output=myDesign_BL-TMR.edf
+hlConst=0
+input=myDesign.edf
+outputAdditionType=2
+mergeFactor=0.85
+removeHL=true
+dir=/usr/share/edif/common/
+writeConfig=myConfig.conf
+part=XCV1000FG680
+no_tmr_p=clk_port,data_in
+technology=Virtex2
+domainReport=myDomainReport.txt
+inputAdditionType=1
+no_tmr_i=mux2,and24
+file=subcell.edf,/usr/share/edifFiles/subcell2.edf
+no_tmr_c=bufg
+tmr_i=clk,fifo_output
+tmr_outports=true
+tmr_inports=true
+\end{verbatim}
+
+Configuration files are defined by the \texttt{java.util.Properties} class. 
+However, the format is simple enough that configuration files can easily be 
+created by hand or by other programs. As seen above, the format is simply 
+\texttt{key=value}. A hash mark (pound sign) (\texttt{\#}) at the beginning of 
+a line marks that line as a comment. BL-TMR options are given just as they would 
+be on the command-line, with the exception that command-line options with no 
+arguments (e.g. \texttt{--tmr\_inports}, \texttt{--summary}, 
+\texttt{--doSCCDecomposition}, etc.) are specified as either \texttt{true} or 
+\texttt{false}, as seen above.
+
+\subsubsection{Use a Configuration File}
+
+The following example shows how to load \texttt{myConfig.conf} as a configuration
+file:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR --useConfig myConfig.conf
+\end{verbatim}
+
+\subsubsection{Combining Configuration Files and Command-line Arguments}
+Configuration files provide default values of BL-TMR options. Any options 
+specified on the command-line will take precedence. (See section 
+\ref{useConfig}, ``\texttt{--useConfig}'' for detailed precedence information.)
+The following example uses the same options specified by myConfig.conf, but
+changes the input and output files:
+
+\begin{verbatim}
+> java byucc.edif.tools.tmr.FlattenTMR myOtherDesign.edf -o myOtherDesign_BL-TMR.edf \
+ --useConfig myConfig.conf
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Special Notes}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Naming Conventions}
+\label{naming conventions}
+The BL-TMR tool alters the names of triplicated signals, cell instances, and 
+ports. Be aware of this when using placement (or other) constraints. An output 
+port named \texttt{myOutport} in the original EDIF file will, when triplicated, 
+become \texttt{myOutport\_TMR\_0, myOutport\_TMR\_1, and myOutport\_TMR\_2}. 
+Similarly, a flip-flop whose instance name is \texttt{myFF} in the original file
+will become \texttt{myFF\_TMR\_0}, \texttt{myFF\_TMR\_1}, 
+\texttt{and myFF\_TMR\_2}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Allocating More Memory for the JVM}
+Larger designs may require more heap memory than the Java Virtual Machine (JVM) 
+is allocated by default. Use the \texttt{-Xmx}\footnote{See
+\url{http://java.sun.com/j2se/1.5.0/docs/tooldocs/windows/java.html\#Xms} for
+more information about this and other command-line options to the JVM.} option 
+with the Java executable to change the maximum amount of memory for the virtual
+machine. The following example allocates up to 256 MB of heap space for the JVM:
+
+\begin{verbatim}
+> java -Xmx256M byucc.edif.tools.tmr.FlattenTMR ...
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{RLOC Constraints}
+The BL-TMR tool does not support RLOC constraints at this time. RLOC constraints 
+must therefore be removed before processing the resulting EDIF file. RLOCs may 
+be removed from the either the source EDIF files (including any external EDIF 
+files) or from the triplicated output file. Automated RLOC removal may be added 
+to the tool in a later release.
+
+To remove RLOC constraints from an EDIF file, you can use the UNIX 
+\texttt{grep} tool. The following example uses \texttt{grep} to find all lines 
+in the source EDIF file \texttt{myDesign\_BL-TMR.edf} that do \emph{not} contain 
+the string \texttt{RLOC} and copy them to the destination EDIF file 
+\texttt{myDesign\_tmr\_noRLOCs.edf.} Note that you may \emph{not} use the same 
+file for the source and destination.
+
+\begin{verbatim}
+> grep -v RLOC myDesign_BL-TMR.edf > myDesign_BL-TMR_noRLOCs.edf
+\end{verbatim}
+
+This trick is guaranteed to work for EDIF files created by the BL-TMR tool as 
+well as all Xilinx CoreGen EDIF files. It is \emph{not} guaranteed to work for 
+all EDIF files in general since it relies on the fact that each RLOC constraint 
+with its associated parentheses do not spread across multiple lines (which is 
+not required by the EDIF file format). For example, it does not work for EDIF 
+files created with the JHDL netlister.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Change Log}
+
+\subsection*{Version 0.2.5 - 13 Jul 2007}
+\begin{itemize}
+\item Added new options for cutset determination (reduces voter count)
+\item Fixed bug in which not all instances were guaranteed to have the same triplication status
+\item Added options to force or exclude full clock domains
+\item Added Virtex4 support
+\item Now allows all valid part number constructions
+\item Fixed bug in which bad cuts were possible when using --no\_tmr\_x options
+\end{itemize}
+
+\subsection*{Version 0.2.4 - 16 Feb 2007}
+\begin{itemize}
+\item Fixed bugs in EdifHalfLatchRemover: 
+\begin{itemize}
+\item Added support for BlackBox modules
+\item Removed addition of ``\_hl'' suffix to replaced primitives
+\end{itemize}
+\item Added option to allow user to specify suffixes for triplicated design
+elements
+\item Design name in output file now matches top-level Cell
+\item Fixed bug in SCCUtilities
+\item created new HalfLatchFlattenedEdifCell class, tool now flattens before HL
+removal
+\item HL removal now recognizes IOB registers
+\item Added option to ignore feedback through IOBs
+\item Port components are automatically triplicated/not triplicated with the port
+\end{itemize}
+
+\subsection*{Version 0.2.3 - 12 Oct 2006}
+\begin{itemize}
+\item Fixed bug when writing config files
+\item Fixed bug in SCC code that could cause a ConcurrentModificationException
+\item Fixed bug in which BL-TMR could produce an invalid design due to too many
+  connections to a MUXF6 input
+\end{itemize}
+
+\subsection*{Version 0.2.2 - 25 Sep 2006}
+\begin{itemize}
+  \item User may now specify hierarchical instance names for forced inclusion
+  in/exclusion from TMR
+  \item Added Half-Latch Removal as a command-line option
+  \item Now using NMREdifCell instead of TMREdifCell, which slightly changed the
+  naming policy for triplicated elements (See section \ref{naming conventions}
+  ``Naming Conventions'')
+  \item Added fmap removal (fixes the use of inputAdditionType=1)
+  \item Added Multiple EDIF Creation
+  \begin{itemize}
+    \item Removed the DUF, UEF, and ASUF command-line parameters
+    \item Added factor\_type and factor\_value command-line parameters
+  \end{itemize}
+\end{itemize}
+
+\subsection*{Version 0.2.1 - 28 Jul 2006}
+\begin{itemize}
+\item Now disallows voting between MUXF5, MUXF6, MUXF7, MUXF8
+\item Added unused cell trimming
+\end{itemize}
+
+\subsection*{Version 0.2.0 - 25 Jul 2006}
+\begin{itemize}
+\item New command-line parser\footnote{The BL-TMR tool uses \emph{JSAP: the 
+Java-based Simple Argument Parser} by Martian Software, Inc.\ for parsing 
+command-line arguments.  JSAP and its source code can be found at 
+\url{http://www.martiansoftware.com/jsap/index.html}.} (not backwards 
+compatible)
+\item Added half-latch removal option
+\item Added configuration files support
+\item Some command-line parameters have been renamed
+\item Added recursive black box merging
+\item Fixed bug which caused some nets to lose their original name
+\end{itemize}
+
+\subsection*{Version 0.1.9 - 3 Jul 2006}
+\begin{itemize}
+\item Fixed bug in which output EDIF file could be invalid and crash in the map 
+stage (voters were inserted in the carry chain).
+\end{itemize}
+
+\subsection*{Version 0.1.8 - 13 Jun 2006}
+\begin{itemize}
+\item Added triplication status to reports
+\item Added available space utilization factor
+\item Added force triplicate options
+\item Fixed bug in SCCUtilities that could cause a class cast exception
+\end{itemize}
+
+\subsection*{Version 0.1.7 - 23 May 2006}
+\begin{itemize}
+\item Added DLLs to resources tracked for Virtex parts
+\item Added options for ordering of SCC additions (-SCCSortType)
+\end{itemize}
+
+\subsection*{Version 0.1.6 - 18 May 2006}
+\begin{itemize}
+\item Added options to select type of partial Input to Feedback and Feedback 
+Output addition to TMR (-input and -outputAdditionType)
+\item Added option to ignore INOUT port restriction
+\item Moved to Java 5
+\end{itemize}
+
+\subsection*{Version 0.1.5 - 12 May 2006}
+\begin{itemize}
+\item Version 0.1.4 contained a left-over debug printout. This was removed.
+\end{itemize}
+
+\subsection*{Version 0.1.4 - 11 May 2006}
+\begin{itemize}
+\item Added option for naming tmr domain report
+\item Added utilization\_expansion\_factor option
+\end{itemize}
+
+\subsection*{Version 0.1.3 - 3 May 2006}
+\begin{itemize}
+\item Added options to selectively exclude Feedback, Input to Feedback, 
+Feedback Output, and Feed-forward sections from TMR.
+\item Complete partial TMR now matches ``Full'' TMR\@. (Before this, the 
+``Feed-forward'' section was not included.)
+\end{itemize}
+
+\subsection*{Version 0.1.2 - 17 Apr 2006}
+\begin{itemize}
+\item Added automatic IOB handling. The user no longer needs to specifically 
+include or exclude IBUFs, OBUFs, etc.
+\item Added automatic log file creation. The user may also customize the 
+filename of the logfile.
+\item Fixed issue in which ``rename'' directives in the original EDIF were not 
+preserved. The output EDIF now contains the original ``rename''s.
+\end{itemize}
+
+\subsection*{Version 0.1.1 - 9 Mar 2006}
+\begin{itemize}
+\item Added version number to the output of the tool for version tracking
+purposes.
+\end{itemize}
+
+\subsection*{Initial Release---Version 0.1.0 - 8 Mar 2006}
+\begin{itemize}
+\item Initial release outside of BYU\@. No version number is contained in
+the released JAR file.
+\end{itemize}
+
+\end{document}
+
+%
+% Words to be ignored by the spell-checker:
+%
+
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
+% LocalWords:  OBUFs logfile INOUT TMR'd tmr txt 
+
