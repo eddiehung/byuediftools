@@ -146,9 +146,9 @@ public class LogFile {
     //	public static enum logLevel {Debug,Log,Std,Warn,Err};
 
     class outStream extends PrintStream {
-        private PrintStream _log;
+        //private PrintStream _log;
 
-        private PrintStream _out;
+        //private PrintStream _out;
 
         private int _local_level;
 
@@ -176,9 +176,9 @@ public class LogFile {
 
         @Override
         public void print(String s) {
-            _log.println(s);
+            _log.print(s);
             if (_local_level <= _LogLevel)
-                _out.println(s);
+                _out.print(s);
         }
 
     }
