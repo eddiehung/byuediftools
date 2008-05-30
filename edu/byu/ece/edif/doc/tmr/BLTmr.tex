@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% $Id:BLTmr.tex 151 2008-04-02 16:27:55Z jamesfcarroll $
+% $Id:BL-TMR.tex 151 2008-04-02 16:27:55Z jamesfcarroll $
 %
-% Documentation file for the BYU-LANL Triple Modular Redundancy (BLTmr) Tool.
+% Documentation file for the BYU-LANL Triple Modular Redundancy (BL-TMR) Tool.
 %
 % Author: Brian Pratt <bhpratt@gmail.com>
 %         James Carroll <jcarroll@byu.net>
@@ -87,14 +87,14 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-The BYU-LANL Triple Modular Redundancy (BLTmr) Tool is an EDIF-based tool to 
+The BYU-LANL Triple Modular Redundancy (BL-TMR) Tool is an EDIF-based tool to 
 insert redundancy in an FPGA design in order to increase reliability. Triple 
 modular redundancy (TMR) is applied to the EDIF input file according to the 
 options chosen by the user. Partial TMR focuses on ``persistent'' components of 
 the design in order to get the ``most bang for your buck.''
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{BLTmr Tool Options}
+\section{BL-TMR Tool Options}
 Options can be specified on the command line or in a configuration file in any 
 order. This section describes each of these options in detail, which are 
 summarized below:\footnote{This list is obtainable with the \texttt{--help} 
@@ -105,7 +105,7 @@ categories.}
 > java byucc.edif.tools.tmr.FlattenTMR --help
 Usage:
 
-java -cp BLTmr.jar byucc.edif.tools.tmr.FlattenTMR <input_file>
+java -cp BL-TMR.jar byucc.edif.tools.tmr.FlattenTMR <input_file>
    [(-o|--output) <output_file>]
    [(-d|--dir) dir1,dir2,...,dirN ]
    [(-f|--file) file1,file2,...,fileN ]
@@ -174,10 +174,10 @@ Filename and path to the EDIF source file containing the top-level cell to be
 triplicated. This is the only required parameter.
 
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
-Filename and path to the triplicated EDIF output file created by the BLTmr
+Filename and path to the triplicated EDIF output file created by the BL-TMR
 tool. 
 
-Default: \texttt{BLTmr.edf} in the current working directory.
+Default: \texttt{BL-TMR.edf} in the current working directory.
 
 \subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
 Comma-separated list of directories containing external EDIF files referenced 
@@ -195,7 +195,7 @@ Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Partial TMR Options}
-The following options control the manner in which the BLTmr tool performs
+The following options control the manner in which the BL-TMR tool performs
 triplication: whether to do full or partial TMR; what specific ports, cell
 types, and cell instances to be triplicated; and how to handle strongly
 connected components (SCCs).
@@ -320,11 +320,11 @@ Skip triplication of the portions of the design which are not related to
 feedback sections (neither drive nor are driven by the feedback sections).
 
 \subsubsection{\texttt{--noInoutCheck}}
-% By default, designs with INOUT ports are not allowed, since the BLTmr tool 
+% By default, designs with INOUT ports are not allowed, since the BL-TMR tool 
 % currently does not support all aspects of INOUT ports. This option forces the 
 % tool to allow designs with INOUT ports, which \emph{may} result in a working 
 % TMR'd design, but might not.
-\textbf{Deprecated} - The BLTmr tool no longer checks for INOUT ports since they
+\textbf{Deprecated} - The BL-TMR tool no longer checks for INOUT ports since they
 are handled correctly in most cases.
 
 \subsubsection{\texttt{--no\_iob\_feedback}}
@@ -336,7 +336,7 @@ and thus reduce the number of voters inserted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{SCC Options}
-The following options control how BLTmr handles strongly connected components 
+The following options control how BL-TMR handles strongly connected components 
 (SCCs) and related logic. An SCC, by definition, is a set of circuit components 
 that are mutually reachable. That is, following the flow of data, every 
 component in the SCC can be reached from every other. In an SCC, each component 
@@ -346,7 +346,7 @@ options determine the order in which SCCs and related logic are triplicated as
 well as whether or not SCCs can be partitioned into smaller components.
 
 \subsubsection{\texttt{--SCCSortType} $\{1,2,3\}$}
-Choose the method the BLTmr tool uses to partially triplicate logic in the 
+Choose the method the BL-TMR tool uses to partially triplicate logic in the 
 ``feedback'' section of the design.  Option 1 triplicates the largest SCCs 
 first. Option 2 triplicates the smallest first. Option 3 triplicates the SCCs 
 in topological order.
@@ -372,17 +372,17 @@ are not enough resources to triplicate the entire set of SCCs.
 
 
 \subsubsection{\texttt{--use\_bad\_cut\_conn}}
-Instructs BLTmr to use the ``BadCutConnectivity'' style graph to choose
+Instructs BL-TMR to use the ``BadCutConnectivity'' style graph to choose
 SCC elements for triplication. This may have better performance than the 
 default algorithm.
 
 \subsubsection{\texttt{--highest\_fanout\_cutset}}
-Instructs BLTmr to try to insert voters at the outputs of the instances with 
+Instructs BL-TMR to try to insert voters at the outputs of the instances with 
 the highest fanout (those that drive the most sinks), when inserting voters 
 in SCCs.
 
 \subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
-Instructs BLTmr to try to insert voters at the outputs of the flip-flops with 
+Instructs BL-TMR to try to insert voters at the outputs of the flip-flops with 
 the highest fanout (those that drive the most sinks), when inserting voters 
 in SCCs.
 
@@ -462,7 +462,7 @@ Must be between 0 and 1, inclusive. Default: 0.95.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Utilization Factors and Multiple EDIF Creation}
-Starting with version 0.2.2, BLTmr allows the user to create either a single 
+Starting with version 0.2.2, BL-TMR allows the user to create either a single 
 EDIF file or multiple EDIF files, each with a different amount of partial TMR.
 In either case, the amount of partial TMR is specified with a Utilization Factor
 Type and a Utilization Factor Value.  The Factor Value is either a single value
@@ -471,11 +471,11 @@ incremental step size.
 
 Multiple EDIF Creation is activated by the use of both the \texttt{--low} and
 \texttt{--high} parameters.  Using one without the other will result in an error
-and BLTmr will not run.
+and BL-TMR will not run.
 
-When creating a single EDIF file, BLTmr will place the output file in the
+When creating a single EDIF file, BL-TMR will place the output file in the
 current directory by default, or in the location specified by the
-\texttt{--output} option. When creating multiple EDIF files, BLTmr will place
+\texttt{--output} option. When creating multiple EDIF files, BL-TMR will place
 each EDIF file in its own subdirectory within the current directory. Both the 
 subdirectory and the EDIF file will have a unique name that identifies the level
 of partial TMR used.  
@@ -485,7 +485,7 @@ For example, given the following set of command-line parameters:
 \begin{verbatim}
 > java ... --low 0.50 --high 1.0 --inc .10 --factorType asuf MyDesign.edf
 \end{verbatim} 
-BLTmr will create six EDIF files, starting with 
+BL-TMR will create six EDIF files, starting with 
 \texttt{MyDesign\_asuf\_0\_5.edf}, \texttt{MyDesign\_asuf\_0\_6.edf}, 
 \\\texttt{MyDesign\_asuf\_0\_7.edf}, and ending with 
 \texttt{MyDesign\_asuf\_1.edf}. Each EDIF file would be placed in separate 
@@ -550,7 +550,7 @@ Must be greater than or equal to 0.
 Specify the step size of the Factor Value for Multiple EDIF Creation.
 
 For example, if the lower bound is 0.25, the upper bound is 0.75, and the step
-size is 0.15, then BLTmr will run, starting with a Factor Value of 0.25, then
+size is 0.15, then BL-TMR will run, starting with a Factor Value of 0.25, then
 0.40, then 0.55, and will end with 0.70.
 
 Must be between 0 and 1, inclusive. Default: 1.0
@@ -561,7 +561,7 @@ The following options determine if and how half-latch removal should be
 performed in the resulting EDIF file. Half-latches are constants found
 throughout FPGA designs which increase sensitivity but, if upset, \emph{cannot}
 be corrected through scrubbing, because they are not determined by the
-configuration bits. The BLTmr tool can remove most of the half-latches from the
+configuration bits. The BL-TMR tool can remove most of the half-latches from the
 input EDIF file, prior to performing TMR, significantly increasing reliability.
 
 \subsubsection{\texttt{--removeHL}}
@@ -583,7 +583,7 @@ this option and the polarity (1 or 0) specified with the \texttt{--hlConst}
 option.
 
 \subsubsection{\texttt{--packRegisters} \{i\textbar o\textbar b\textbar n\}}
-By default, the BLTmr tool treats all ports on the input EdifCell as top-level
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
 ports (those that will be the inputs and outputs of the FPGA). The half-latch 
 tool must therefore treat any FFs that will be packed into the IOBs differently
 than other FFs (at least with Virtex devices). This option allows the user to
@@ -624,26 +624,26 @@ information are printed.
 \textbf{Deprecated} - TMR summary is always displayed
 
 \subsubsection{\texttt{--log <logfile>}}
-The name of the BLTmr log file, which records the options used along with
+The name of the BL-TMR log file, which records the options used along with
 the runtime details and results. 
 
-Default: \texttt{BLTmr.log}.
+Default: \texttt{BL-TMR.log}.
 
 \subsubsection{\texttt{--domainReport <domainReport>}}
 The name of the domain report file. The domain report lists the domain (0, 1, 
 or 2) of each cell instance in the resulting EDIF file. This report is used as 
 input to the LANL RadDRC half-latch removal tool. 
 
-Default: \texttt{BLTmr\_domain\_report.txt}.
+Default: \texttt{BL-TMR\_domain\_report.txt}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Configuration File Options}
 \label{config options}
-The BLTmr tool can use configuration files in place of command-line parameters. 
+The BL-TMR tool can use configuration files in place of command-line parameters. 
 If a parameter is specified in a configuration file, it will be passed to the 
-BLTmr tool, unless it is overridden by the same argument on the command-line. 
-The files \texttt{BLTmr.conf}, in the curent working directory, and 
-\texttt{/etc/BLTmr/BLTmr.conf}, will be used as source files for default 
+BL-TMR tool, unless it is overridden by the same argument on the command-line. 
+The files \texttt{BL-TMR.conf}, in the curent working directory, and 
+\texttt{/etc/BL-TMR/BL-TMR.conf}, will be used as source files for default 
 parameters. If either or both of these files do not exist, it will not cause a 
 problem. (See section \ref{using config}, ``Using Configuration Files'' for
 more information.)
@@ -652,17 +652,17 @@ more information.)
 \label{useConfig}
 Specify an additional configuration file from which to read parameters.
 
-The order of precedence for BLTmr options:
+The order of precedence for BL-TMR options:
 \begin{enumerate}
   \item Command-line
   \item Configuration file specified by the \texttt{--useConfig} option
-  \item Configuration file \texttt{BLTmr.conf} in the current directory
-  \item Configuration file \texttt{/etc/BLTmr/BLTmr.conf}
+  \item Configuration file \texttt{BL-TMR.conf} in the current directory
+  \item Configuration file \texttt{/etc/BL-TMR/BL-TMR.conf}
 \end{enumerate}
 
 \subsubsection{\texttt{--writeConfig[:<config\_file>]}}
 Write the current set of command-line parameters to a configuration file and 
-exit. The parameters will be parsed to ensure they are valid, but the BLTmr tool
+exit. The parameters will be parsed to ensure they are valid, but the BL-TMR tool
 will not run.  Note that only the parameters on the command-line are stored in
 the configuration file. When using \texttt{--writeConfig}, any use of
 \texttt{--useConfig} is ignored. This is to prevent complicated cascades
@@ -670,18 +670,18 @@ of configuration files combined with command-line options.
 
 This option can be called in two ways. First, specifying simply 
 \texttt{--writeConfig} will cause the command-line parameters to be written to 
-the configuration file \texttt{BLTmr.conf} in the current working directory. 
+the configuration file \texttt{BL-TMR.conf} in the current working directory. 
 Second, if followed with a colon and a filename, the command-line parameters 
 will be written to the specified file. 
 
 Examples:
 \begin{itemize}
   \item \texttt{--writeConfig} will write the command-line parameters to the
-  file \texttt{BLTmr.conf}.
+  file \texttt{BL-TMR.conf}.
   \item \texttt{--writeConfig:JonSmith.conf} will write the command-line 
   parameters to the file \texttt{JonSmith.conf}.
-  \item \texttt{--writeConfig:/usr/lib/BLTmr/common.conf} will write the
-  command-line pa\-ram\-e\-ters to the file \texttt{/usr/share/BLTmr/common.conf}. 
+  \item \texttt{--writeConfig:/usr/lib/BL-TMR/common.conf} will write the
+  command-line pa\-ram\-e\-ters to the file \texttt{/usr/share/BL-TMR/common.conf}. 
 \end{itemize}
 
 
@@ -758,19 +758,19 @@ for each (Virtex XCV1000-FG680).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Partial TMR---No I/O triplication, External EDIF files}
-This example shows a standard usage of the BLTmr tool for partial TMR\@. In this 
+This example shows a standard usage of the BL-TMR tool for partial TMR\@. In this 
 case, the design is too large to fit in the targeted device when fully 
-triplicated. The BLTmr tool will triplicate as much logic as possible and 
+triplicated. The BL-TMR tool will triplicate as much logic as possible and 
 estimate when the target chip will be fully utilized.
 
 This design also requires some external EDIF files that are referenced in 
 \texttt{myLargeDesign.edf} as ``black boxes.'' These external files, which are 
 located in the \texttt{externalSrcDir} directory, will be incorporated into the 
 triplicated design. Thus, the external files will not be needed with the 
-\texttt{myLargeDesign\_BLTmr.edf} output file.
+\texttt{myLargeDesign\_BL-TMR.edf} output file.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BLTmr.edf \
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BL-TMR.edf \
   -d ./externalSrcDir
 \end{verbatim}
 
@@ -782,7 +782,7 @@ In this case, the user wishes to include parts of strongly-connected components
 merge and optimization factors.
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BLTmr.edf \
+> java byucc.edif.tools.tmr.FlattenTMR myLargeDesign.edf -o myLargeDesign_BL-TMR.edf \
   -d ./externalSrcDir --doSCCDecomposition --mergeFactor 0.4 --optimizationFactor 0.85
 \end{verbatim}
 
@@ -843,7 +843,7 @@ the target chip is utilized.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Using Configuration Files}
 \label{using config}
-Configuration files can greatly simplify the use of the BLTmr tool. The following 
+Configuration files can greatly simplify the use of the BL-TMR tool. The following 
 examples show how to create and use configuration files. (See section
 \ref{config options}, ``Configuration File Options'' for more information.)
 
@@ -852,7 +852,7 @@ The following will write the current command-line arguments to the file
 \texttt{myConfig.conf}:
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_BLTmr.edf -f \ 
+> java byucc.edif.tools.tmr.FlattenTMR myDesign.edf -o myDesign_BL-TMR.edf -f \ 
 subcell.edf,/usr/share/edifFiles/subcell2.edf, -d /usr/share/edif/common/ \ 
 --tmr_inports --tmr_outports --tmr_c DLL,fdc,clk_buf --tmr_i clk,fifo_output \ 
 --no_tmr_p clk_port,data_in --no_tmr_c bufg --no_tmr_i mux2,and24 \ 
@@ -876,7 +876,7 @@ summary=true
 optimizationFactor=0.9
 log=myLogFile.log
 notmrFeedForward=true
-output=myDesign_BLTmr.edf
+output=myDesign_BL-TMR.edf
 hlConst=0
 input=myDesign.edf
 outputAdditionType=2
@@ -901,7 +901,7 @@ Configuration files are defined by the \texttt{java.util.Properties} class.
 However, the format is simple enough that configuration files can easily be 
 created by hand or by other programs. As seen above, the format is simply 
 \texttt{key=value}. A hash mark (pound sign) (\texttt{\#}) at the beginning of 
-a line marks that line as a comment. BLTmr options are given just as they would 
+a line marks that line as a comment. BL-TMR options are given just as they would 
 be on the command-line, with the exception that command-line options with no 
 arguments (e.g. \texttt{--tmr\_inports}, \texttt{--summary}, 
 \texttt{--doSCCDecomposition}, etc.) are specified as either \texttt{true} or 
@@ -917,14 +917,14 @@ file:
 \end{verbatim}
 
 \subsubsection{Combining Configuration Files and Command-line Arguments}
-Configuration files provide default values of BLTmr options. Any options 
+Configuration files provide default values of BL-TMR options. Any options 
 specified on the command-line will take precedence. (See section 
 \ref{useConfig}, ``\texttt{--useConfig}'' for detailed precedence information.)
 The following example uses the same options specified by myConfig.conf, but
 changes the input and output files:
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.FlattenTMR myOtherDesign.edf -o myOtherDesign_BLTmr.edf \
+> java byucc.edif.tools.tmr.FlattenTMR myOtherDesign.edf -o myOtherDesign_BL-TMR.edf \
  --useConfig myConfig.conf
 \end{verbatim}
 
@@ -934,7 +934,7 @@ changes the input and output files:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Naming Conventions}
 \label{naming conventions}
-The BLTmr tool alters the names of triplicated signals, cell instances, and 
+The BL-TMR tool alters the names of triplicated signals, cell instances, and 
 ports. Be aware of this when using placement (or other) constraints. An output 
 port named \texttt{myOutport} in the original EDIF file will, when triplicated, 
 become \texttt{myOutport\_TMR\_0, myOutport\_TMR\_1, and myOutport\_TMR\_2}. 
@@ -957,7 +957,7 @@ machine. The following example allocates up to 256 MB of heap space for the JVM:
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{RLOC Constraints}
-The BLTmr tool does not support RLOC constraints at this time. RLOC constraints 
+The BL-TMR tool does not support RLOC constraints at this time. RLOC constraints 
 must therefore be removed before processing the resulting EDIF file. RLOCs may 
 be removed from the either the source EDIF files (including any external EDIF 
 files) or from the triplicated output file. Automated RLOC removal may be added 
@@ -965,16 +965,16 @@ to the tool in a later release.
 
 To remove RLOC constraints from an EDIF file, you can use the UNIX 
 \texttt{grep} tool. The following example uses \texttt{grep} to find all lines 
-in the source EDIF file \texttt{myDesign\_BLTmr.edf} that do \emph{not} contain 
+in the source EDIF file \texttt{myDesign\_BL-TMR.edf} that do \emph{not} contain 
 the string \texttt{RLOC} and copy them to the destination EDIF file 
 \texttt{myDesign\_tmr\_noRLOCs.edf.} Note that you may \emph{not} use the same 
 file for the source and destination.
 
 \begin{verbatim}
-> grep -v RLOC myDesign_BLTmr.edf > myDesign_BLTmr_noRLOCs.edf
+> grep -v RLOC myDesign_BL-TMR.edf > myDesign_BL-TMR_noRLOCs.edf
 \end{verbatim}
 
-This trick is guaranteed to work for EDIF files created by the BLTmr tool as 
+This trick is guaranteed to work for EDIF files created by the BL-TMR tool as 
 well as all Xilinx CoreGen EDIF files. It is \emph{not} guaranteed to work for 
 all EDIF files in general since it relies on the fact that each RLOC constraint 
 with its associated parentheses do not spread across multiple lines (which is 
@@ -1016,7 +1016,7 @@ removal
 \begin{itemize}
 \item Fixed bug when writing config files
 \item Fixed bug in SCC code that could cause a ConcurrentModificationException
-\item Fixed bug in which BLTmr could produce an invalid design due to too many
+\item Fixed bug in which BL-TMR could produce an invalid design due to too many
   connections to a MUXF6 input
 \end{itemize}
 
@@ -1044,7 +1044,7 @@ removal
 
 \subsection*{Version 0.2.0 - 25 Jul 2006}
 \begin{itemize}
-\item New command-line parser\footnote{The BLTmr tool uses \emph{JSAP: the 
+\item New command-line parser\footnote{The BL-TMR tool uses \emph{JSAP: the 
 Java-based Simple Argument Parser} by Martian Software, Inc.\ for parsing 
 command-line arguments.  JSAP and its source code can be found at 
 \url{http://www.martiansoftware.com/jsap/index.html}.} (not backwards 
@@ -1131,7 +1131,7 @@ the released JAR file.
 % Words to be ignored by the spell-checker:
 %
 
-% LocalWords:  BYU LANL BLTmr EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
+% LocalWords:  BYU LANL BL-TMR EDIF FPGA TMR OBUF IBUF BUFG IBUFG LUTs
 % LocalWords:  SCC SCCs FFs UCF Xilinx java JHDL netlister IOB IBUFs
 % LocalWords:  OBUFs logfile INOUT TMR'd tmr txt 
 

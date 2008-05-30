@@ -1,12 +1,12 @@
 \section{JEdifTMRAnalysis}
 
-The following options control the manner in which the BLTmr tool performs
+The following options control the manner in which the BL-TMR tool performs
 triplication: whether to do full or partial TMR; what specific ports, cell
 types, and cell instances to be triplicated; and how to handle strongly
 connected components (SCCs).
 
 \begin{verbatim}
->java byucc.edif.tools.tmr.jedif.JEdifTMRAnalysis
+>java edu.byu.ece.edif.jedif.JEdifTMRAnalysis
 [-h|--help] 
 [-v|--version] 
 
@@ -16,6 +16,7 @@ connected components (SCCs).
 
 [--full_tmr] 
 
+[--tmr_p Port name1,Port name2,...,Port nameN ]
 [--tmr_inports] 
 [--tmr_outports] 
 [--no_tmr_p port1,port2,...,portN ] 
@@ -42,7 +43,10 @@ connected components (SCCs).
 [--merge_factor <merge_factor>] 
 [--optimization_factor <optimization_factor>] 
 [--factor_type <{DUF|UEF|ASUF}>] 
-[--factor_value <factor_value>] 
+[--factor_value <factor_value>]
+
+[--ignore_hard_resource_utilization_limits]
+[--ignore_soft_logic_utilization_limit]
 
 [--use_bad_cut_conn] 
 
@@ -193,7 +197,7 @@ and thus reduce the number of voters inserted.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{SCC Options}
-The following options control how BLTmr handles strongly connected components 
+The following options control how BL-TMR handles strongly connected components 
 (SCCs) and related logic. An SCC, by definition, is a set of circuit components 
 that are mutually reachable. That is, following the flow of data, every 
 component in the SCC can be reached from every other. In an SCC, each component 
@@ -203,7 +207,7 @@ options determine the order in which SCCs and related logic are triplicated as
 well as whether or not SCCs can be partitioned into smaller components.
 
 \subsubsection{\texttt{--ssc\_sort\_type} $\{1,2,3\}$}
-Choose the method the BLTmr tool uses to partially triplicate logic in the 
+Choose the method the BL-TMR tool uses to partially triplicate logic in the 
 ``feedback'' section of the design.  Option 1 triplicates the largest SCCs 
 first. Option 2 triplicates the smallest first. Option 3 triplicates the SCCs 
 in topological order.

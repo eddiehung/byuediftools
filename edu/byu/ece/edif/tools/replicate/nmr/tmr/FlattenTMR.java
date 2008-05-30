@@ -179,9 +179,9 @@ public class FlattenTMR {
         // TODO: Remove this option from the NMRCommandParser
         //		if (NMRUtilities.cellHasInoutPorts(cell)) {
         //			if (_result.getBoolean(TMRCommandParser.NO_IN_OUT_CHECK)) {
-        //				println("WARNING: Your design contains INOUT ports. BLTmr does not currently support INOUT ports.");
+        //				println("WARNING: Your design contains INOUT ports. BL-TMR does not currently support INOUT ports.");
         //			} else {
-        //				println("ERROR: BLTmr does not currently support INOUT ports. Use "
+        //				println("ERROR: BL-TMR does not currently support INOUT ports. Use "
         //						+ TMRCommandParser.NO_IN_OUT_CHECK
         //						+ " to force TMR with INOUT ports.");
         //				System.exit(1);
@@ -367,7 +367,7 @@ public class FlattenTMR {
                     throw new EdifRuntimeException("Unable to created directory: " + directory.toString()
                             + ". Perhaps you do not have write permission.");
                 }
-                createLogFile(directory.toString() + "/" + design + ".BLTmr.log");
+                createLogFile(directory.toString() + "/" + design + ".BL-TMR.log");
                 // 1.c) Print version info
                 println(getVersionInfo());
                 // Print CVS revision number to log file only
@@ -803,11 +803,11 @@ public class FlattenTMR {
     }
 
     /**
-     * @return a String of the version and date of this release of the BLTmr
+     * @return a String of the version and date of this release of the BL-TMR
      * tool.
      */
     public static String getVersionInfo() {
-        return "BLTmr Tool version " + FlattenTMR.VERSION + ", " + FlattenTMR.RELEASE_DATE;
+        return "BL-TMR Tool version " + FlattenTMR.VERSION + ", " + FlattenTMR.RELEASE_DATE;
     }
 
     // ///////////////////////////////////////////////////////////////////

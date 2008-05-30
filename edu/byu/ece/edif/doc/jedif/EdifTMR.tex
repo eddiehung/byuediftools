@@ -4,27 +4,34 @@ one easy step. If you already know exactly what setting you wish use
 to perform TMR, this tool will be faster.
 
 \begin{verbatim}
->java byucc.edif.tools.tmr.jedif.EdifTMR
-TMR - v1.0 
-Runs through the JEdif TMR toolflow in one step
-Copyright (c) 2005-2007 Brigham Young University, All rights reserved.
+>java edu.byu.ece.edif.jedif.EdifTMR
 
 [-h|--help]
 [-v|--version]
 
-<input_file> 
+<input_file>
 [(-o|--output) <output_file>]
 
 [(-d|--dir) dir1,dir2,...,dirN ]
 [(-f|--file) file1,file2,...,fileN ]
 
+[--no_flatten]
+[--no_open_pins]
+[--blackboxes]
+[--replace_srls]
+[--remove_rlocs]
 [--remove_hl]
 [--hl_constant <{0|1}>]
-[--hl_port_name <hl_port_name>]
+[--hl_use_port <hl_port_name>]
 [--pack_registers <{i|o|b|n}>]
 [--remove_fmaps]
 
+[--write_config <config_file>]
+[--use_config <config_file>]
+[--iob_output <output_file>]
+
 [--full_tmr]
+[--tmr_p Port name1,Port name2,...,Port nameN ]
 [--tmr_inports]
 [--tmr_outports]
 [--no_tmr_p port1,port2,...,portN ]
@@ -45,20 +52,26 @@ Copyright (c) 2005-2007 Brigham Young University, All rights reserved.
 
 [--input_addition_type <{1|2|3}>]
 [--output_addition_type <{1|2|3}>]
+
 [--merge_factor <merge_factor>]
 [--optimization_factor <optimization_factor>]
-[--factor_type <{DUF|UEF|ASUF}>]
+[--factor_type <{DUF|UEF|ASUF|CF}>]
 [--factor_value <factor_value>]
+
+[--ignore_hard_resource_utilization_limits]
+[--ignore_soft_logic_utilization_limit]
 
 [--use_bad_cut_conn]
 [--highest_fanout_cutset]
 [--highest_ff_fanout_cutset]
 
+[--iob_input <input_file>]
 
 [--tmr_suffix suffix1,suffix2,...,suffixN ]
 [--tmr_cell_name <tmr_cell_name>]
 [--tmr_domain_report <tmr_domain_report>]
-
+[--edif]
+[--tmr_ports_file <tmr_ports_file>]
 
 [(-p|--part) <part>]
 

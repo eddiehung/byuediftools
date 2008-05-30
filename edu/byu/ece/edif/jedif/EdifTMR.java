@@ -73,7 +73,7 @@ public class EdifTMR extends EDIFMain {
         parser.addCommands(new JEdifTMRParserCommandGroup());
 
         parser.addCommands(new TechnologyCommandGroup());
-        parser.addCommands(new LogFileCommandGroup("BLTmr.log"));
+        parser.addCommands(new LogFileCommandGroup("BL-TMR.log"));
 
         JSAPResult result = parser.parse(args, err);
 

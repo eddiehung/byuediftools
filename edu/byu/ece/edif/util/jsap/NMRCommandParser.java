@@ -48,7 +48,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
 
 /**
- * A command-line argument parser for FlattenTMR, also known as the BLTmr Tool,
+ * A command-line argument parser for FlattenTMR, also known as the BL-TMR Tool,
  * based on {@link JSAP} (Java-based Simple Argument Parser). This class handles
  * the parsing of all command-line arguments, ensuring that they are
  * syntactically correct. It also provides automatically-formated usage and help
@@ -95,7 +95,7 @@ public class NMRCommandParser extends JSAPCommandParser {
 
         _NMRParameters.add(new FlaggedOption(OUTPUT_FILE).setStringParser(JSAP.STRING_PARSER).setDefault("nmr.edf")
                 .setRequired(JSAP.NOT_REQUIRED).setShortFlag('o').setLongFlag("output").setUsageName("output_file")
-                .setHelp("Filename and path to the triplicated EDIF output file created by the BLTmr tool."));
+                .setHelp("Filename and path to the triplicated EDIF output file created by the BL-TMR tool."));
 
         _NMRParameters.add(new FlaggedOption(DIR).setStringParser(JSAP.STRING_PARSER).setRequired(JSAP.NOT_REQUIRED)
                 .setShortFlag('d').setLongFlag("dir").setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS).setList(
@@ -213,7 +213,7 @@ public class NMRCommandParser extends JSAPCommandParser {
                         .setLongFlag("noInoutCheck")
                         .setDefault(FALSE)
                         .setHelp(
-                                "By default, designs with INOUT ports are not allowed by the BLTmr tool, since it currently does not support all aspects of INOUT ports. This option forces the tool to allow designs with INOUT ports, which *may* result in a working NMR'd design, but might not."));
+                                "By default, designs with INOUT ports are not allowed by the BL-TMR tool, since it currently does not support all aspects of INOUT ports. This option forces the tool to allow designs with INOUT ports, which *may* result in a working NMR'd design, but might not."));
 
         _NMRParameters
                 .add(new Switch(NO_IOB_FB)
@@ -235,7 +235,7 @@ public class NMRCommandParser extends JSAPCommandParser {
                         .setUsageName("{1|2|3}")
                         .setDefault("3")
                         .setHelp(
-                                "Choose the method the BLTmr tool uses to triplicate logic in the \"feedback\" section of the design. Option 1 chooses the largest SCCs first. Option 2 chooses the smallest first. Option 3 adds the SCCs in topological order."));
+                                "Choose the method the BL-TMR tool uses to triplicate logic in the \"feedback\" section of the design. Option 1 chooses the largest SCCs first. Option 2 chooses the smallest first. Option 3 adds the SCCs in topological order."));
 
         _NMRParameters.add(new Switch(DO_SCC_DECOMPOSITION).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(
                 "doSCCDecomposition").setDefault(FALSE).setHelp("Allow SCCs to be partially triplicated."));
@@ -377,7 +377,7 @@ public class NMRCommandParser extends JSAPCommandParser {
                         .setLongFlag("log")
                         .setDefault("nmr.log")
                         .setHelp(
-                                "The name of the BLTmr log file, which records the options used along with the runtime details and results."));
+                                "The name of the BL-TMR log file, which records the options used along with the runtime details and results."));
 
         _NMRParameters
                 .add(new FlaggedOption(DOMAIN_REPORT)
@@ -397,7 +397,7 @@ public class NMRCommandParser extends JSAPCommandParser {
         q = (QualifiedSwitch) getByID(WRITE_CONFIG);
         unregisterParameter(q);
         _parameters.remove(q);
-        _NMRParameters.add(q.setDefault("BLTmr.conf"));
+        _NMRParameters.add(q.setDefault("BL-TMR.conf"));
 
         /*
          * Help and Version Information: Add short flags -h and -v
@@ -432,7 +432,7 @@ public class NMRCommandParser extends JSAPCommandParser {
 
     /*
      * For more information about the above parameters, see the documentation
-     * (BLTmr.tex or BLTmr.pdf).
+     * (BL-TMR.tex or BL-TMR.pdf).
      */
 
     /**
@@ -809,7 +809,7 @@ public class NMRCommandParser extends JSAPCommandParser {
     /**
      * Primary configuration file
      */
-    public static final String CONF_FILENAME = "BLTmr.conf";
+    public static final String CONF_FILENAME = "BL-TMR.conf";
 
     public static final String DIR = "dir";
 
@@ -834,7 +834,7 @@ public class NMRCommandParser extends JSAPCommandParser {
     /**
      * Secondary configuration file
      */
-    public static final String ETC_FILENAME = "/etc/BLTmr/BLTmr.conf";
+    public static final String ETC_FILENAME = "/etc/BL-TMR/BL-TMR.conf";
 
     public static final String FACTOR_TYPE = "factorType";
 

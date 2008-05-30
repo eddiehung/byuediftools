@@ -34,7 +34,7 @@ import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 
 /**
- * Provides a stand alone EDIF parser that interacts with the {@link byucc.edif}
+ * Provides a stand alone EDIF parser that interacts with the {@link edu.byu.ece.edif.core}
  * package. This class extends the {@link EdifParserCore} class which is auto
  * generated from the edif.jj file. Classes that want to integrate an Edif
  * parser should use this object rather than the EdifParserCore. It is much

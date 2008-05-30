@@ -56,11 +56,11 @@ public class OutputFileCommandGroup extends AbstractCommandGroup {
         _output_file = new FlaggedOption(OUTPUT_OPTION);
         _output_file.setStringParser(JSAP.STRING_PARSER);
         _output_file.setRequired(JSAP.NOT_REQUIRED);
-        _output_file.addDefault("BLTmr");
+        _output_file.addDefault("BL-TMR");
         _output_file.setShortFlag('o');
         _output_file.setLongFlag(OUTPUT_OPTION);
         _output_file.setUsageName("output_file");
-        _output_file.setHelp("Filename and path to the triplicated EDIF output file created by the BLTmr tool.");
+        _output_file.setHelp("Filename and path to the triplicated EDIF output file created by the BL-TMR tool.");
         this.addCommand(_output_file);
 
     }

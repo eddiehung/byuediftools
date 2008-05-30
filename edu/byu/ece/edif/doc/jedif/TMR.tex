@@ -4,10 +4,7 @@ JEdif TMR takes the data from the analysis steps and creates a
 triplicated cell
 
 \begin{verbatim}
-> java byucc.edif.tools.tmr.jedif.JEdifTMR -h
-JEdifTMR - v0.3.2
-Triplicates .jedif netlist according to previous triplication policy.
-Copyright (c) 2005-2007 Brigham Young University, All rights reserved.
+> java edu.byu.ece.edif.jedif.JEdifTMR -h
 
 Options:
   [-h|--help]
@@ -88,7 +85,7 @@ The name of the domain report file. The domain report lists the domain (0, 1,
 or 2) of each cell instance in the resulting EDIF file. This report is used as 
 input to the LANL RadDRC half-latch removal tool. 
 
-Default: \texttt{BLTmr\_domain\_report.txt}.
+Default: \texttt{BL-TMR\_domain\_report.txt}.
 
 \subsubsection{\texttt{--tmr\_ports\_file <tmr\_ports\_file>}}
 The name of the tmr\_ports file. It consists of a list of ports to
