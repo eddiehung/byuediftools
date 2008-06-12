@@ -79,12 +79,13 @@ public class JEdifDWC extends EDIFMain {
         // Define the print streams for this program
         PrintStream out = System.out;
         PrintStream err = System.out;
-        printProgramExecutableString(out);
-
+        
         // Print executable heading
         EXECUTABLE_NAME = "JEdifDWC";
         TOOL_SUMMARY_STRING = "Duplicates .jedif netlist according to previous duplication policy.";
 
+        printProgramExecutableString(out);
+        
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
         // TODO: JEdifParserCommand has a simple static method. Better place for it? 
@@ -264,16 +265,13 @@ public class JEdifDWC extends EDIFMain {
             e1.toRuntime();
         }
         newDesign.setTopCellInstance(dwcInstance);
+        
         // copy design properties
-        // TODO: is there not an automated way of doing this?
         EdifDesign oldDesign = topCell.getLibrary().getLibraryManager().getEdifEnvironment().getTopDesign();
-        if (oldDesign.getPropertyList() != null) {
-            for (Object o : oldDesign.getPropertyList().values()) {
-                Property p = (Property) o;
-                newDesign.addProperty((Property) p.clone());
-            }
-        }
+        newDesign.copyProperties(oldDesign);
+
         top.setTopDesign(newDesign);
+        
         /*
          * flatCell is no longer needed after dwc, so it deletes itself from the
          * library it belongs to.
