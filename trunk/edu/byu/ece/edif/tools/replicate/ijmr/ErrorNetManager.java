@@ -45,7 +45,7 @@ import edu.byu.ece.edif.core.EdifNet;
  * </pre>
  * 
  * The data structure is as follows:
- * Map<DWCComparatorType, Map<DWCRailType, List<EdifNet>>>
+ * Map&lt;DWCComparatorType, Map&lt;DWCRailType, List&lt;EdifNet&gt;&gt;&gt;
  */
 public class ErrorNetManager {
 
@@ -114,11 +114,11 @@ public class ErrorNetManager {
 	}
 	
 	/**
-	 * Get the mapping from rail type to List<EdifNet> for the given
+	 * Get the mapping from rail type to List&lt;EdifNet&gt; for the given
 	 * comparator type
 	 * 
 	 * @param type the comparator type
-	 * @return the mapping from rail type to List<EdifNet>
+	 * @return the mapping from rail type to List&lt;EdifNet&gt;
 	 */
 	protected Map<DWCRailType, List<EdifNet>> getRailMap(DWCComparatorType type) {
 		Map<DWCRailType, List<EdifNet>> railMap = _errorNetMap.get(type);
