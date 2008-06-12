@@ -87,8 +87,10 @@ public class TMRDWCEdifCell extends IJMREdifCell {
     public static final String DUAL_RAIL_0_SUFFIX = "_DRC0";
     public static final String DUAL_RAIL_1_SUFFIX = "_DRC1";
     
-    
-
+    /**
+     * Create a new TMRDWCEdifCell, used for applying triplication and
+     * duplication.
+     */
     public TMRDWCEdifCell(EdifLibrary lib, String name, EdifCell origCell,
             Collection<EdifCellInstance> feedbackPlusInput, NMRArchitecture tmrArchitecture,
             NMRArchitecture dwcArchitecture, Map<Integer, List<EdifPort>> portsToReplicate,
@@ -129,6 +131,10 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         replicateCell(portsToReplicate, instancesToReplicate);
     }
 
+    /**
+     * Create a new TMRDWCEdifCell, used for applying triplication and
+     * duplication.
+     */
     public TMRDWCEdifCell(EdifLibrary lib, String name, EdifCell origCell,
             Collection<EdifCellInstance> feedbackPlusInput, NMRArchitecture tmrArchitecture,
             NMRArchitecture dwcArchitecture, Map<Integer, List<EdifPort>> portsToReplicate,
@@ -369,6 +375,11 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         return _ofdCell;
     }
 
+    /**
+     * This method is responsible for connecting nets to the appropriate sinks.
+     * It takes the necessary measures to deal with replication factor
+     * boundaries.
+     */
     @Override
     protected void connectNetSinks(EdifNet origNet, List<EdifNet> newNets, Collection<EdifPortRef> origDrivers,
             Collection<EdifPortRef> origSinks) {
@@ -663,7 +674,7 @@ public class TMRDWCEdifCell extends IJMREdifCell {
     }
 
     /**
-     * Create the specified number of voters and return the voter ouput nets.
+     * Create the specified number of voters and return the voter output nets.
      * 
      * @param inputs voter inputs
      * @param origNet the original net before triplication (for getting a name)
@@ -699,14 +710,23 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         return voterOutputs;
     }
 
+    /**
+     * Get a Collection of the voters in the design.
+     */
     public Collection<EdifCellInstance> getVoters() {
         return _voters;
     }
 
+    /**
+     * Get a Collection of the comparators in the design.
+     */
     public Collection<EdifCellInstance> getComparators() {
         return _comparators;
     }
 
+    /**
+     * Get a Collection of the persistent error nets in the design.
+     */
     public Collection<EdifNet> getPersistentErrorNets() {
         Collection<EdifNet> persNets = new ArrayList<EdifNet>();
         for (DWCRailType railType : _usedRailTypes) {
@@ -715,6 +735,9 @@ public class TMRDWCEdifCell extends IJMREdifCell {
         return persNets;
     }
 
+    /**
+     * Get a Collection of the non-persistent error nets in the design.
+     */
     public Collection<EdifNet> getNonPersistentErrorNets() {
         Collection<EdifNet> nonpersNets = new ArrayList<EdifNet>();
         for (DWCRailType railType : _usedRailTypes) {
