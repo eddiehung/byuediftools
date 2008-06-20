@@ -1,7 +1,21 @@
+Change Log for BYU EDIF Tools
 
- Change Log for BYU EDIF Tools
- 
+-------------------------------------------------------------------
+Electron Release - Version 0.4.1 (Future)
+-------------------------------------------------------------------
+
+New Features:
+
+Bug Fixes:
+
+	* Fixed --tmr_p option. --tmr_p will now include the listed ports.
+
+Enhancements / Other:
+
+
+------------------------------------------------------------------- 
 Electron Release - Version 0.4.0 (30 May 2008)
+-------------------------------------------------------------------
 
 New Features:
 
@@ -19,8 +33,9 @@ Enhancements / Other:
   * Further re-organization of package structure and class names
   * Completed re-formatting of source code
 
-
+-------------------------------------------------------------------
 Pre-Electron Release (16 April 2008)
+-------------------------------------------------------------------
 
 New Features:
 

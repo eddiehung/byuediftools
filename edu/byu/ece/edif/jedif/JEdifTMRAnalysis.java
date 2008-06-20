@@ -41,8 +41,8 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
 import edu.byu.ece.edif.tools.replicate.Replication;
@@ -99,6 +99,7 @@ public class JEdifTMRAnalysis extends EDIFMain {
         parser.addCommands(new OutputFileCommandGroup());
         parser.addCommands(new JEdifTMRAnalysisCommandGroup());
         parser.addCommands(new TechnologyCommandGroup());
+        parser.addCommands(new IOBCommandGroup());
         parser.addCommands(new ConfigFileCommandGroup(EXECUTABLE_NAME));
         parser.addCommands(new LogFileCommandGroup("JEdifTMRAnalysis.log"));
         JSAPResult result = parser.parse(args, err);
@@ -171,12 +172,16 @@ public class JEdifTMRAnalysis extends EDIFMain {
             System.exit(1);
         }
 
-        out.println("Utilization before Triplication: \n" + duTracker);
+        out.println("\nUtilization before Triplication: \n" + duTracker);
         // Step 3: Account for ports/instances to triplicate/exclude from TMR	
         // Set up necessary data structures
         EdifCellInstanceGraph eciConnectivityGraph = new EdifCellInstanceGraph(flatCell, true, true);
+        boolean packInputRegs = false, packOutputRegs = false;
+        packInputRegs = IOBCommandGroup.packInputRegisters(result);
+        packOutputRegs = IOBCommandGroup.packOutputRegisters(result);
+
         AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) flatCell,
-                eciConnectivityGraph);
+                eciConnectivityGraph, packInputRegs, packOutputRegs);
 
         // Delete the source-to-source Edges. We don't need them after the
         // IOB analysis
@@ -410,8 +415,9 @@ public class JEdifTMRAnalysis extends EDIFMain {
      */
     protected static boolean fullTMR(DeviceUtilizationTracker duTracker, EdifCell flatCell) {
         out.println("Full TMR requested.");
-        for (Iterator instancesIterator = flatCell.cellInstanceIterator(); instancesIterator.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) instancesIterator.next();
+        //for (Iterator instancesIterator = flatCell.cellInstanceIterator(); instancesIterator.hasNext();) {
+        for (EdifCellInstance eci : flatCell.getSubCellList()) {
+            //EdifCellInstance eci = (EdifCellInstance) instancesIterator.next();
             try {
                 duTracker.nmrInstance(eci, _replicationFactor);
             } catch (OverutilizationEstimatedStopException e1) {
@@ -453,6 +459,7 @@ public class JEdifTMRAnalysis extends EDIFMain {
         _noTriplicatePorts.addAll(Arrays.asList(JEdifTMRAnalysisCommandGroup.getNoTMRp(global_result)));
 
         // Filter the set of ports to triplicate
+        LogFile.out().println("Triplicating Ports");
         _portsToTriplicate = filterPortsToTriplicate(flatCell, JEdifTMRAnalysisCommandGroup.tmrInports(global_result),
                 JEdifTMRAnalysisCommandGroup.tmrOutports(global_result), _noTriplicatePorts,
                 JEdifTMRAnalysisCommandGroup.tmrPorts(global_result));
@@ -485,11 +492,16 @@ public class JEdifTMRAnalysis extends EDIFMain {
         // Register the port IOB instances to skip with the DeviceUtilizationTracker
         Set<EdifCellInstance> _iobInstancesNotToTriplicate = new LinkedHashSet<EdifCellInstance>();
         for (EdifPort port : _portsNotToTriplicate) {
+            LogFile.log().println("Not triplicating port:" + port);
             _iobInstancesNotToTriplicate.addAll(iobAnalyzer.getIOBInstances(port.getSingleBitPortList()));
         }
         for (EdifCellInstance eci : _iobInstancesNotToTriplicate) {
             duTracker.excludeInstanceFromNMR(eci);
-            debug.println("Excluding instance for iob register packing: " + eci);
+            LogFile.log().println("Excluding instance from iob register packing: " + eci);
+        }
+        for (EdifCellInstance eci : _iobInstancesToTriplicate) {
+            //duTracker.excludeInstanceFromNMR(eci);
+            LogFile.log().println(" Including instance for iob register packing: " + eci);
         }
         return _portsToTriplicate;
     }
@@ -511,16 +523,18 @@ public class JEdifTMRAnalysis extends EDIFMain {
 
         Set<EdifPort> ports = new LinkedHashSet<EdifPort>();
 
-        if (!tripInputs && !tripOutputs)
+        if (!tripInputs && !tripOutputs && (triplicate.size() == 0)) {
+            LogFile.out().println("No Port Triplication:");
             return ports; // Return empty Set
+        }
 
-        out.println("");
-        out.println("Port Triplication:");
+        LogFile.out().println("");
+        LogFile.out().println("Port Triplication: see Log for details.");
         for (EdifPort port : cell.getPortList()) {
             //System.out.println(port.getClass().getName());
-            out.print("\t" + port);
+            LogFile.log().print("\t" + port);
             if (noTriplicate.contains(port.getName())) {
-                out.println(" : in list to not triplicate.");
+                LogFile.log().println(" : in list to not triplicate.");
                 continue;
             }
             if (triplicate.contains(port.getName())) {
@@ -530,18 +544,18 @@ public class JEdifTMRAnalysis extends EDIFMain {
                 else
                     dir = "out";
 
-                out.println(" : triplicate " + dir + "put port as requested");
+                LogFile.log().println(" : triplicate " + dir + "put port as requested");
                 ports.add(port);
                 continue;
             }
             if (tripInputs && port.isInput()) {
-                out.println(" : triplicate input port");
+                LogFile.log().println(" : triplicate input port");
                 ports.add(port);
             } else if (tripOutputs && port.isOutput()) {
-                out.println(" : triplicate output port");
+                LogFile.log().println(" : triplicate output port");
                 ports.add(port);
             } else
-                out.println(" : nothing being done");
+                LogFile.log().println(" : nothing being done");
         }
         return ports;
     }
@@ -555,13 +569,13 @@ public class JEdifTMRAnalysis extends EDIFMain {
         Collection<EdifCellInstance> excludeInstances = new ArrayList<EdifCellInstance>();
         if (JEdifTMRAnalysisCommandGroup.noTMRi(global_result)) {
             for (String instanceName : JEdifTMRAnalysisCommandGroup.getNoTMRi(global_result)) {
-                out.println("Excluding instance " + instanceName + " from TMR");
+                LogFile.log().println("Excluding instance " + instanceName + " from TMR");
                 // Get Collection of instances
                 Collection<FlattenedEdifCellInstance> instances = ((FlattenedEdifCell) flatCell)
                         .getInstancesWithin(instanceName);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
-                    out.println("\tWARNING: No match for instance " + instanceName);
+                    LogFile.log().println("\tWARNING: No match for instance " + instanceName);
                 else
                     excludeInstances.addAll(instances);
             }
@@ -571,7 +585,7 @@ public class JEdifTMRAnalysis extends EDIFMain {
             Collection<String> excludeCellTypes = Arrays.asList(JEdifTMRAnalysisCommandGroup.getNoTMRc(global_result));
 
             for (String excludeCellType : excludeCellTypes) {
-                out.println("Excluding cell type " + excludeCellType + " from TMR");
+                LogFile.log().println("Excluding cell type " + excludeCellType + " from TMR");
                 // Need to package the excludeCellType String in a Collection
                 Collection<String> excludeCellTypeColl = new ArrayList<String>(1);
                 excludeCellTypeColl.add(excludeCellType);
@@ -580,7 +594,7 @@ public class JEdifTMRAnalysis extends EDIFMain {
                         .getInstancesWithinCellTypes(excludeCellTypeColl);
                 // Give user warning if no match was found
                 if (instances == null || instances.isEmpty())
-                    out.println("\tWARNING: No match for cell type " + excludeCellType);
+                    LogFile.log().println("\tWARNING: No match for cell type " + excludeCellType);
                 else
                     excludeInstances.addAll(instances);
             }
@@ -596,10 +610,8 @@ public class JEdifTMRAnalysis extends EDIFMain {
             Set<EdifNet> clocks = clockDomainMap.keySet();
 
             for (String netName : excludeClockDomains) {
-                Iterator i = clocks.iterator();
                 Collection<EdifCellInstance> instances = new ArrayList<EdifCellInstance>();
-                while (i.hasNext()) {
-                    EdifNet net = (EdifNet) i.next();
+                for (EdifNet net : clocks) {
                     if (net.getName().equals(netName)) {
                         out.println("Excluding clock domain " + netName + " from TMR.");
                         instances.addAll(clockDomainMap.get(net));
@@ -675,10 +687,8 @@ public class JEdifTMRAnalysis extends EDIFMain {
             Set<EdifNet> clocks = clockDomainMap.keySet();
 
             for (String netName : forceClockDomains) {
-                Iterator i = clocks.iterator();
                 Collection<EdifCellInstance> instances = new ArrayList<EdifCellInstance>();
-                while (i.hasNext()) {
-                    EdifNet net = (EdifNet) i.next();
+                for (EdifNet net : clocks) {
                     if (net.getName().equals(netName)) {
                         out.println("Forcing triplication of clock domain " + netName);
                         instances.addAll(clockDomainMap.get(net));
@@ -787,12 +797,12 @@ public class JEdifTMRAnalysis extends EDIFMain {
                 }
                 //exclude the whole group
                 if (!excluded.isEmpty()) {
-                    LogFile.out().println("Excluding all cells in bad cut " + "group. See log for details");
+                    LogFile.out().println("Excluding all cells in bad cut group. See log for details");
                     //logger.println(excluded.toString(),LogFile.LOG);
                     // Previously-excluded
                     LogFile.log().println("User requested exclusion of instances: " + excluded);
                     // Newly-added:
-                    Collection newExclusions = new ArrayList(badCuteci);
+                    Collection<EdifCellInstance> newExclusions = new ArrayList<EdifCellInstance>(badCuteci);
                     newExclusions.removeAll(excluded);
                     LogFile.log().println("The following instances will also be excluded: " + newExclusions);
                     eci_it = badCuteci.iterator();
