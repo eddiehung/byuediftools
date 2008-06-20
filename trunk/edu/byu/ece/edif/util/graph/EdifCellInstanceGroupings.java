@@ -24,7 +24,6 @@ package edu.byu.ece.edif.util.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,8 +51,9 @@ public class EdifCellInstanceGroupings {
     protected EdifCellInstanceGroupings(EdifCellInstanceGroupings ecig) {
         _cell = ecig._cell; // Reference same cell
         // Create copies of internal Collections
-        _edifCellInstanceGroups = new ArrayList(ecig._edifCellInstanceGroups);
-        _edifCellInstanceGroupsMap = new LinkedHashMap(ecig._edifCellInstanceGroupsMap);
+        _edifCellInstanceGroups = new ArrayList<EdifCellInstanceCollection>(ecig._edifCellInstanceGroups);
+        _edifCellInstanceGroupsMap = new LinkedHashMap<EdifCellInstance, EdifCellInstanceCollection>(
+                ecig._edifCellInstanceGroupsMap);
     }
 
     public Object clone() {
@@ -68,10 +68,12 @@ public class EdifCellInstanceGroupings {
         //    a. Add the new SingleInstanceCollection to the groups array
         //    b. Add the instance - SingleInstanceCollection pair to the map
 
-        _edifCellInstanceGroups = new ArrayList(_cell.getSubCellList().size());
-        _edifCellInstanceGroupsMap = new LinkedHashMap(_cell.getSubCellList().size());
-        for (Iterator i = _cell.getSubCellList().iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
+        _edifCellInstanceGroups = new ArrayList<EdifCellInstanceCollection>(_cell.getSubCellList().size());
+        _edifCellInstanceGroupsMap = new LinkedHashMap<EdifCellInstance, EdifCellInstanceCollection>(_cell
+                .getSubCellList().size());
+        for (EdifCellInstance eci : _cell.getSubCellList()) {
+            //for (Iterator i = _cell.getSubCellList().iterator(); i.hasNext();) {
+            //EdifCellInstance eci = (EdifCellInstance) i.next();
             EdifCellInstanceCollection ecic = new SingleInstanceCollection(eci);
             _edifCellInstanceGroups.add(ecic);
             _edifCellInstanceGroupsMap.put(eci, ecic);
@@ -91,15 +93,16 @@ public class EdifCellInstanceGroupings {
      * @return The resulting EdifCellInstanceCollection group containing all
      * instances from ecis.
      */
-    public EdifCellInstanceCollection groupInstances(Collection ecis) {
+    public EdifCellInstanceCollection groupInstances(Collection<EdifCellInstance> ecis) {
 
         // 1. Get the groups (could be size 1) to which each instance belongs.
         //    Add all instances from each group to a new group.
         //    Remove all of the old groups.
         EdifCellInstanceCollection newGroup = new MultipleInstanceCollection();
-        for (Iterator i = ecis.iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
-            EdifCellInstanceCollection oldGroup = (EdifCellInstanceCollection) _edifCellInstanceGroupsMap.get(eci);
+        for (EdifCellInstance eci : ecis) {
+            //for (Iterator i = ecis.iterator(); i.hasNext();) {
+            //    EdifCellInstance eci = (EdifCellInstance) i.next();
+            EdifCellInstanceCollection oldGroup = _edifCellInstanceGroupsMap.get(eci);
             // The group this Instance belonged to may have been removed already
             if (oldGroup != null) {
                 newGroup.addAll(oldGroup);
@@ -131,8 +134,8 @@ public class EdifCellInstanceGroupings {
     public EdifCellInstanceCollection groupInstances(EdifCellInstance e1, EdifCellInstance e2) {
 
         // 1. Get the groups (could be size 1) to which each instance belongs.
-        EdifCellInstanceCollection c1 = (EdifCellInstanceCollection) _edifCellInstanceGroupsMap.get(e1);
-        EdifCellInstanceCollection c2 = (EdifCellInstanceCollection) _edifCellInstanceGroupsMap.get(e2);
+        EdifCellInstanceCollection c1 = _edifCellInstanceGroupsMap.get(e1);
+        EdifCellInstanceCollection c2 = _edifCellInstanceGroupsMap.get(e2);
 
         // 2. Remove the EdifCellInstanceCollection objects from the groups array.
         if (_edifCellInstanceGroups.remove(c1) == false)
@@ -235,8 +238,8 @@ public class EdifCellInstanceGroupings {
      * @param ecic New group to update in the map.
      */
     protected void updateMap(EdifCellInstanceCollection ecic) {
-        for (Iterator i = ecic.iterator(); i.hasNext();)
-            _edifCellInstanceGroupsMap.put(i.next(), ecic);
+        for (EdifCellInstance eci : ecic)
+            _edifCellInstanceGroupsMap.put(eci, ecic);
     }
 
     /**
@@ -250,10 +253,10 @@ public class EdifCellInstanceGroupings {
      * array.
      */
     protected void removeOldSingleInstanceGroups(EdifCellInstanceCollection new_group) {
-        for (Iterator i = new_group.iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
-            EdifCellInstanceCollection singleInstanceGroup = (EdifCellInstanceCollection) _edifCellInstanceGroupsMap
-                    .get(eci);
+        for (EdifCellInstance eci : new_group) {
+            //for (Iterator i = new_group.iterator(); i.hasNext();) {
+            //    EdifCellInstance eci = (EdifCellInstance) i.next();
+            EdifCellInstanceCollection singleInstanceGroup = _edifCellInstanceGroupsMap.get(eci);
             _edifCellInstanceGroups.remove(singleInstanceGroup);
         }
     }
@@ -266,7 +269,7 @@ public class EdifCellInstanceGroupings {
      * specified EdifCellInstance belongs.
      */
     public EdifCellInstanceCollection getGroup(Object eci) {
-        return (EdifCellInstanceCollection) _edifCellInstanceGroupsMap.get(eci);
+        return _edifCellInstanceGroupsMap.get(eci);
     }
 
     /**
@@ -278,7 +281,7 @@ public class EdifCellInstanceGroupings {
     public Collection<EdifCellInstanceCollection> getInstanceGroups() {
         // create a new copy of the collections. Don't allow them
         // to mess it up.
-        return new ArrayList(_edifCellInstanceGroups);
+        return new ArrayList<EdifCellInstanceCollection>(_edifCellInstanceGroups);
     }
 
     public int getNumberGroups() {
@@ -290,9 +293,9 @@ public class EdifCellInstanceGroupings {
      * EdifCellInstanceCollection objects. Removes all references to the rest of
      * the ECIs and their corresponding groups.
      * 
-     * @param ecis EdifCellInstanceCollections to retain
+     * @param ecis Collection of EdifCellInstanceCollection to retain
      */
-    public void retainGroups(Collection ecics) {
+    public void retainGroups(Collection<EdifCellInstanceCollection> ecics) {
         _edifCellInstanceGroups.retainAll(ecics);
         _edifCellInstanceGroupsMap.values().retainAll(ecics);
     }
@@ -308,5 +311,5 @@ public class EdifCellInstanceGroupings {
      * EdifCellInstanceCollection grouping of EdifCellInstances. Note that a
      * group can be a single instance.
      */
-    Map _edifCellInstanceGroupsMap;
+    Map<EdifCellInstance, EdifCellInstanceCollection> _edifCellInstanceGroupsMap;
 }

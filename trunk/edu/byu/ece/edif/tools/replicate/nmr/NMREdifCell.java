@@ -27,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,6 +47,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.RenamedObject;
+import edu.byu.ece.edif.tools.LogFile;
 
 // ////////////////////////////////////////////////////////////////////////////
 // // NMREdifCell
@@ -617,7 +617,8 @@ public abstract class NMREdifCell extends EdifCell {
      * @param edifCellInstancesToReplicate Indicates which of the instances in
      * the original design to replicate within this new design.
      */
-    protected Map replicateCellInstances(Collection edifCellInstancesToReplicate) {
+    protected Map<EdifCellInstance, EdifCellInstance[]> replicateCellInstances(
+            Collection<EdifCellInstance> edifCellInstancesToReplicate) {
 
         if (debug)
             System.out.println("Number of instances to replicate: " + edifCellInstancesToReplicate.size());
@@ -628,8 +629,8 @@ public abstract class NMREdifCell extends EdifCell {
         for (int i = 0; i < _replicationFactor; i++)
             _instanceDomainArray[i] = new ArrayList<EdifCellInstance>(numberOfInstancesToReplicate);
 
-        if (edifCellInstancesToReplicate == null)
-            edifCellInstancesToReplicate = new ArrayList(0);
+        //if (edifCellInstancesToReplicate == null)
+        //    edifCellInstancesToReplicate = new ArrayList(0);
 
         Collection<EdifCellInstance> edifCellInstanceList = _origCell.getSubCellList();
         _edifCellInstanceMap = new LinkedHashMap<EdifCellInstance, EdifCellInstance[]>(edifCellInstanceList.size());
@@ -700,9 +701,10 @@ public abstract class NMREdifCell extends EdifCell {
          * Iterate over every net in the cell. For each net, create either a
          * single net or a replicated version of the net.
          */
-        for (Iterator netIterator = _origCell.netListIterator(); netIterator.hasNext();) {
+        for (EdifNet net : _origCell.getNetList()) {
+            //for (Iterator netIterator = _origCell.netListIterator(); netIterator.hasNext();) {
+            //EdifNet net = (EdifNet) netIterator.next();
 
-            EdifNet net = (EdifNet) netIterator.next();
             if (debug) {
                 System.out.println("----------");
                 System.out.println("Net " + net.getName() + " (" + net.getOldName() + ")");
@@ -802,7 +804,7 @@ public abstract class NMREdifCell extends EdifCell {
             if (portRefsToCut.contains(driver)) {
                 driverIsCut = true;
                 if (debug)
-                    System.out.println("At least one driver of net " + net.getName() + " is cut");
+                    LogFile.log().println("At least one driver of net " + net.getName() + " is cut");
             }
         }
 
