@@ -51,5 +51,12 @@ public class EdifNameableParentStringReference extends EdifNameableStringReferen
         return lib.getCell(_edifName);
     }
 
+    /**
+     * Returns the name of the EdifCell
+     */
+    public String toString() {
+        return _parent.toString();
+    }
+
     protected EdifNameableStringReference _parent;
 }
