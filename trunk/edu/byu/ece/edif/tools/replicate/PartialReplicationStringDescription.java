@@ -107,7 +107,7 @@ public class PartialReplicationStringDescription implements Serializable {
         return desc;
     }
 
-    //	protected EdifCell cell;
+    //  protected EdifCell cell;
     protected EdifNameableParentStringReference _cellToReplicate;
 
     protected Collection<Replication> _portsToReplicate;
@@ -117,6 +117,41 @@ public class PartialReplicationStringDescription implements Serializable {
     protected Collection<EdifPortRefStringReference> _portRefsToCut;
 
     protected Collection<EdifNameableStringReference> _feedbackPlusInput;
+
+    /**
+     * @return the _cellToReplicate
+     */
+    public EdifNameableParentStringReference get_cellToReplicate() {
+        return _cellToReplicate;
+    }
+
+    /**
+     * @return the _portsToReplicate
+     */
+    public Collection<Replication> get_portsToReplicate() {
+        return _portsToReplicate;
+    }
+
+    /**
+     * @return the _instancesToReplicate
+     */
+    public Collection<Replication> get_instancesToReplicate() {
+        return _instancesToReplicate;
+    }
+
+    /**
+     * @return the _portRefsToCut
+     */
+    public Collection<EdifPortRefStringReference> get_portRefsToCut() {
+        return _portRefsToCut;
+    }
+
+    /**
+     * @return the _feedbackPlusInput
+     */
+    public Collection<EdifNameableStringReference> get_feedbackPlusInput() {
+        return _feedbackPlusInput;
+    }
 
     public static void main(String args[]) throws ReplicationException {
 
