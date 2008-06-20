@@ -26,7 +26,6 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.stringparsers.EnumeratedStringParser;
 
 import edu.byu.ece.edif.util.jsap.AbstractCommandGroup;
 import edu.byu.ece.edif.util.jsap.BoundedIntegerStringParser;
@@ -64,17 +63,6 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
                 + " when using half-latch removal.");
         this.addCommand(_hl_port_name_option);
 
-        _pack_iob_registers_option = new FlaggedOption(PACK_IOB_REGISTERS);
-        _pack_iob_registers_option.setStringParser(EnumeratedStringParser.getParser(INPUT + ";" + OUTPUT + ";" + BOTH
-                + ";" + NONE, false));
-        _pack_iob_registers_option.setLongFlag(PACK_IOB_REGISTERS);
-        _pack_iob_registers_option.setDefault(BOTH);
-        _pack_iob_registers_option.setUsageName("{" + INPUT + "|" + OUTPUT + "|" + BOTH + "|" + NONE + "}");
-        _pack_iob_registers_option.setHelp("Half-latch removal by default treat registers that can be packed"
-                + " into the IOB differently. '" + INPUT + "' will pack input registers into IOBs, '" + OUTPUT
-                + "' will pack output registers, '" + BOTH + "' will pack both. '" + NONE + "' will pack neither.");
-        this.addCommand(_pack_iob_registers_option);
-
         _remove_fmaps_option = new Switch(REMOVE_FMAPS);
         _remove_fmaps_option.setShortFlag(JSAP.NO_SHORTFLAG);
         _remove_fmaps_option.setLongFlag(REMOVE_FMAPS);
@@ -106,29 +94,11 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
         return result.getString(JEdifSterilizeCommandGroup.HL_PORT_NAME);
     }
 
-    public static boolean packInputRegisters(JSAPResult result) {
-        String packRegisters = result.getString(PACK_IOB_REGISTERS);
-        if (packRegisters.equalsIgnoreCase(INPUT) || packRegisters.equalsIgnoreCase(BOTH))
-            return true;
-        else
-            return false;
-    }
-
-    public static boolean packOutputRegisters(JSAPResult result) {
-        String packRegisters = result.getString(PACK_IOB_REGISTERS);
-        if (packRegisters.equalsIgnoreCase(OUTPUT) || packRegisters.equalsIgnoreCase(BOTH))
-            return true;
-        else
-            return false;
-    }
-
     protected Switch _remove_hl_option;
 
     protected FlaggedOption _hl_constant_option;
 
     protected FlaggedOption _hl_port_name_option;
-
-    protected FlaggedOption _pack_iob_registers_option;
 
     protected Switch _remove_fmaps_option;
 
@@ -140,17 +110,7 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
 
     public static final String HL_USE_PORT = "hl_use_port";
 
-    public static final String PACK_IOB_REGISTERS = "pack_registers";
-
     public static final String REMOVE_FMAPS = "remove_fmaps";
-
-    public static final String INPUT = "i";
-
-    public static final String OUTPUT = "o";
-
-    public static final String BOTH = "b";
-
-    public static final String NONE = "n";
 
     public static final String FALSE = "false";
 

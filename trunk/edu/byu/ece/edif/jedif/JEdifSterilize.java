@@ -71,6 +71,7 @@ public class JEdifSterilize extends EDIFMain {
 
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new JEdifSterilizeCommandGroup());
+        parser.addCommands(new IOBCommandGroup());
         parser.addCommands(new JEdifParserCommandGroup());
         parser.addCommands(new JEdifOutputCommandGroup());
         parser.addCommands(new LogFileCommandGroup("sterilize.log"));
@@ -179,8 +180,8 @@ public class JEdifSterilize extends EDIFMain {
      * @param _debug is an option for debugging.
      * @param args is args.
      */
-    public static FlattenedEdifCell sterilize(FlattenedEdifCell flatCell,
-            EdifCellInstanceGraph eciConnectivityGraph, boolean reportTiming, boolean debug, JSAPResult result) {
+    public static FlattenedEdifCell sterilize(FlattenedEdifCell flatCell, EdifCellInstanceGraph eciConnectivityGraph,
+            boolean reportTiming, boolean debug, JSAPResult result) {
         /*
          * 5. Remove fmaps.
          */
@@ -192,8 +193,8 @@ public class JEdifSterilize extends EDIFMain {
          */
         // Pack IOBs or not?
         boolean packInputRegs = false, packOutputRegs = false;
-        packInputRegs = JEdifSterilizeCommandGroup.packInputRegisters(result);
-        packOutputRegs = JEdifSterilizeCommandGroup.packOutputRegisters(result);
+        packInputRegs = IOBCommandGroup.packInputRegisters(result);
+        packOutputRegs = IOBCommandGroup.packOutputRegisters(result);
 
         AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer(flatCell, eciConnectivityGraph, packInputRegs,
                 packOutputRegs);
@@ -266,18 +267,5 @@ public class JEdifSterilize extends EDIFMain {
         }
         return flatCell;
     }
-
-    /**
-     * IOB Register packing option
-     */
-    public static final String PACK_IOB_REGISTERS = JEdifSterilizeCommandGroup.PACK_IOB_REGISTERS;
-
-    public static final String INPUT = JEdifSterilizeCommandGroup.INPUT;
-
-    public static final String OUTPUT = JEdifSterilizeCommandGroup.OUTPUT;
-
-    public static final String BOTH = JEdifSterilizeCommandGroup.BOTH;
-
-    public static final String NONE = JEdifSterilizeCommandGroup.NONE;
 
 }
