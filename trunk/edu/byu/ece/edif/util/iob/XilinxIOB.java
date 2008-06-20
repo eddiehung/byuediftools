@@ -40,11 +40,11 @@ public abstract class XilinxIOB extends AbstractIOB {
      * @return true if this XilinxVirtexIOB object corresponds to a clock IOB,
      * false otherwise.
      */
-    public boolean isClockIOB() {
+    public boolean canPack() {
         if (_ibuf != null)
             if (_ibuf.getType().startsWith("IBUFG"))
-                return true;
-        return false;
+                return false;
+        return true;
     }
 
     public void setResistor(EdifCellInstance resistor) {
