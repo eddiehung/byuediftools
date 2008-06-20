@@ -22,6 +22,7 @@
  */
 package edu.byu.ece.edif.util.jsap;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -71,6 +72,18 @@ public class OutputFileCommandGroup extends AbstractCommandGroup {
 
     public static String getOutputFileName(JSAPResult result) {
         return result.getString(OUTPUT_OPTION);
+    }
+
+    public static PrintStream getOutputStream(JSAPResult result) {
+        String file = OutputFileCommandGroup.getOutputFileName(result);
+        PrintStream p = null;
+        try {
+            p = new PrintStream(new FileOutputStream(file));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return p;
     }
 
     /**
