@@ -135,10 +135,10 @@ public abstract class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         _badCutConnections.addBadCutConnection("DSP48", "PCOUT", "DSP48", "PCIN");
         _badCutConnections.addBadCutConnection("DSP48", "BCOUT", "DSP48", "BCIN");
 
-        _badCutConnections.addBadCutConnection("*", "*", "IDELAYCTL", "*");
-        _badCutConnections.addBadCutConnection("*", "*", "IDELAY", "*");
-        _badCutConnections.addBadCutConnection("IDELAY", "*", "*", "*");
-        _badCutConnections.addBadCutConnection("IDELAYCTL", "*", "*", "*");
+        _badCutConnections.addBadCutConnection("*", "*", "IDELAYCTL", "REFCLK");
+        _badCutConnections.addBadCutConnection("*", "*", "IDELAYCTL", "RST");
+        _badCutConnections.addBadCutConnection("BUFG", "O", "IDELAYCTL", "REFCLK");
+
 
     }
 
