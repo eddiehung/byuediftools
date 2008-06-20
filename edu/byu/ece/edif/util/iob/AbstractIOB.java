@@ -55,7 +55,7 @@ public abstract class AbstractIOB {
 
     }
 
-    abstract boolean isClockIOB();
+    abstract boolean canPack();
 
     abstract public void setResistor(EdifCellInstance resistor);
 

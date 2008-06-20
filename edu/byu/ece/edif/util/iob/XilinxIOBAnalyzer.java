@@ -27,7 +27,6 @@ import java.util.Collection;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
-import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -114,14 +113,15 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 if (successor instanceof EdifCellInstance) {
                     EdifCellInstance eci = (EdifCellInstance) successor;
                     if (XilinxResourceMapper.IO.equals(XilinxResourceMapper.getResourceType(eci))) {
-                        xiob.setIBUF(eci);
-                        LogFile.debug().println("Found IBUF: " + eci);
+                        xiob.setIBUF(eci, graph);
+                        if (_debug)
+                            System.out.println("Found IBUF: " + eci);
                     }
                 }
             }
 
             // Check for clock port (If so, can't pack registers in the IOB)
-            if (!xiob.isClockIOB() && packInputRegisters) { // Only pack if user specified so
+            if (xiob.canPack() && packInputRegisters) { // Only pack if user specified so
                 // Check for input Reg (using inBuf if it exists or port otherwise)
                 Object source = null;
                 EdifCellInstance ibuf = xiob.getIBUF();
