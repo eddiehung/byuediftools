@@ -96,6 +96,14 @@ public class EdifEnvironmentCopy {
         createTopDesign();
         return _newEnv;
     }
+    
+    /**
+     * 
+     * @return The copied EdifEnvironment
+     */
+    public EdifEnvironment getNewEnvironment() {
+    	return _newEnv;
+    }
 
     /**
      * Copy the date, author, program, and version of the old environment into
