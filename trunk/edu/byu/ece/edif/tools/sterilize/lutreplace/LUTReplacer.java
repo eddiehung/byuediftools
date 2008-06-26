@@ -180,110 +180,118 @@ public class LUTReplacer{
 				EdifNet O3 = context.getNewNetToConnect("O3");
 				
 				// Call code to create replacement cell internals
-				if(oldCell.getName().equals("SRL16"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CLK, A0, A1, A2, A3, Q);
-				else if(oldCell.getName().equals("SRL16_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16_1_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CLK, A0, A1, A2, A3, Q);
-				else if(oldCell.getName().equals("SRL16E"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16E_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CE, CLK, A0, A1, A2, A3, Q);
-				else if(oldCell.getName().equals("SRL16E_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16E_1_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CE, CLK, A0, A1, A2, A3, Q);
-				else if(oldCell.getName().equals("SRLC16"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CLK, A0, A1, A2, A3, Q, Q15);
-				else if(oldCell.getName().equals("SRLC16_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16_1_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CLK, A0, A1, A2, A3, Q, Q15);
-				else if(oldCell.getName().equals("SRLC16E"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16E_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CE, CLK, A0, A1, A2, A3, Q, Q15);
-				else if(oldCell.getName().equals("SRLC16E_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16E_1_replacement.Replace(newLibManager, newParent, INIT, 
-							D, CE, CLK, A0, A1, A2, A3, Q, Q15);
-				else if(oldCell.getName().equals("RAM16X1D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1D_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO, DPO);
-				else if(oldCell.getName().equals("RAM16X1D_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1D_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO, DPO);
-				else if(oldCell.getName().equals("RAM16X1S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1S_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, O);
-				else if(oldCell.getName().equals("RAM16X1S_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1S_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, O);
-				else if(oldCell.getName().equals("RAM16X2D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X2D_replacement.Replace(newLibManager, newParent,
-							WE, D0, D1, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO0, SPO1, DPO0, DPO1);
-				else if(oldCell.getName().equals("RAM16X2S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
-							WE, D0, D1, WCLK, A0, A1, A2, A3, O0, O1);
-				else if(oldCell.getName().equals("RAM16X4D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X4D_replacement.Replace(newLibManager, newParent,
-							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, 
-							SPO0, SPO1, SPO2, SPO3, DPO0, DPO1, DPO2, DPO3);
-				else if(oldCell.getName().equals("RAM16X4S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X4S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01, INIT_02, INIT_03,
-							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, O0, O1, O2, O3);
-				else if(oldCell.getName().equals("RAM16X8D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X8D_replacement.Replace(newLibManager, newParent,
-							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3,
-							SPO_0, SPO_1, SPO_2, SPO_3, SPO_4, SPO_5, SPO_6, SPO_7, DPO_0, DPO_1, DPO_2, DPO_3, DPO_4, DPO_5, DPO_6, DPO_7);
-				else if(oldCell.getName().equals("RAM16X8S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X8S_replacement.Replace(newLibManager, newParent,
-							INIT_00, INIT_01, INIT_02, INIT_03, INIT_04, INIT_05, INIT_06, INIT_07,
-							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7);
-				else if(oldCell.getName().equals("RAM32X1D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1D_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4,
-							SPO, DPO);
-				else if(oldCell.getName().equals("RAM32X1D_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1D_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4,
-							SPO, DPO);
-				else if(oldCell.getName().equals("RAM32X1S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1S_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, O);
-				else if(oldCell.getName().equals("RAM32X1S_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1S_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, O);
-				else if(oldCell.getName().equals("RAM32X2S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
-							WE, D0, D1, WCLK, A0, A1, A2, A3, A4, O0, O1);
-				else if(oldCell.getName().equals("RAM32X4S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X4S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01, INIT_02, INIT_03,
-							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, A4, O0, O1, O2, O3);
-				else if(oldCell.getName().equals("RAM32X8S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X8S_replacement.Replace(newLibManager, newParent,
-							INIT_00, INIT_01, INIT_02, INIT_03, INIT_04, INIT_05, INIT_06, INIT_07,
-							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, A4, O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7);
-				else if(oldCell.getName().equals("RAM64X1D"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1D_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4, DPRA5,
-							SPO, DPO);
-				else if(oldCell.getName().equals("RAM64X1D_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1D_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4, DPRA5,
-							SPO, DPO);
-				else if(oldCell.getName().equals("RAM64X1S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1S_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, O);
-				else if(oldCell.getName().equals("RAM64X1S_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1S_1_replacement.Replace(newLibManager, newParent, INIT,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, O);
-				else if(oldCell.getName().equals("RAM64X2S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
-							WE, D0, D1, WCLK, A0, A1, A2, A3, A4, A5, O0, O1);
-				else if(oldCell.getName().equals("RAM128X1S"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM128X1S_replacement.Replace(newLibManager, newParent, INIT_HIGH, INIT_LOW,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, A6, O);
-				else if(oldCell.getName().equals("RAM128X1S_1"))
-					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM128X1S_1_replacement.Replace(newLibManager, newParent, INIT_HIGH, INIT_LOW,
-							WE, D, WCLK, A0, A1, A2, A3, A4, A5, A6, O);
+				if(oldCell.getName().equals("SRL16") || oldCell.getName().equals("SRL16_1") || 
+						oldCell.getName().equals("SRL16E") || oldCell.getName().equals("SRL16E_1") || 
+						oldCell.getName().equals("SRLC16") || oldCell.getName().equals("SRLC16_1") || 
+						oldCell.getName().equals("SRLC16E") || oldCell.getName().equals("SRLC16E_1")) {
+					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.Replace(newLibManager, oldCell.getName(), newParent,
+							oldInstance.getName(), INIT, D, CE, CLK, A0, A1, A2, A3, Q, Q15);
+				}
+				
+//				if(oldCell.getName().equals("SRL16"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CLK, A0, A1, A2, A3, Q);
+//				else if(oldCell.getName().equals("SRL16_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16_1_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CLK, A0, A1, A2, A3, Q);
+//				else if(oldCell.getName().equals("SRL16E"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16E_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CE, CLK, A0, A1, A2, A3, Q);
+//				else if(oldCell.getName().equals("SRL16E_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL16E_1_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CE, CLK, A0, A1, A2, A3, Q);
+//				else if(oldCell.getName().equals("SRLC16"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CLK, A0, A1, A2, A3, Q, Q15);
+//				else if(oldCell.getName().equals("SRLC16_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16_1_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CLK, A0, A1, A2, A3, Q, Q15);
+//				else if(oldCell.getName().equals("SRLC16E"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16E_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CE, CLK, A0, A1, A2, A3, Q, Q15);
+//				else if(oldCell.getName().equals("SRLC16E_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRLC16E_1_replacement.Replace(newLibManager, newParent, INIT, 
+//							D, CE, CLK, A0, A1, A2, A3, Q, Q15);
+//				else if(oldCell.getName().equals("RAM16X1D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1D_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO, DPO);
+//				else if(oldCell.getName().equals("RAM16X1D_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1D_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO, DPO);
+//				else if(oldCell.getName().equals("RAM16X1S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1S_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, O);
+//				else if(oldCell.getName().equals("RAM16X1S_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X1S_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, O);
+//				else if(oldCell.getName().equals("RAM16X2D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X2D_replacement.Replace(newLibManager, newParent,
+//							WE, D0, D1, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, SPO0, SPO1, DPO0, DPO1);
+//				else if(oldCell.getName().equals("RAM16X2S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
+//							WE, D0, D1, WCLK, A0, A1, A2, A3, O0, O1);
+//				else if(oldCell.getName().equals("RAM16X4D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X4D_replacement.Replace(newLibManager, newParent,
+//							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3, 
+//							SPO0, SPO1, SPO2, SPO3, DPO0, DPO1, DPO2, DPO3);
+//				else if(oldCell.getName().equals("RAM16X4S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X4S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01, INIT_02, INIT_03,
+//							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, O0, O1, O2, O3);
+//				else if(oldCell.getName().equals("RAM16X8D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X8D_replacement.Replace(newLibManager, newParent,
+//							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, DPRA0, DPRA1, DPRA2, DPRA3,
+//							SPO_0, SPO_1, SPO_2, SPO_3, SPO_4, SPO_5, SPO_6, SPO_7, DPO_0, DPO_1, DPO_2, DPO_3, DPO_4, DPO_5, DPO_6, DPO_7);
+//				else if(oldCell.getName().equals("RAM16X8S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM16X8S_replacement.Replace(newLibManager, newParent,
+//							INIT_00, INIT_01, INIT_02, INIT_03, INIT_04, INIT_05, INIT_06, INIT_07,
+//							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7);
+//				else if(oldCell.getName().equals("RAM32X1D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1D_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4,
+//							SPO, DPO);
+//				else if(oldCell.getName().equals("RAM32X1D_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1D_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4,
+//							SPO, DPO);
+//				else if(oldCell.getName().equals("RAM32X1S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1S_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, O);
+//				else if(oldCell.getName().equals("RAM32X1S_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X1S_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, O);
+//				else if(oldCell.getName().equals("RAM32X2S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
+//							WE, D0, D1, WCLK, A0, A1, A2, A3, A4, O0, O1);
+//				else if(oldCell.getName().equals("RAM32X4S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X4S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01, INIT_02, INIT_03,
+//							WE, D0, D1, D2, D3, WCLK, A0, A1, A2, A3, A4, O0, O1, O2, O3);
+//				else if(oldCell.getName().equals("RAM32X8S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM32X8S_replacement.Replace(newLibManager, newParent,
+//							INIT_00, INIT_01, INIT_02, INIT_03, INIT_04, INIT_05, INIT_06, INIT_07,
+//							WE, D_0, D_1, D_2, D_3, D_4, D_5, D_6, D_7, WCLK, A0, A1, A2, A3, A4, O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7);
+//				else if(oldCell.getName().equals("RAM64X1D"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1D_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4, DPRA5,
+//							SPO, DPO);
+//				else if(oldCell.getName().equals("RAM64X1D_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1D_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, DPRA0, DPRA1, DPRA2, DPRA3, DPRA4, DPRA5,
+//							SPO, DPO);
+//				else if(oldCell.getName().equals("RAM64X1S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1S_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, O);
+//				else if(oldCell.getName().equals("RAM64X1S_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X1S_1_replacement.Replace(newLibManager, newParent, INIT,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, O);
+//				else if(oldCell.getName().equals("RAM64X2S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM64X2S_replacement.Replace(newLibManager, newParent, INIT_00, INIT_01,
+//							WE, D0, D1, WCLK, A0, A1, A2, A3, A4, A5, O0, O1);
+//				else if(oldCell.getName().equals("RAM128X1S"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM128X1S_replacement.Replace(newLibManager, newParent, INIT_HIGH, INIT_LOW,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, A6, O);
+//				else if(oldCell.getName().equals("RAM128X1S_1"))
+//					edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM128X1S_1_replacement.Replace(newLibManager, newParent, INIT_HIGH, INIT_LOW,
+//							WE, D, WCLK, A0, A1, A2, A3, A4, A5, A6, O);
 			}
 			
 			// Write to EDIF File
@@ -300,8 +308,6 @@ public class LUTReplacer{
 			} catch (FileNotFoundException e){
 				System.out.println("FileNotFoundException caught");
 			}
-			
 			System.out.println("done");
-			
 	}
 }
