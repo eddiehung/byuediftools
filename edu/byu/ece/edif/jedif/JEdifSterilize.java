@@ -50,6 +50,7 @@ import edu.byu.ece.edif.util.jsap.JEdifOutputCommandGroup;
 import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
 import edu.byu.ece.edif.util.jsap.OutputFileCommandGroup;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer;
 
 public class JEdifSterilize extends EDIFMain {
 
@@ -186,6 +187,8 @@ public class JEdifSterilize extends EDIFMain {
          * 5. Remove fmaps.
          */
         FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+        
+        LUTReplacer.replaceLUTs(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
 
         /*
          * 8. Analyze IOBs of the flattened EdifCell TODO: Add IOBAnalyzer
