@@ -19,13 +19,13 @@ import edu.byu.ece.edif.core.StringTypedValue;
 public class SRL_Replacement {
 
 	/** Enumerate all of the SRL types */	
-	public static final String SRL16_STRING = 		"SRL16";
-	public static final String SRL16_1_STRING = 	"SRL16_1";
-	public static final String SRL16E_STRING = 		"SRL16E";
-	public static final String SRL16E_1_STRING = 	"SRL16E_1";
-	public static final String SRLC16_STRING = 		"SRLC16";
-	public static final String SRLC16_1_STRING = 	"SRLC16_1";
-	public static final String SRLC16E_STRING = 	"SRLC16E";
+	public static final String SRL16_STRING 	= 	"SRL16";
+	public static final String SRL16_1_STRING 	= 	"SRL16_1";
+	public static final String SRL16E_STRING 	= 	"SRL16E";
+	public static final String SRL16E_1_STRING 	= 	"SRL16E_1";
+	public static final String SRLC16_STRING 	= 	"SRLC16";
+	public static final String SRLC16_1_STRING 	= 	"SRLC16_1";
+	public static final String SRLC16E_STRING 	= 	"SRLC16E";
 	public static final String SRLC16E_1_STRING = 	"SRLC16E_1";
 	
 	public enum SRLType {SRL16, SRL16_1, SRL16E, SRL16E_1, SRLC16, SRLC16_1, SRLC16E, SRLC16E_1};
@@ -266,7 +266,7 @@ public class SRL_Replacement {
 		EdifSingleBitPort sESBP = sPort.getSingleBitPort(0);
 		EdifSingleBitPort oESBP = oPort.getSingleBitPort(0);
 		
-		// Hoop up 2-1 muxes to get a 16-1 mux
+		// Hook up 2-1 muxes to get a 16-1 mux
 		for (int i = 0; i < 14; i++) {
 			int muxNumber;
 			if(i%2 == 0) {
@@ -293,7 +293,7 @@ public class SRL_Replacement {
 			}
 		}
 		
-		// Hoop up select signals a0, a1, a2, a3
+		// Hook up select signals a0, a1, a2, a3
 		for (int i = 0; i < 15; i++) {
 			EdifNet aNet = null;
 			if (i >= 0 && i <= 7) {
