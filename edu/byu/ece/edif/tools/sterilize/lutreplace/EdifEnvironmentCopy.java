@@ -324,7 +324,6 @@ public class EdifEnvironmentCopy {
         EdifPort oldPort = oldSbp.getParent();
         EdifPort newPort = _portMap.get(oldPort);
         EdifSingleBitPort newSbp = newPort.getSingleBitPort(oldSbp.bitPosition());
-
         EdifCellInstance newEci = null;
         if (oldRef.getCellInstance() != null)
             newEci = _instanceMap.get(oldRef.getCellInstance());

@@ -32,6 +32,8 @@ public class LUTReplacer{
 		// Create copy replace object
 		EdifEnvironmentCopyReplace ecr = null;
 		try {
+			System.out.println("Environment:"+env);
+			System.out.println("cellsToReplace:"+cellsToReplace);
 			ecr = new EdifEnvironmentCopyReplace(env, cellsToReplace);
 		} catch (EdifNameConflictException e) {
 			System.err.println(e);
