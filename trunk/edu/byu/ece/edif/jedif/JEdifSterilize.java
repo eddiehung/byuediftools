@@ -124,7 +124,9 @@ public class JEdifSterilize extends EDIFMain {
             myCell = myEnv.getTopCell();
 
             if (myCell instanceof FlattenedEdifCell) {
+            	System.out.println("myCell:"+myCell);
                 flatCell = (FlattenedEdifCell) myCell;
+                System.out.println("flatCell:"+flatCell);
             } else {
                 LogFile.out().print("Flattening... ");
                 flatCell = new FlattenedEdifCell(myCell, "_flat");
@@ -183,14 +185,14 @@ public class JEdifSterilize extends EDIFMain {
      */
     public static FlattenedEdifCell sterilize(FlattenedEdifCell flatCell, EdifCellInstanceGraph eciConnectivityGraph,
             boolean reportTiming, boolean debug, JSAPResult result) {
-        /*
+        /**
          * 5. Remove fmaps.
          */
-        FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+//        FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
         
         LUTReplacer.replaceLUTs(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
 
-        /*
+        /**
          * 8. Analyze IOBs of the flattened EdifCell TODO: Add IOBAnalyzer
          * objects for other architectures/technologies
          */
