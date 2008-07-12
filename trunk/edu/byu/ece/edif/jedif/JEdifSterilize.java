@@ -122,11 +122,8 @@ public class JEdifSterilize extends EDIFMain {
         FlattenedEdifCell flatCell = null;
         try {
             myCell = myEnv.getTopCell();
-
             if (myCell instanceof FlattenedEdifCell) {
-            	System.out.println("myCell:"+myCell);
                 flatCell = (FlattenedEdifCell) myCell;
-                System.out.println("flatCell:"+flatCell);
             } else {
                 LogFile.out().print("Flattening... ");
                 flatCell = new FlattenedEdifCell(myCell, "_flat");
@@ -188,9 +185,10 @@ public class JEdifSterilize extends EDIFMain {
         /**
          * 5. Remove fmaps.
          */
-//        FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
-        
+                
         LUTReplacer.replaceLUTs(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+        
+        FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
 
         /**
          * 8. Analyze IOBs of the flattened EdifCell TODO: Add IOBAnalyzer
