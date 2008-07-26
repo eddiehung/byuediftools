@@ -71,8 +71,16 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
                 + " *all* FMAPS can be removed at the EDIF level for all architectures. Some"
                 + " post-processing may be necessary.");
         this.addCommand(_remove_fmaps_option);
+        
+        _replace_lut_option = new Switch(REPLACE_LUTS);
+        _replace_lut_option.setShortFlag(JSAP.NO_SHORTFLAG);
+        _replace_lut_option.setLongFlag(REPLACE_LUTS);
+        _replace_lut_option.setDefault(FALSE);
+        _replace_lut_option.setHelp("Replace all the SRLs and RAMs instantiatied by LUTs with actual"
+                + " flip-flops");
+        this.addCommand(_replace_lut_option);
     }
-
+    
     /**
      * Set := {0,1} Use for {@linkplain #HL_CONSTANT hlConst}.
      */
@@ -84,6 +92,10 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
 
     public static boolean getRemoveFMaps(JSAPResult result) {
         return result.getBoolean(REMOVE_FMAPS);
+    }
+    
+    public static boolean getReplaceLuts(JSAPResult result) {
+        return result.getBoolean(REPLACE_LUTS);
     }
 
     public static int getHLConstant(JSAPResult result) {
@@ -101,6 +113,8 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
     protected FlaggedOption _hl_port_name_option;
 
     protected Switch _remove_fmaps_option;
+    
+    protected Switch _replace_lut_option;
 
     public static final String REMOVE_HL = "remove_hl";
 
@@ -111,6 +125,8 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
     public static final String HL_USE_PORT = "hl_use_port";
 
     public static final String REMOVE_FMAPS = "remove_fmaps";
+    
+    public static final String REPLACE_LUTS = "replace_luts";
 
     public static final String FALSE = "false";
 
