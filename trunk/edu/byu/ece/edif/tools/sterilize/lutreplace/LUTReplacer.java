@@ -3,6 +3,7 @@ package edu.byu.ece.edif.tools.sterilize.lutreplace;
 import java.util.ArrayList;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxGenLib;
 import edu.byu.ece.edif.core.EdifCell;
@@ -17,7 +18,8 @@ import edu.byu.ece.edif.core.EdifPrintWriter;
 
 public class LUTReplacer{
 
-	public static EdifEnvironment replaceLUTs(EdifEnvironment env) {
+	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream out) {
+		System.out.print("Replacing LUTs . . .");
 		// Create list of instances to replace
 		ArrayList<EdifCell> cellsToReplace = new ArrayList<EdifCell>();
 		EdifLibrary primitiveLibrary = XilinxGenLib.library;
@@ -182,6 +184,7 @@ public class LUTReplacer{
 			}
 		}
 
+		System.out.print("Done"+'\n');
 		return newEnv;
 	}
 
@@ -198,7 +201,8 @@ public class LUTReplacer{
 		}
 
 		EdifEnvironment top = edu.byu.ece.edif.util.merge.EdifMergeParser.getMergedEdifEnvironment(args[0], args);
-		EdifEnvironment newEnv = replaceLUTs(top);
+		PrintStream out = null;
+		EdifEnvironment newEnv = replaceLUTs(top, out);
 
 		// Write to EDIF File
 		String inputFileName = args[0];

@@ -97,7 +97,7 @@ public class JEdifSterilize extends EDIFMain {
         // This function has been moved to JEdifBuild.
         //replace_srls_rlocs(result, logger, myEnv);
 
-        flatten_sterilize(result, myEnv);
+        flatten_sterilize(result, myEnv, out);
 
         //Serializing to a JEdif
         if (!result.userSpecified(OutputFileCommandGroup.OUTPUT_OPTION)) {
@@ -116,7 +116,7 @@ public class JEdifSterilize extends EDIFMain {
         //		" sterilized into the JEdif file '"+JEdifOutputCommandGroup.getOutputFileName(result)+"'");
     }
 
-    public static void flatten_sterilize(JSAPResult result, EdifEnvironment myEnv) {
+    public static void flatten_sterilize(JSAPResult result, EdifEnvironment myEnv, PrintStream out) {
         boolean debug = false;
         EdifCell myCell = null;
         FlattenedEdifCell flatCell = null;
@@ -145,7 +145,8 @@ public class JEdifSterilize extends EDIFMain {
                 eciConnectivityGraph, //EdifCellInstanceGraph,
                 false, //boolean reportTiming,
                 debug, //boolean _debug,
-                result); //JSAPResult
+                result, //JSAPResult,
+                out);	//PrintStream
         // Set as top cell
 
         myEnv.setTopCell(sterilizeCell);
@@ -181,15 +182,24 @@ public class JEdifSterilize extends EDIFMain {
      * @param args is args.
      */
     public static FlattenedEdifCell sterilize(FlattenedEdifCell flatCell, EdifCellInstanceGraph eciConnectivityGraph,
-            boolean reportTiming, boolean debug, JSAPResult result) {
+            boolean reportTiming, boolean debug, JSAPResult result, PrintStream out) {
         /**
          * 5. Remove fmaps.
          */
-                
-        LUTReplacer.replaceLUTs(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+        if (JEdifSterilizeCommandGroup.getRemoveFMaps(result)) {
+        	int fmapCount = FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+        	/**
+        	 * TODO: write into log file
+        	 */
+        }
         
-        FmapRemover.removeFmaps(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
-
+        if (JEdifSterilizeCommandGroup.getReplaceLuts(result)) {
+        	LUTReplacer.replaceLUTs(flatCell.getLibrary().getLibraryManager().getEdifEnvironment(), out);
+        	/**
+        	 * TODO: write into log file
+        	 */
+        }
+        
         /**
          * 8. Analyze IOBs of the flattened EdifCell TODO: Add IOBAnalyzer
          * objects for other architectures/technologies

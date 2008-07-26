@@ -24,12 +24,15 @@ package edu.byu.ece.edif.tools.sterilize.fmap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxGenLib;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibrary;
+import edu.byu.ece.edif.core.EdifNet;
+import edu.byu.ece.edif.core.EdifPortRef;
 
 /**
  * <p>
@@ -79,8 +82,9 @@ public abstract class FmapRemover {
      * @param environment The EdifEnvironment object
      * @return true if the EdifEnvironment was modified.
      */
-    public static boolean removeFmaps(EdifEnvironment environment) {
-        boolean result = false;
+    public static int removeFmaps(EdifEnvironment environment) {
+    	System.out.print("Removing fmaps . . .");
+        int fmapCount = 0;
         /* Iterate over all the EdifCells in all the EdifLibraries. */
         for (EdifLibrary library : environment.getLibraryManager().getLibraries()) {
 
@@ -91,13 +95,31 @@ public abstract class FmapRemover {
                  * Iterate over all the EdifCellInstances in the EdifCell and
                  * mark any fmap instances to be removed.
                  */
-                Collection<EdifCellInstance> instancesToRemove = new ArrayList<EdifCellInstance>();
+                Collection<EdifCellInstance> instancesToRemove = new LinkedHashSet<EdifCellInstance>();
                 for (EdifCellInstance instance : cell.getSubCellList()) {
                     if (instance.getCellType().equalsName(XilinxGenLib.FMAP())) {
-                        // Remove the instance and all associated portRefs.
                         instancesToRemove.add(instance);
                     }
                 }
+                
+                /*
+                 * Iterate over all the EdifPortRefs in the EdifCellInstance and 
+                 * mark any fmap-connected port references to be removed.
+                 */
+                Collection<EdifPortRef> portRefsToRemove = new ArrayList<EdifPortRef>();
+                if (cell.getNetList() != null) {
+                	for (EdifNet net : cell.getNetList()) {
+                		for (EdifPortRef portRef : net.getPortRefList()) {
+                			if (portRef.getCellInstance() != null) {
+                				EdifCellInstance instance = portRef.getCellInstance();
+                				if (instancesToRemove.contains(instance)) {
+                					portRefsToRemove.add(portRef);
+                				}
+                			}
+                		}
+                	}
+                }
+                
                 /*
                  * Actually remove any fmap EdifCellInstances previously found.
                  * 
@@ -106,7 +128,15 @@ public abstract class FmapRemover {
                  */
                 for (EdifCellInstance instance : instancesToRemove) {
                     if (cell.deleteSubCell(instance, true))
-                        result = true;
+                        fmapCount++;
+                }
+                
+                /*
+                 * Actually remove any fmap-connected EdifPortRefs previously found.
+                 * 
+                 */
+                for (EdifPortRef portRef : portRefsToRemove) {
+                    portRef.getNet().deletePortConnection(portRef);
                 }
 
                 /*
@@ -124,10 +154,10 @@ public abstract class FmapRemover {
              * avoid a ConcurrentModificationException.)
              */
             for (EdifCell cell : cellsToRemove) {
-                if (library.deleteCell(cell, true))
-                    result = true;
+            	library.deleteCell(cell, true);
             }
         }
-        return result;
+        System.out.print("Done"+'\n');
+        return fmapCount;
     }
 }

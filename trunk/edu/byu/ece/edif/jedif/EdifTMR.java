@@ -94,7 +94,7 @@ public class EdifTMR extends EDIFMain {
 
         TechnologyCommandGroup.getPartFromEDIF(result, env);
 
-        JEdifSterilize.flatten_sterilize(result, env);
+        JEdifSterilize.flatten_sterilize(result, env, out);
         EdifCell flatCell = env.getTopCell();
         //now we have a flattened and sterilized cell
         //tmr analysis

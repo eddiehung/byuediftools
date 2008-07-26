@@ -322,7 +322,7 @@ public class EdifEnvironmentCopy {
     protected void addEdifPortRef(EdifNet newNet, EdifPortRef oldRef) {
         EdifSingleBitPort oldSbp = oldRef.getSingleBitPort();
         EdifPort oldPort = oldSbp.getParent();
-        EdifPort newPort = _portMap.get(oldPort);
+        EdifPort newPort = _portMap.get(oldPort);        
         EdifSingleBitPort newSbp = newPort.getSingleBitPort(oldSbp.bitPosition());
         EdifCellInstance newEci = null;
         if (oldRef.getCellInstance() != null)
