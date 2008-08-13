@@ -107,7 +107,7 @@ public class XilinxLibrary extends XilinxGenLib {
             //xilinxLibrary.addCell(xilinx_cell);
             //return xilinx_cell;
             try {
-                result = new EdifCell(xilinxLibrary, xilinx_cell);
+                result = new EdifCell(xilinxLibrary, xilinx_cell.getName());
             } catch (EdifNameConflictException e) {
                 e.toRuntime();
             } catch (InvalidEdifNameException e) {
