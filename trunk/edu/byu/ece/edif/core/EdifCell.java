@@ -174,10 +174,6 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
         _isPrimitive = isPrimitive;
     }
 
-    public EdifCell(EdifLibrary lib, EdifCell cell) throws EdifNameConflictException, InvalidEdifNameException {
-        this(lib, cell, cell.getName());
-    }
-
     /**
      * @deprecated Only called by the constructor below.
      */
