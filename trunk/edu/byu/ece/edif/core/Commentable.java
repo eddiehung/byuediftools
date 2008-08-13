@@ -30,6 +30,6 @@ public interface Commentable {
 
     public void addComment(String comment);
 
-    public List getComments();
+    public EdifComment getComment();
 
 }
