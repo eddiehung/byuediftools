@@ -281,7 +281,7 @@ public abstract class EdifHalfLatchRemover {
         if (cellToConvert.isPrimitive() || cellToConvert.isBlackBox()) {
             // Do a simple copy
             try {
-                return new EdifCell(targetLib, cellToConvert);
+                return new EdifCell(targetLib, cellToConvert.getName());
             } catch (InvalidEdifNameException e) {
                 // This should never happen
                 e.toRuntime();
