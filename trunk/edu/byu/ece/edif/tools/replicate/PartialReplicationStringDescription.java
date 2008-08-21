@@ -41,6 +41,15 @@ import edu.byu.ece.edif.tools.replicate.nmr.EdifNameableParentStringReference;
 import edu.byu.ece.edif.tools.replicate.nmr.EdifNameableStringReference;
 import edu.byu.ece.edif.tools.replicate.nmr.EdifPortRefStringReference;
 
+/**
+ * This class stores the PartialReplicationDescription information as a String rather than
+ * in its normal, binary serialized form. This is done because we want to avoid serializing
+ * the EdifCell to replicate with this replication information. This allows us to store
+ * the replication information in a much smaller size. Before using this information in
+ * a replication setting, the PartialReplicationStringDescription needs to be converted
+ * into a PartialReplicationDescription.
+ *
+ */
 public class PartialReplicationStringDescription implements Serializable {
     public static final long serialVersionUID = 42L;
 
@@ -75,6 +84,10 @@ public class PartialReplicationStringDescription implements Serializable {
             _portRefsToCut = new ArrayList<EdifPortRefStringReference>();
     }
 
+    /**
+     * Creates a PartialReplicationDescription object. Requires the EdifEnvironment that matches
+     * the partialReplicationDescription.
+     */
     public PartialReplicationDescription getDescription(EdifEnvironment env) throws ReplicationException {
         PartialReplicationDescription desc = new PartialReplicationDescription();
 
