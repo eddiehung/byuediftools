@@ -30,14 +30,17 @@ public class XilinxPartValidator {
 
     protected String[][] packageNames;
 
-    public XilinxPartValidator(String archName, String[] devNames, String[][] packageNames) {
-        this.archName = archName;
-        this.devNames = devNames;
-        this.packageNames = packageNames;
+    public XilinxPartValidator(String arch_Name, String[] dev_Names, String[][] package_Names) {
+        this.archName = arch_Name;
+        this.devNames = dev_Names;
+        this.packageNames = package_Names;
     }
 
     public String validate(String part) throws IllegalArgumentException {
         //System.out.println("........................................................................................................................");
+
+        //handle radhard parts by ignoring the rad-hard part.
+        part = part.replace("QR", "C");
 
         String scrambled = part;
 
@@ -158,10 +161,8 @@ public class XilinxPartValidator {
         setDevName(indevice);
         setPackageName(inpackage);
 
-        if (comboIsCorrect(inarchitecture, indevice, inpackage)) {
-            //System.out.println("The configuration you entered has been validated.");
-        } else {
-            backwardslist(indevice, inpackage);
+        if (!comboIsCorrect(inarchitecture, indevice, inpackage)) {
+            backwardslist(inpackage);
             throw new IllegalArgumentException(
                     "ERROR: The architecture/device/package/speed configuration you entered is NOT valid!\n");
         }
@@ -174,7 +175,8 @@ public class XilinxPartValidator {
         int i = 0;
         String output = "";
 
-        while (i < portion.length() && !Character.isDigit(portion.charAt(i)) && !output.equalsIgnoreCase("xcv")) {
+        while (i < portion.length() && !Character.isDigit(portion.charAt(i))
+                && !(output.equalsIgnoreCase("xcv") || output.equalsIgnoreCase("xqrv"))) {
             output = output + portion.charAt(i);
             i++;
         }//this while loop collects letters/nondigits
@@ -183,14 +185,14 @@ public class XilinxPartValidator {
             output = output.substring(1);//checks to see if there is a dash in front of the package
         }
         //System.out.println("2:output is: "+output);
-        if (output.equalsIgnoreCase("xcv"))
+        if (output.equalsIgnoreCase("xcv") || output.equalsIgnoreCase("xqrv"))
             return "XCV";
         while (i < portion.length() && Character.isDigit(portion.charAt(i))) {
             output = output + portion.charAt(i);
             i++;
         }//this while loop collects digits
         //System.out.println("3:output is: "+output);
-        if (output.startsWith("XC2") || output.equals("XC4")) {
+        if (output.startsWith("XC2") || output.equals("XC4") || output.startsWith("XQR2") || output.equals("XQR4")) {
             output += 'V';
             i++;
             if (portion.charAt(i) == 'P') {
@@ -205,9 +207,12 @@ public class XilinxPartValidator {
 
     public static final String XCV = "xcv", XC2V = "xc2v", XC2VP = "xc2vp", XC4V = "xc4v";
 
-    public static final String[] archNames = { XCV, XC2VP, XC2V, XC4V };
+    public static final String XQRV = "xqrv", XQR2V = "xqr2v", XQR2VP = "xqr2vp", XQR4V = "xqr4v";
 
-    public static final String[] techNames = { "Virtex", "Virtex2Pro", "Virtex2", "Virtex4" };
+    public static final String[] archNames = { XCV, XC2VP, XC2V, XC4V, XQRV, XQR2VP, XQR2V, XQR4V };
+
+    public static final String[] techNames = { "Virtex", "Virtex2Pro", "Virtex2", "Virtex4", "Virtex", "Virtex2Pro",
+            "Virtex2", "Virtex4" };
 
     static public String getTechnologyFromPart(String part) {
         String technology = "";
@@ -222,9 +227,7 @@ public class XilinxPartValidator {
     }
 
     public void setArchName(String name) {
-        if (archNameIsValid(name)) {
-            //System.out.println("Architecture '"+name+"' is valid.");
-        } else {
+        if (!archNameIsValid(name)) {
             System.out.println("*******************************************************************");
             for (int i = 0; i < archNames.length; i++) {
                 System.out.print(archNames[i] + " ");
@@ -246,9 +249,7 @@ public class XilinxPartValidator {
     }
 
     public void setDevName(String name) {
-        if (devNameIsValid(name)) {
-            //System.out.println("Device '"+name+"' is valid.");
-        } else {
+        if (!devNameIsValid(name)) {
             System.out.println("*******************************************************************");
             for (int i = 0; i < devNames.length; i++) {
                 System.out.print(devNames[i] + " ");
@@ -270,9 +271,7 @@ public class XilinxPartValidator {
     }
 
     public void setPackageName(String name) {
-        if (packageNameIsValid(name)) {
-            //System.out.println("Package '"+name+"' is valid.");
-        } else {
+        if (!packageNameIsValid(name)) {
             System.out.println("*******************************************************************");
             for (int i = 0; i < packageNames.length; i++) {//goes through the devices
                 System.out.print(devNames[i] + ": ");
@@ -319,7 +318,7 @@ public class XilinxPartValidator {
         return false;
     }
 
-    public void backwardslist(String dev, String pac) {
+    public void backwardslist(String pac) {
         for (int i = 0; i < devNames.length; i++) {//goes through the devices
             for (int j = 0; j < packageNames[i].length; j++) {//goes through the packages
                 if (pac.equalsIgnoreCase(packageNames[i][j]))

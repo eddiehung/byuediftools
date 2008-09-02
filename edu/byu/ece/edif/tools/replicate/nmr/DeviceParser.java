@@ -27,7 +27,6 @@ import java.security.InvalidParameterException;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex4DeviceUtilizationTracker;
@@ -37,6 +36,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexIIProDeviceUtiliz
 
 //////////////////////////////////////////////////////////////////////////
 //// DeviceParser
+
 /**
  * @author Keith Morgan
  * @version $Id$
@@ -96,16 +96,16 @@ public class DeviceParser {
             throws OverutilizationException, OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
         String xilinxFamily = parseXilinxFamily(XilinxPartValidator.getTechnologyFromPart(part));
-        if (xilinxFamily == VIRTEX)
+        if (xilinxFamily.equals(VIRTEX))
             return new XilinxVirtexDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
-        else if (xilinxFamily == VIRTEX2)
+        else if (xilinxFamily.equals(VIRTEX2))
             return new XilinxVirtexIIDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
-        else if (xilinxFamily == VIRTEX2PRO)
+        else if (xilinxFamily.equals(VIRTEX2PRO))
             return new XilinxVirtexIIProDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
-        else if (xilinxFamily == VIRTEX4)
+        else if (xilinxFamily.equals(VIRTEX4))
             return new XilinxVirtex4DeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
         else
@@ -214,7 +214,7 @@ public class DeviceParser {
      * @return String
      */
     public static String parseFamily(String vendor, String family) {
-        if (parseVendor(vendor) == XILINX)
+        if (parseVendor(vendor).equals(XILINX))
             return parseXilinxFamily(family);
         else
             throw new EdifRuntimeException("Device vendor " + vendor + " not yet supported.");
