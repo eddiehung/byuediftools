@@ -36,7 +36,9 @@ import com.martiansoftware.jsap.defaultsources.PropertyDefaultSource;
 import edu.byu.ece.edif.jedif.EDIFMain;
 
 /**
- * A standard command line parser for the EDIF infrastructure.
+ * A standard command line parser for the EDIF infrastructure, using the
+ * {@link JSAP} (Java-based Simple Argument Parser) with additional
+ * functionality.
  * <p>
  * TODO:
  * <ul>
@@ -48,6 +50,11 @@ import edu.byu.ece.edif.jedif.EDIFMain;
  * <li> getting several errors for a bad flag like "blah"
  * <li> Add James' config file parser (see NMRCommandParser)
  * </ul>
+ * 
+ * @see <a href="http://www.martiansoftware.com/jsap/doc/javadoc/index.html">
+ * JSAP API</a>
+ * @see <a href="http://www.martiansoftware.com/jsap/">JSAP Homepage</a>
+ * @see JSAP
  */
 public class EdifCommandParser extends JSAP {
 
@@ -110,7 +117,7 @@ public class EdifCommandParser extends JSAP {
         result = this.parse(args);
         if (!result.success()) {
             // If JSAP caught any errors, print them one by one
-            for (java.util.Iterator errs = result.getErrorMessageIterator(); errs.hasNext();) {
+            for (java.util.Iterator<String> errs = result.getErrorMessageIterator(); errs.hasNext();) {
                 err.println("Error: " + errs.next());
             }
 
