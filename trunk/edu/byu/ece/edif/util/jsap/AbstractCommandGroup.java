@@ -25,7 +25,21 @@ package edu.byu.ece.edif.util.jsap;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.Parameter;
+
+/**
+ * This class provides a way to easily group and maintain command line options
+ * for the edif tools, using {@link JSAP}. Classes that inherit from this class
+ * should be used in conjunction with the EdifCommandParser
+ * 
+ * @see EdifCommandParser
+ * @see <a href="http://www.martiansoftware.com/jsap/doc/javadoc/index.html">
+ * JSAP API</a>
+ * @see <a href="http://www.martiansoftware.com/jsap/">JSAP Homepage</a>
+ * @see JSAP
+ * @author dsgib
+ */
 
 public abstract class AbstractCommandGroup implements CommandGroup {
 
