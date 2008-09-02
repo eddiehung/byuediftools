@@ -28,9 +28,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -60,7 +62,6 @@ import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.util.parse.EdifParser;
 import edu.byu.ece.edif.util.parse.ParseException;
@@ -82,32 +83,26 @@ import edu.byu.ece.edif.util.parse.ParseException;
  */
 public class EdifMergeParser {
 
-	/**
-	 * Recursively copy an EdifCell from one EdifLibraryManager to another.
-	 * During the copy, cells (instanced by the cell to be copied) may be added
-	 * to other libraries within the EdifLibraryManager.
-	 *
-	 * This method is not placed in EdifCell because of its need to manage
-	 * libraries. This method is probably best placed in EdifLibrary
-	 * or EdifLibraryManager.
-	 * 
-	 * @param cellToCopy
-	 *            the EdifCell object to copy
-	 * @param targetLib
-	 *            the EdifLibrary to copy the cell into. If no EdifLibrary is
-	 *            specified (null), the EdifCell will be placed in an
-	 *            EdifLibrary with the same name (or a new unique name if there
-	 *            is a clash) as it's old EdifLibrary
-	 * @param elm
-	 *            the EdifLibraryManager to copy the cell into
-	 * @return a reference to the new copy of the EdifCell object
-	 */
-	public static EdifCell copyCellDeep(EdifCell cellToCopy,
-			EdifLibrary targetLib, EdifLibraryManager elm,
-			EdifMergingPolicy mergingPolicy) {
+    /**
+     * Recursively copy an EdifCell from one EdifLibraryManager to another.
+     * During the copy, cells (instanced by the cell to be copied) may be added
+     * to other libraries within the EdifLibraryManager. This method is not
+     * placed in EdifCell because of its need to manage libraries. This method
+     * is probably best placed in EdifLibrary or EdifLibraryManager.
+     * 
+     * @param cellToCopy the EdifCell object to copy
+     * @param targetLib the EdifLibrary to copy the cell into. If no EdifLibrary
+     * is specified (null), the EdifCell will be placed in an EdifLibrary with
+     * the same name (or a new unique name if there is a clash) as it's old
+     * EdifLibrary
+     * @param elm the EdifLibraryManager to copy the cell into
+     * @return a reference to the new copy of the EdifCell object
+     */
+    public static EdifCell copyCellDeep(EdifCell cellToCopy, EdifLibrary targetLib, EdifLibraryManager elm,
+            EdifMergingPolicy mergingPolicy) {
 
-		if (targetLib != null && !elm.containsLibrary(targetLib))
-			throw new EdifRuntimeException("Bad library");
+        if (targetLib != null && !elm.containsLibrary(targetLib))
+            throw new EdifRuntimeException("Bad library");
 
         if (targetLib == null) // determine where to put the cell
             targetLib = mergingPolicy.findLibraryForCell(cellToCopy, elm);
@@ -120,23 +115,23 @@ public class EdifMergeParser {
                 return possibleMatch;
         }
 
-		// Create new empty cell with the same name as the original cell
-		// and add it to the target library. 
-		EdifCell newCell = null;
-		try {
-			newCell = new EdifCell(targetLib, cellToCopy.getName());
-		} catch (EdifNameConflictException e) {
-			e.toRuntime();
-		} catch (InvalidEdifNameException e) {
-			e.toRuntime();
-		}
+        // Create new empty cell with the same name as the original cell
+        // and add it to the target library. 
+        EdifCell newCell = null;
+        try {
+            newCell = new EdifCell(targetLib, cellToCopy.getName());
+        } catch (EdifNameConflictException e) {
+            e.toRuntime();
+        } catch (InvalidEdifNameException e) {
+            e.toRuntime();
+        }
 
-		// Copy primitive flag
-		if (cellToCopy.isPrimitive())
-			newCell.setPrimitive();
+        // Copy primitive flag
+        if (cellToCopy.isPrimitive())
+            newCell.setPrimitive();
 
-		// copy properties
-		newCell.copyProperties(cellToCopy);
+        // copy properties
+        newCell.copyProperties(cellToCopy);
 
         // copy cell instances
         Map<EdifPort, EdifPort> oldToNewPorts = new LinkedHashMap<EdifPort, EdifPort>();
@@ -145,8 +140,8 @@ public class EdifMergeParser {
 
         if (cellToCopy.getInstancedCellTypes() != null) // there are subcells to
             // copy
-            for (Iterator instanced = cellToCopy.getInstancedCellTypes().iterator(); instanced.hasNext();) {
-                EdifCell cell = (EdifCell) instanced.next();
+            for (Iterator<EdifCell> instanced = cellToCopy.getInstancedCellTypes().iterator(); instanced.hasNext();) {
+                EdifCell cell = instanced.next();
 
                 if (oldToNewCells.containsKey(cell))
                     continue;
@@ -156,8 +151,8 @@ public class EdifMergeParser {
                 oldToNewCells.put(cell, newCellRef);
             }
 
-        for (Iterator<EdifCellInstance> instanceIterator = (Iterator<EdifCellInstance>) cellToCopy
-                .cellInstanceIterator(); instanceIterator.hasNext();) {
+        for (Iterator<EdifCellInstance> instanceIterator = cellToCopy.cellInstanceIterator(); instanceIterator
+                .hasNext();) {
             EdifCellInstance oldEci = instanceIterator.next();
             EdifCell newCellRef = oldToNewCells.get(oldEci.getCellType());
 
@@ -170,55 +165,47 @@ public class EdifMergeParser {
 
             EdifCellInstance newInstance = new EdifCellInstance(oldEci.getEdifNameable(), newCell, newCellRef);
 
-			// copy instance properties
-			newInstance.copyProperties(oldEci);
-			/*
-			if (oldEci.getPropertyList() != null) {
-				for (Iterator it = oldEci.getPropertyList().values().iterator(); it
-						.hasNext();) {
-					Property p = (Property) it.next();
-					newInstance.addProperty((Property) p.clone());
-				}
-			}
-			*/
-			oldToNewInstances.put(oldEci, newInstance);
-			try {
-				newCell.addSubCell(newInstance);
-			} catch (EdifNameConflictException e) {
-				e.toRuntime();
-			}
-		}
+            // copy instance properties
+            newInstance.copyProperties(oldEci);
+            /*
+             * if (oldEci.getPropertyList() != null) { for (Iterator it =
+             * oldEci.getPropertyList().values().iterator(); it .hasNext();) {
+             * Property p = (Property) it.next();
+             * newInstance.addProperty((Property) p.clone()); } }
+             */
+            oldToNewInstances.put(oldEci, newInstance);
+            try {
+                newCell.addSubCell(newInstance);
+            } catch (EdifNameConflictException e) {
+                e.toRuntime();
+            }
+        }
 
-		// copy cell interface
-		for (EdifPort oldPort : cellToCopy.getPortList()) {
-			EdifPort newPort = null;
-			try {
-				newPort = newCell.addPort(oldPort.getEdifNameable(),
-						oldPort.getWidth(), oldPort.getDirection());
-			} catch (EdifNameConflictException e) {
-				e.toRuntime();
-			}
-			oldToNewPorts.put(oldPort, newPort);
-			// copy port properties
-			newPort.copyProperties(oldPort);
-			/*
-			if (oldPort.getPropertyList() != null) {
-				for (Iterator it = oldPort.getPropertyList().values()
-						.iterator(); it.hasNext();) {
-					Property p = (Property) it.next();
-					newPort.addProperty((Property) p.clone());
-				}
-			}
-			*/
-		}
+        // copy cell interface
+        for (EdifPort oldPort : cellToCopy.getPortList()) {
+            EdifPort newPort = null;
+            try {
+                newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection());
+            } catch (EdifNameConflictException e) {
+                e.toRuntime();
+            }
+            oldToNewPorts.put(oldPort, newPort);
+            // copy port properties
+            newPort.copyProperties(oldPort);
+            /*
+             * if (oldPort.getPropertyList() != null) { for (Iterator it =
+             * oldPort.getPropertyList().values() .iterator(); it.hasNext();) {
+             * Property p = (Property) it.next(); newPort.addProperty((Property)
+             * p.clone()); } }
+             */
+        }
 
         // copy nets
-        for (Iterator<EdifNet> netIterator = (Iterator<EdifNet>) cellToCopy.netListIterator(); netIterator.hasNext();) {
+        for (Iterator<EdifNet> netIterator = cellToCopy.netListIterator(); netIterator.hasNext();) {
             EdifNet oldNet = netIterator.next();
             EdifNet newNet = new EdifNet(oldNet.getEdifNameable(), newCell);
             // iterate portRefs
-            for (Iterator<EdifPortRef> portRefIterator = (Iterator<EdifPortRef>) oldNet.getPortRefIterator(); portRefIterator
-                    .hasNext();) {
+            for (Iterator<EdifPortRef> portRefIterator = oldNet.getPortRefIterator(); portRefIterator.hasNext();) {
                 EdifPortRef oldRef = portRefIterator.next();
                 EdifSingleBitPort oldSbp = oldRef.getSingleBitPort();
                 EdifSingleBitPort newSbp = oldToNewPorts.get(oldSbp.getParent()).getSingleBitPort(oldSbp.bitPosition());
@@ -230,25 +217,22 @@ public class EdifMergeParser {
                 newNet.addPortConnection(newEpr);
             }
 
-			// copy net properties
-			newNet.copyProperties(oldNet);
-			/*
-			if (oldNet.getPropertyList() != null) {
-				for (Iterator it = oldNet.getPropertyList().values().iterator(); it
-						.hasNext();) {
-					Property p = (Property) it.next();
-					newNet.addProperty((Property) p.clone());
-				}
-			}
-			*/
-			try {
-				newCell.addNet(newNet);
-			} catch (EdifNameConflictException e) {
-				e.toRuntime();
-			}
-		}
-		return newCell;
-	}
+            // copy net properties
+            newNet.copyProperties(oldNet);
+            /*
+             * if (oldNet.getPropertyList() != null) { for (Iterator it =
+             * oldNet.getPropertyList().values().iterator(); it .hasNext();) {
+             * Property p = (Property) it.next(); newNet.addProperty((Property)
+             * p.clone()); } }
+             */
+            try {
+                newCell.addNet(newNet);
+            } catch (EdifNameConflictException e) {
+                e.toRuntime();
+            }
+        }
+        return newCell;
+    }
 
     /**
      * Returns a Map between matching ports in the two different EdifCell
@@ -259,16 +243,16 @@ public class EdifMergeParser {
      * For example, a port named "port0" will match a port named "port_0_". The
      * key of the Map is a Port from c1 and the value is a Port from c2.
      */
-    public static Map getOneToOnePortMatches(EdifCell c1, EdifCell c2) {
+    public static Map<EdifPort, EdifPort> getOneToOnePortMatches(EdifCell c1, EdifCell c2) {
         Map<EdifPort, EdifPort> portMap = new LinkedHashMap<EdifPort, EdifPort>(c1.getPortList().size());
 
-        for (Iterator i = c1.getPortList().iterator(); i.hasNext();) {
+        for (Iterator<EdifPort> i = c1.getPortList().iterator(); i.hasNext();) {
 
-            EdifPort port1 = (EdifPort) i.next();
+            EdifPort port1 = i.next();
 
             boolean loop = true;
-            for (Iterator j = c2.getPortList().iterator(); j.hasNext() && loop;) {
-                EdifPort port2 = (EdifPort) j.next();
+            for (Iterator<EdifPort> j = c2.getPortList().iterator(); j.hasNext() && loop;) {
+                EdifPort port2 = j.next();
                 if (port1.equals(port2)) {
                     portMap.put(port1, port2);
                     loop = false;
@@ -280,9 +264,9 @@ public class EdifMergeParser {
             if (loop) // So far no match. Now check for matches with expanded
             // name matching. eg. port0 matches port_0_
             {
-                for (Iterator j = c2.getPortList().iterator(); j.hasNext() && loop;) {
+                for (Iterator<EdifPort> j = c2.getPortList().iterator(); j.hasNext() && loop;) {
 
-                    EdifPort port2 = (EdifPort) j.next();
+                    EdifPort port2 = j.next();
 
                     if (port1.getWidth() == port2.getWidth() && // Widths and
                             // directions
@@ -317,15 +301,15 @@ public class EdifMergeParser {
             if (loop) {
                 // still no match - now check for matches using
                 // EdifBusNetNamingPolicy
-                for (Iterator j = c2.getPortList().iterator(); j.hasNext() && loop;) {
-                    EdifPort port2 = (EdifPort) j.next();
+                for (Iterator<EdifPort> j = c2.getPortList().iterator(); j.hasNext() && loop;) {
+                    EdifPort port2 = j.next();
                     if (port1.getWidth() == port2.getWidth() && port1.getDirection() == port2.getDirection()) {
                         EdifBusNetNamingPolicy policy1 = BasicEdifBusNetNamingPolicy.EdifBusNetNamingPolicy(port1
                                 .getOldName());
                         EdifBusNetNamingPolicy policy2 = BasicEdifBusNetNamingPolicy.EdifBusNetNamingPolicy(port2
                                 .getOldName());
 
-                        if (policy1 != null & policy2 != null) {
+                        if (policy1 != null && policy2 != null) {
                             if (policy1.getBusBaseName(port1.getOldName()).toLowerCase().equals(
                                     policy2.getBusBaseName(port2.getOldName()).toLowerCase())
                                     && policy1.getBusPosition(port1.getOldName()) == policy2.getBusPosition(port2
@@ -384,8 +368,8 @@ public class EdifMergeParser {
         // 1. Search for all single-bit ports whose basename
         // matches the name of the given EdifPort
         List<EdifPort> c = new ArrayList<EdifPort>(port.getWidth());
-        for (Iterator i = cellInt.getPortList().iterator(); i.hasNext();) {
-            EdifPort p = (EdifPort) i.next();
+        for (Iterator<EdifPort> i = cellInt.getPortList().iterator(); i.hasNext();) {
+            EdifPort p = i.next();
             if (p.getWidth() > 1)
                 continue; // skip over multi-bit ports
             String basename = BasicEdifBusNetNamingPolicy.getBusBaseNameStatic(p.getName());
@@ -412,11 +396,12 @@ public class EdifMergeParser {
      * "ref" multi-bit EdifPort. Note: This method is not currently used by any
      * other method in this class.
      */
-    public static Map getMatchingMultiBitPorts(EdifCellInterface ref, EdifCellInterface compare) {
+    public static Map<EdifPort, Collection<EdifPort>> getMatchingMultiBitPorts(EdifCellInterface ref,
+            EdifCellInterface compare) {
         Map<EdifPort, Collection<EdifPort>> m = new LinkedHashMap<EdifPort, Collection<EdifPort>>(ref.getPortList()
                 .size());
-        for (Iterator i = ref.getPortList().iterator(); i.hasNext();) {
-            EdifPort p = (EdifPort) i.next();
+        for (Iterator<EdifPort> i = ref.getPortList().iterator(); i.hasNext();) {
+            EdifPort p = i.next();
             if (p.getWidth() <= 1)
                 continue; // look for multi-bit ports
             Collection<EdifPort> mports = getMatchingBusPorts(compare, p);
@@ -492,8 +477,8 @@ public class EdifMergeParser {
     public static EdifCell findMatchingEdifCellInterface(EdifLibraryManager elm, EdifCell cell, Boolean open) {
 
         //EdifCell tmp=null;
-        for (Iterator i = elm.getLibraries().iterator(); i.hasNext();) {
-            EdifLibrary lib = (EdifLibrary) i.next();
+        for (Iterator<EdifLibrary> i = elm.getLibraries().iterator(); i.hasNext();) {
+            EdifLibrary lib = i.next();
             EdifCell c = findMatchingEdifCellInterface(lib, cell, open);
             if (c != null) {
                 return c;
@@ -597,13 +582,13 @@ public class EdifMergeParser {
 
         int maxMatches = 0;
         EdifLibrary matchingLib = null;
-        Collection libraries = elm.getLibraries();
+        Collection<EdifLibrary> libraries = elm.getLibraries();
         if (inputLibrary != null) {
-            for (Iterator i = libraries.iterator(); i.hasNext();) {
-                EdifLibrary lib = (EdifLibrary) i.next();
+            for (Iterator<EdifLibrary> i = libraries.iterator(); i.hasNext();) {
+                EdifLibrary lib = i.next();
                 int localMatch = 0;
-                for (Iterator j = inputLibrary.getCells().iterator(); j.hasNext();) {
-                    EdifCell c = (EdifCell) j.next();
+                for (Iterator<EdifCell> j = inputLibrary.getCells().iterator(); j.hasNext();) {
+                    EdifCell c = j.next();
 
                     // NHR2 - MAR 2006
                     // - We should only count cells that are the same in name
@@ -658,13 +643,13 @@ public class EdifMergeParser {
         // Step 3. Update cell references to black box. Equalize each
         // reference if necessary
 
-        Map definitionExpandedPorts = getOneToManyPortMatches(blackBox, newDef);
-        Map blackBoxExpandedPorts = getOneToManyPortMatches(newDef, blackBox);
-        Map oneToOnePorts = getOneToOnePortMatches(blackBox, newDef);
+        Map<EdifPort, Collection<EdifPort>> definitionExpandedPorts = getOneToManyPortMatches(blackBox, newDef);
+        Map<EdifPort, Collection<EdifPort>> blackBoxExpandedPorts = getOneToManyPortMatches(newDef, blackBox);
+        Map<EdifPort, EdifPort> oneToOnePorts = getOneToOnePortMatches(blackBox, newDef);
 
-        Collection blackInstances = elm.findCellInstancesOf(blackBox);
-        for (Iterator i = blackInstances.iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
+        Collection<EdifCellInstance> blackInstances = elm.findCellInstancesOf(blackBox);
+        for (Iterator<EdifCellInstance> i = blackInstances.iterator(); i.hasNext();) {
+            EdifCellInstance eci = i.next();
             eci.modifyCellRef(newDef, false);
             modifyPortRefsEqualize(eci, definitionExpandedPorts, blackBoxExpandedPorts, oneToOnePorts, outstream);
         }
@@ -678,8 +663,10 @@ public class EdifMergeParser {
      * @param blackBox EdifCell to be modified
      * @param definition
      */
-    public static void modifyPortRefsEqualize(EdifCellInstance eci, Map definitionExpandedPorts,
-            Map blackBoxExpandedPorts, Map oneToOnePorts, PrintStream outstream) {
+    public static void modifyPortRefsEqualize(EdifCellInstance eci,
+            Map<EdifPort, Collection<EdifPort>> definitionExpandedPorts,
+            Map<EdifPort, Collection<EdifPort>> blackBoxExpandedPorts, Map<EdifPort, EdifPort> oneToOnePorts,
+            PrintStream outstream) {
         // outstream.println("Equalizing eci "+eci);
 
         // Step 1. Obtain all port refs to this instance
@@ -696,9 +683,9 @@ public class EdifMergeParser {
         // multi-bit port in the black box).
 
         // Change each port reference to each expanded port
-        for (Iterator i = definitionExpandedPorts.keySet().iterator(); i.hasNext();) {
-            EdifPort multiBitBlackBoxPort = (EdifPort) i.next();
-            Collection singleBitDefinitionPorts = (Collection) definitionExpandedPorts.get(multiBitBlackBoxPort);
+        for (Iterator<EdifPort> i = definitionExpandedPorts.keySet().iterator(); i.hasNext();) {
+            EdifPort multiBitBlackBoxPort = i.next();
+            Collection<EdifPort> singleBitDefinitionPorts = definitionExpandedPorts.get(multiBitBlackBoxPort);
             EdifBusNamingPolicy busPolicy = BasicEdifBusNamingPolicy.EdifBusNamingPolicy(multiBitBlackBoxPort
                     .getOldName());
             if (busPolicy == null)
@@ -723,8 +710,8 @@ public class EdifMergeParser {
 
                     EdifNet net = epr.getNet();
                     boolean find = false;
-                    for (Iterator k = singleBitDefinitionPorts.iterator(); k.hasNext();) {
-                        EdifPort singleBitPort = (EdifPort) k.next();
+                    for (Iterator<EdifPort> k = singleBitDefinitionPorts.iterator(); k.hasNext();) {
+                        EdifPort singleBitPort = k.next();
                         //
                         policy = BasicEdifBusNetNamingPolicy.EdifBusNetNamingPolicy(singleBitPort.getName());
                         //
@@ -748,9 +735,9 @@ public class EdifMergeParser {
 
         // Step 3. Identify those ports in the definition that are
         // multi-bits and single-bit in the black box.
-        for (Iterator i = blackBoxExpandedPorts.keySet().iterator(); i.hasNext();) {
-            EdifPort multiBitDefinitionPort = (EdifPort) i.next();
-            Collection singleBitBlackBoxPorts = (Collection) blackBoxExpandedPorts.get(multiBitDefinitionPort);
+        for (Iterator<EdifPort> i = blackBoxExpandedPorts.keySet().iterator(); i.hasNext();) {
+            EdifPort multiBitDefinitionPort = i.next();
+            Collection<EdifPort> singleBitBlackBoxPorts = blackBoxExpandedPorts.get(multiBitDefinitionPort);
             EdifBusNamingPolicy busPolicy = BasicEdifBusNamingPolicy.EdifBusNamingPolicy(multiBitDefinitionPort
                     .getOldName());
             boolean littleEndian = true;
@@ -761,8 +748,8 @@ public class EdifMergeParser {
             // Search port refs for those connected to port
             for (EdifPortRef epr : instancePortRefs) {
                 // Loop over the single bit ports and see if they match
-                for (Iterator k = singleBitBlackBoxPorts.iterator(); k.hasNext();) {
-                    EdifPort singleBitBlackBoxPort = (EdifPort) k.next();
+                for (Iterator<EdifPort> k = singleBitBlackBoxPorts.iterator(); k.hasNext();) {
+                    EdifPort singleBitBlackBoxPort = k.next();
                     if (epr.getPort() == singleBitBlackBoxPort) {
                         EdifNet net = epr.getNet();
                         int busMember;
@@ -782,15 +769,15 @@ public class EdifMergeParser {
 
         // Step 4. Identify those ports in the definition that are
         // the same as those in the black box
-        for (Iterator i = oneToOnePorts.keySet().iterator(); i.hasNext();) {
-            EdifPort blackBoxPort = (EdifPort) i.next();
-            EdifPort definitionPort = (EdifPort) oneToOnePorts.get(blackBoxPort);
+        for (Iterator<EdifPort> i = oneToOnePorts.keySet().iterator(); i.hasNext();) {
+            EdifPort blackBoxPort = i.next();
+            EdifPort definitionPort = oneToOnePorts.get(blackBoxPort);
 
             // Search port refs for those connected to port
             for (EdifPortRef epr : instancePortRefs) {
                 // Loop over the single bit ports and see if they match
                 if (epr.getPort() == blackBoxPort) {
-                    EdifNet net = (EdifNet) epr.getNet();
+                    EdifNet net = epr.getNet();
 
                     oldToNewPortRefs.put(epr, new EdifPortRef(net, definitionPort.getSingleBitPort(epr.getBusMember()),
                             eci));
@@ -860,7 +847,7 @@ public class EdifMergeParser {
         // cell2, and placing ports that return true when passed to the
         // EdifPort "equals" method in the Map oneToOneMatches.
 
-        Map oneToOneMatches = getOneToOnePortMatches(cell1, cell2);
+        Map<EdifPort, EdifPort> oneToOneMatches = getOneToOnePortMatches(cell1, cell2);
 
         // Find all cases when one port in cell1 matches more than
         // one port in cell2
@@ -868,7 +855,7 @@ public class EdifMergeParser {
         // comparing each port with cell2's interface. The method
         // getMatchingBusPorts() in this class accomplishes this task.
 
-        Map c1TOc2Matches = getOneToManyPortMatches(cell1, cell2);
+        Map<EdifPort, Collection<EdifPort>> c1TOc2Matches = getOneToManyPortMatches(cell1, cell2);
 
         // Find all cases when one port in cell2 matches more than
         // one port in cell1
@@ -876,7 +863,7 @@ public class EdifMergeParser {
         // comparing each port with cell2's interface. The method
         // getMatchingBusPorts() in this class accomplishes this task.
 
-        Map c2TOc1Matches = getOneToManyPortMatches(cell2, cell1);
+        Map<EdifPort, Collection<EdifPort>> c2TOc1Matches = getOneToManyPortMatches(cell2, cell1);
 
         // See if all the ports in both cells are matched
 
@@ -888,8 +875,8 @@ public class EdifMergeParser {
 
         portList1.removeAll(oneToOneMatches.keySet());
         portList1.removeAll(c1TOc2Matches.keySet());
-        for (Iterator i = c2TOc1Matches.values().iterator(); i.hasNext();) {
-            Collection c = (Collection) i.next();
+        for (Iterator<Collection<EdifPort>> i = c2TOc1Matches.values().iterator(); i.hasNext();) {
+            Collection<EdifPort> c = i.next();
             portList1.removeAll(c);
         }
 
@@ -906,8 +893,8 @@ public class EdifMergeParser {
 
         portList2.removeAll(oneToOneMatches.values());
         portList2.removeAll(c2TOc1Matches.keySet());
-        for (Iterator i = c1TOc2Matches.values().iterator(); i.hasNext();) {
-            Collection c = (Collection) i.next();
+        for (Iterator<Collection<EdifPort>> i = c1TOc2Matches.values().iterator(); i.hasNext();) {
+            Collection<EdifPort> c = i.next();
             portList2.removeAll(c);
         }
         if (portList2.size() > 0) {
@@ -987,7 +974,7 @@ public class EdifMergeParser {
             defaultDirs.addAll(newDirs);
 
         // External files
-        Set externalFiles = EdifMergeParser.parseArguments(args, "-f");
+        Set<String> externalFiles = EdifMergeParser.parseArguments(args, "-f");
 
         try {
             return EdifMergeParser.parseAndMergeEdif(topFilename, defaultDirs, externalFiles, primLib);
@@ -1043,9 +1030,9 @@ public class EdifMergeParser {
      * @throws ParseException
      * @throws FileNotFoundException
      */
-    public static EdifEnvironment parseAndMergeEdif(String topFilename, Collection<String> dirs, Collection files,
-            EdifLibrary primLib, boolean allowOpenPins, boolean quitOnError) throws ParseException,
-            FileNotFoundException {
+    public static EdifEnvironment parseAndMergeEdif(String topFilename, Collection<String> dirs,
+            Collection<String> files, EdifLibrary primLib, boolean allowOpenPins, boolean quitOnError)
+            throws ParseException, FileNotFoundException {
 
         if (files != null && files.size() > 0)
             LogFile.out().println("Include these EDIF files: " + files);
@@ -1058,8 +1045,8 @@ public class EdifMergeParser {
         return getMergedEdifEnvironment(topFilename, dirs, files.iterator(), primLib, null, allowOpenPins, quitOnError);
     }
 
-    public static EdifEnvironment parseAndMergeEdif(String topFilename, Collection<String> dirs, Collection files,
-            EdifLibrary primLib) throws ParseException, FileNotFoundException {
+    public static EdifEnvironment parseAndMergeEdif(String topFilename, Collection<String> dirs,
+            Collection<String> files, EdifLibrary primLib) throws ParseException, FileNotFoundException {
         return parseAndMergeEdif(topFilename, dirs, files, primLib, true, false);
     }
 
@@ -1105,19 +1092,19 @@ public class EdifMergeParser {
      * @param numValues
      * @return A Set of List values
      */
-    public static Set parseArguments(String args[], String flag, int numValues) {
-        Set list = new TreeSet();
+    public static Set<String> parseArguments(String args[], String flag, int numValues) {
+        Set<String> list = new TreeSet<String>();
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals(flag)) {
                 i++;
-                ArrayList values = new ArrayList();
+                ArrayList<String> values = new ArrayList<String>();
                 int firstValIndex = i;
                 for (; i < firstValIndex + numValues; i++) {
                     if (args.length > i) {
                         values.add(args[i]);
                     }
                 }
-                list.add(values); // Will this properly add each of the
+                list.addAll(values); // Will this properly add each of the
                 // elements of the ArrayList "values" to the
                 // Set "list"?
             }
@@ -1150,12 +1137,12 @@ public class EdifMergeParser {
      */
     public static EdifEnvironment getMergedEdifEnvironment(String filename, String[] args) {
         // Identify any search directories and default files
-        Collection dirs = createDefaultDirs();
-        Set newDirs = parseArguments(args, "-L");
+        Collection<String> dirs = createDefaultDirs();
+        Set<String> newDirs = parseArguments(args, "-L");
 
         if (newDirs != null && newDirs.size() > 0)
             dirs.addAll(newDirs);
-        Set files = parseArguments(args, "-f");
+        Set<String> files = parseArguments(args, "-f");
 
         if (files != null && files.size() > 0)
             LogFile.out().println("Include these EDIF files: " + files);
@@ -1253,7 +1240,7 @@ public class EdifMergeParser {
                     for (EdifCell blackBox : blackBoxes) {
                         for (int i = 0; i < EDIF_EXTENSIONS.length; i++) {
                             String fName = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
-                            if ((new File(fName).exists()) && !fileNameToEnv.containsKey(fName)
+                            if (filename_exists(dirName, fName) && !fileNameToEnv.containsKey(fName)
                                     && (!fName.equals(filename))) {
                                 // does this file exist? and did we already parse it?
                                 fileNameToEnv.put(fName, getMergedEdifEnvironment(fName, dirs, files_i, primLib,
@@ -1303,13 +1290,28 @@ public class EdifMergeParser {
             // merge black boxes
             EdifMergingPolicy mergingPolicy = new ReuseNewLeafCellsMergingPolicy();
             for (Iterator<EdifCell> i = blackBoxToDefinition.keySet().iterator(); i.hasNext();) {
-                EdifCell blackBox = (EdifCell) i.next();
-                EdifCell blackBoxDefinition = (EdifCell) blackBoxToDefinition.get(blackBox);
+                EdifCell blackBox = i.next();
+                EdifCell blackBoxDefinition = blackBoxToDefinition.get(blackBox);
                 if (blackBoxDefinition != null)
                     replaceBlackBox(blackBox, blackBoxDefinition, outstream, mergingPolicy);
             }
         }
         return top;
+    }
+
+    private static boolean filename_exists(String dName, String file) {
+        FilenameFilter filter = new FilenameFilter() {
+            public boolean accept(File d, String name) {
+                return name.toLowerCase().endsWith(".edf");
+            }
+        };
+        File dir = new File(dName);
+        ArrayList<String> children = new ArrayList<String>(Arrays.asList(dir.list(filter)));
+        for (String name : children) {
+            if (file.equalsIgnoreCase(name))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -1489,12 +1491,12 @@ public class EdifMergeParser {
 
         LogFile.out().println("Done");
 
-        Set outputFile = parseArguments(args, "-o");
+        Set<String> outputFile = parseArguments(args, "-o");
         String OutputFileName = null;
         if (outputFile == null || outputFile.size() < 1)
             OutputFileName = new String("merge.edf");
         else
-            OutputFileName = (String) outputFile.iterator().next();
+            OutputFileName = outputFile.iterator().next();
 
         try {
             EdifPrintWriter epw = new EdifPrintWriter(new FileOutputStream(OutputFileName));
