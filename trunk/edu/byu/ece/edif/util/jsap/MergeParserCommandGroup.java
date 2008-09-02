@@ -128,7 +128,7 @@ public class MergeParserCommandGroup extends InputFileCommandGroup {
 
         LogFile.out().println("Parsing");
         try {
-            Set searchDirs = EdifMergeParser.createDefaultDirs();
+            Set<String> searchDirs = EdifMergeParser.createDefaultDirs();
             searchDirs.addAll(getDirectoryCollection(result));
             top = EdifMergeParser.parseAndMergeEdif(getInputFileName(result), searchDirs,
                     getIncludeFileCollection(result), primitiveLibrary, allow_open_pins, quitOnError);
