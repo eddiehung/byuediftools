@@ -54,8 +54,14 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         ff_fanout = new Switch(HIGHEST_FF_FANOUT_CUTSET);
         ff_fanout.setShortFlag(JSAP.NO_SHORTFLAG);
         ff_fanout.setLongFlag(HIGHEST_FF_FANOUT_CUTSET);
-        ff_fanout.setDefault(FALSE).setHelp("Use highest flip-flop cutset option");
+        ff_fanout.setDefault(TRUE).setHelp("Use highest flip-flop cutset option- this is the default");
         this.addCommand(ff_fanout);
+
+        connectivity = new Switch(CONNECTIVITY_CUTSET);
+        connectivity.setShortFlag(JSAP.NO_SHORTFLAG);
+        connectivity.setLongFlag(CONNECTIVITY_CUTSET);
+        connectivity.setDefault(FALSE).setHelp("Use older connectivity graph for cutset");
+        this.addCommand(connectivity);
 
         //TODO: remove since this option will now only be used in JEdifTMRAnalysis
         //		iob_feedback = new Switch(NO_IOB_FB);
@@ -82,6 +88,10 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
 
     static public boolean getFanout(JSAPResult result) {
         return result.getBoolean(HIGHEST_FANOUT_CUTSET);
+    }
+
+    static public boolean getConnectivity(JSAPResult result) {
+        return result.getBoolean(CONNECTIVITY_CUTSET);
     }
 
     //	static public boolean getCutIOB(JSAPResult result) {
@@ -130,7 +140,7 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         return iobAnal;
     }
 
-    protected Switch fanout, ff_fanout, iob_feedback;
+    protected Switch fanout, ff_fanout, connectivity, iob_feedback;
 
     protected FlaggedOption iob_input_file;
 
@@ -140,7 +150,11 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
 
     public static final String HIGHEST_FF_FANOUT_CUTSET = "highest_ff_fanout_cutset";
 
+    public static final String CONNECTIVITY_CUTSET = "connectivity_cutset";
+
     public static final String FALSE = "false";
+
+    public static final String TRUE = "true";
 
     public static final String IOB_INPUT_FILE = "iob_input";
 
