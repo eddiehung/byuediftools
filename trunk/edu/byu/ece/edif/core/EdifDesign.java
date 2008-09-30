@@ -61,34 +61,6 @@ public class EdifDesign extends NamedPropertyObject implements EdifOut {
     ////                         public methods                    ////
 
     /**
-     * Two EdifDsign objects are considered edifEquals if:
-     * <ul>
-     * <li> The EdifCellInstance objects in each EdifDesign object are edifEqual</li>
-     * <li> Both EdifDesign objects have the same name (as defined by
-     * getName().equals()</li>
-     * <li> Both EdifDesign objects have the same properties (or both have no
-     * properties)</li>
-     * </ul>
-     * 
-     * @param o Comparison EdifDesign object
-     * @return true of the two EdifDesign objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifDesign))
-            return false;
-
-        EdifDesign that = (EdifDesign) o;
-
-        return (this.getName() == null ? that.getName() == null : this.getName().equals(that.getName()))
-                && (this.getPropertyList() == null ? that.getPropertyList() == null : this.getPropertyList().equals(
-                        that.getPropertyList()))
-                && (this.getTopCellInstance() == null ? that.getTopCellInstance() == null : this.getTopCellInstance()
-                        .edifEquals(that.getTopCellInstance()));
-    }
-
-    /**
      * Return the top cell instance of this design.
      * 
      * @return an EdifCellInstance Object that refers to the top EdifCell of

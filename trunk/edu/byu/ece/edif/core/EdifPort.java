@@ -131,33 +131,6 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
     }
 
     /**
-     * Two EdifPort objects are considered edifEqual if:
-     * <ul>
-     * <li> They have the same name (as defined by {@link EdifNet#getName()}.equals())</li>
-     * <li> They have the same direction (IN or OUT)</li>
-     * <li> The property lists are equal (as defined by
-     * {@link PropertyList#equals(PropertyList)}) </li>
-     * <li> Each of the SingleBitPort objects are edifEqual when taken in order</li>
-     * </ul>
-     * 
-     * @param o Comparison EdifPort object
-     * @return true of the two EdifPort objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifPort))
-            return false;
-
-        EdifPort that = (EdifPort) o;
-
-        return this._direction == that.getDirection()
-                && (this.getName() == null ? that.getName() == null : this.getName().equals(that.getName()))
-                && (this.getPropertyList() == null ? that.getPropertyList() == null : this.getPropertyList().equals(
-                        that.getPropertyList())) && edifEqualsSingleBitPorts(that);
-    }
-
-    /**
      * Return the EdifCell which this EdifPort belongs to.
      * 
      * @return an <code>EdifCell</code> value representing the
@@ -399,23 +372,6 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
 
     ///////////////////////////////////////////////////////////////////
     // Private methods
-
-    /**
-     * For each bit position, in order, check to make sure that both EdifPort
-     * objects have the same SingleBitPort object in that position, or that both
-     * are null.
-     * 
-     * @param that Comparison EdifPort object
-     * @return true if the EdifSingleBitPorts are edifEqual
-     */
-    private boolean edifEqualsSingleBitPorts(EdifPort that) {
-        for (int i = 0; i < this._singleBitPorts.length; i++)
-            if (!(this.getSingleBitPort(i) == null ? that.getSingleBitPort(i) == null : this.getSingleBitPort(i)
-                    .edifEquals(that.getSingleBitPort(i))))
-                return false;
-
-        return true;
-    }
 
     /**
      * This method determines whether the EdifPort object passed in is the same

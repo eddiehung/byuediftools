@@ -167,28 +167,6 @@ public class EdifCellInterface implements EdifOut, Trimable, Serializable {
     }
 
     /**
-     * Two EdifCellInterface objects are considered edifEqual if
-     * <ul>
-     * <li> They contain EdifPort objects which are edifEqual </li>
-     * </ul>
-     * 
-     * @param o Comparison EdifCellInterface object
-     * @return true if the two EdifCellInterface objects are edifEqual
-     * @see EdifPort#edifEquals(Object)
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifCellInterface))
-            return false;
-
-        EdifCellInterface that = (EdifCellInterface) o;
-
-        return edifEqualsPortList(that);
-
-    }
-
-    /**
      * Determine whether the given EdifCell object matches the interface of the
      * current EdifCell object. To make this test, each port is compared for
      * equality. Two EdifCell port interfaces are the same if each of the
@@ -548,46 +526,6 @@ public class EdifCellInterface implements EdifOut, Trimable, Serializable {
     public void trimToSize() {
         _portList.trimToSize();
     }
-
-    ///////////////////////////////////////////////////////////////////
-    // Private methods 
-    /**
-     * Two EdifPort lists are considered edifEqual if
-     * <ul>
-     * <li> Each of the EdifPort objects are edifEqual</li>
-     * </ul>
-     * 
-     * @param that Comparison EdifCellInterface object
-     * @return true if the EdifPort lists are edifEqual
-     */
-    private boolean edifEqualsPortList(EdifCellInterface that) {
-        List<EdifPort> thisPortList = this.getPortList();
-        List<EdifPort> thatPortList = that.getPortList();
-
-        if (thisPortList == null && thatPortList != null)
-            return false;
-        if (thisPortList != null && thatPortList == null)
-            return false;
-
-        // Make sure that each of the Cell Instances in this EdifCell match one
-        // of the CellInstances in that EdifCell
-        if (thisPortList != null)
-            for (EdifPort thisPort : thisPortList) {
-                boolean result = false;
-                for (EdifPort thatPort : thatPortList) {
-                    if (thisPort.edifEquals(thatPort)) {
-                        result = true;
-                        break;
-                    }
-                }
-                if (result == false)
-                    return false;
-            }
-        return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ////                         private variables                 ////
 
     /**
      * Parent EdifCell that owns this interface

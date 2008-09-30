@@ -104,28 +104,6 @@ public class EdifPortRef implements Serializable {
     }
 
     /**
-     * Two EdifPortRef objects are considered edifEqual if:
-     * <ul>
-     * <li> If the referenced EdifCellInstance objects in each EdifPortRef
-     * object have the same name</li>
-     * </ul>
-     * 
-     * @param o Comparison EdifPortRef object
-     * @return true of the two EdifPortRef objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifPortRef))
-            return false;
-
-        EdifPortRef that = (EdifPortRef) o;
-
-        return edifEqualCellInstanceName(that);
-
-    }
-
-    /**
      * Return true if the current port ref's port equals within one of the
      * passed-in collection of EdifPortRef Object's port. Equality done by ==.
      * 
@@ -334,20 +312,6 @@ public class EdifPortRef implements Serializable {
 
     ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ////
-
-    private boolean edifEqualCellInstanceName(EdifPortRef that) {
-        boolean result;
-
-        if (this.getCellInstance() == null)
-            result = (that.getCellInstance() == null);
-        else if (that.getCellInstance() == null)
-            result = false;
-        else if (this.getCellInstance().getName() == null)
-            result = (that.getCellInstance().getName() == null);
-        else
-            result = this.getCellInstance().getName().equals(that.getCellInstance().getName());
-        return result;
-    }
 
     private void init(EdifNet net, EdifSingleBitPort port, EdifCellInstance i) {
         _net = net;
