@@ -49,45 +49,7 @@ public class BetaRegression extends EDIFMain {
      * @param args
      */
     public static void main(String[] args) {
-
-        //testEdifEquals(args);
-        testEdifDiff(args);
-    }
-
-    private static void testEdifDiff(String[] args) {
-        String[] arg1 = { args[0] };
-        String[] arg2 = { args[1] };
-
-        topA = getTop(arg1);
-        topB = getTop(arg2);
-
-        if (topA.edifEquals(topB))
-            System.out.println("Yipee!  They are edifEqual!");
-        else {
-            List<EdifDifference> list = topA.edifDiff(topB, true);
-            for (EdifDifference d : list) {
-                System.out.println(d.toString());
-            }
-        }
-
-    }
-
-    /**
-     * Make sure that edifEquals is working
-     * 
-     * @param args
-     */
-    private static void testEdifEquals(String[] args) {
-        String[] arg1 = { args[0] };
-        String[] arg2 = { args[1] };
-
-        topA = getTop(arg1);
-        topB = getTop(arg2);
-
-        if (topA.edifEquals(topB))
-            System.out.println("Yipee! They are edifEqual!");
-        else
-            System.out.println("Sorry Charley! They are not edifEqual!");
+     
     }
 
     private static EdifEnvironment getTop(String args[]) {

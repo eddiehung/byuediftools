@@ -139,34 +139,6 @@ public class EdifCellInstance extends NamedPropertyObject implements EdifOut {
     }
 
     /**
-     * Two EdifCellInstance objects are considered edifEqual if:
-     * <ul>
-     * <li> They have the same String name </li>
-     * <li> The names of the parent cells are equal </li>
-     * <li> The names of the cell type are equal </li>
-     * <li> The property lists are equal (as defined by
-     * {@link PropertyList#equals(PropertyList)}) </li>
-     * </ul>
-     * 
-     * @param o Comparison EdifCellInstance object
-     * @return true of the two EdifCellInstance objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifCellInstance))
-            return false;
-
-        EdifCellInstance that = (EdifCellInstance) o;
-
-        return (this.getName() == null ? that.getName() == null : this.getName().equals(that.getName()))
-                && edifEqualCellTypeName(that)
-                && edifEqualParentName(that)
-                && (this.getPropertyList() == null ? that.getPropertyList() == null : this.getPropertyList().equals(
-                        that.getPropertyList()));
-    }
-
-    /**
      * This method will determine the parent cell of an EdifCellInstance and
      * search through the nets of this parent cell. The EdifPortRefs of those
      * nets that connect to the given EdifCellInstance are returned in a
@@ -554,55 +526,6 @@ public class EdifCellInstance extends NamedPropertyObject implements EdifOut {
 
     ///////////////////////////////////////////////////////////////////
     // Private methods
-
-    /**
-     * Check to see if the name of the parent of this EdifCellInstance matches
-     * the name of the parent of that EdifCellInstance
-     * 
-     * @param that Comparison EdifCellInstance object
-     * @return true if the two parent (EdifCell) objects have the same name
-     */
-    private boolean edifEqualParentName(EdifCellInstance that) {
-
-        boolean result;
-
-        if (this.getParent() == null)
-            result = (that.getParent() == null);
-        else if (that.getParent() == null)
-            result = false;
-        else if (this.getParent().getName() == null)
-            result = (that.getParent().getName() == null);
-        else
-            result = this.getParent().getName().equals(that.getParent().getName());
-
-        return result;
-    }
-
-    /**
-     * Check to see if the name of the cell type of this EdifCellInstance
-     * matches the name of the cell type of that EdifCellInstance
-     * 
-     * @param that Comparison EdifCellInstance object
-     * @return true if the two cell types (EdifCell) objects have the same name
-     */
-    private boolean edifEqualCellTypeName(EdifCellInstance that) {
-
-        boolean result;
-
-        if (this.getCellType() == null)
-            result = (that.getCellType() == null);
-        else if (that.getCellType() == null)
-            result = false;
-        else if (this.getCellType().getName() == null)
-            result = (that.getCellType().getName() == null);
-        else
-            result = this.getCellType().getName().equals(that.getCellType().getName());
-
-        return result;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ////                         private variables                 ////
 
     /**
      * This EdifCell reference refers to the type of EdifCell that is instanced.

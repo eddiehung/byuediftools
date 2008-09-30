@@ -321,32 +321,6 @@ public class EdifNet extends NamedPropertyObject implements EdifOut, Trimable {
     }
 
     /**
-     * Two EdifNet objects are considered edifEqual if:
-     * <ul>
-     * <li> They have the same name (as defined by {@link EdifNet#getName()}.equals())</li>
-     * <li> The List of attached EdifPortRef objects are edifEqual</li>
-     * <li> The property lists are equal (as defined by
-     * {@link PropertyList#equals(PropertyList)}) </li>
-     * </ul>
-     * 
-     * @param o Comparison EdifNet object
-     * @return true of the two EdifNet objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifNet))
-            return false;
-
-        EdifNet that = (EdifNet) o;
-
-        return (this.getName() == null ? that.getName() == null : this.getName().equals(that.getName()))
-                && (this.getPropertyList() == null ? that.getPropertyList() == null : this.getPropertyList().equals(
-                        that.getPropertyList())) && edifEqualPortRefList(that);
-
-    }
-
-    /**
      * Return the EdifPortRef on this EdifNet that references the given
      * EdifPort/EdifCellInstance combination or null if no EdifPortRef on this
      * EdifNet references the given combination.
@@ -878,44 +852,6 @@ public class EdifNet extends NamedPropertyObject implements EdifOut, Trimable {
 
     ///////////////////////////////////////////////////////////////////
     // Private methods
-
-    /**
-     * Two EdifPortRef lists are considered edifEqual if
-     * <ul>
-     * <li> Each of the EdifPortRef objects are edifEqual</li>
-     * </ul>
-     * 
-     * @param that Comparison EdifNet object
-     * @return true if the EdifPortRef lists are edifEqual
-     */
-    private boolean edifEqualPortRefList(EdifNet that) {
-        Collection<EdifPortRef> thisPortRefList = this.getPortRefList();
-        Collection<EdifPortRef> thatPortRefList = that.getPortRefList();
-
-        if (thisPortRefList == null && thatPortRefList != null)
-            return false;
-        if (thisPortRefList != null && thatPortRefList == null)
-            return false;
-
-        // Make sure that each of the Nets in this EdifCell match one
-        // of the Nets in that EdifCell
-        if (thisPortRefList != null)
-            for (EdifPortRef thisPortRef : thisPortRefList) {
-                boolean result = false;
-                for (EdifPortRef thatPortRef : thatPortRefList) {
-                    if (thisPortRef.edifEquals(thatPortRef)) {
-                        result = true;
-                        break;
-                    }
-                }
-                if (result == false)
-                    return false;
-            }
-        return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ////                    private variables                      ////
 
     /**
      * List of EdifPortRef objects that this net is connected to. Limit the size
