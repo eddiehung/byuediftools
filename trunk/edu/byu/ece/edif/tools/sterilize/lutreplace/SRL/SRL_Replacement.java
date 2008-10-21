@@ -3,6 +3,7 @@ package edu.byu.ece.edif.tools.sterilize.lutreplace.SRL;
 import edu.byu.ece.edif.arch.xilinx.XilinxLibrary;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
+import edu.byu.ece.edif.core.EdifCellInterface;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifNameable;
@@ -11,6 +12,7 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.EdifTypedValue;
+import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.PropertyList;
@@ -144,8 +146,27 @@ public class SRL_Replacement {
 			}
 		}
 		
+//		/****** Step 6. Wire up clocks ******/
+//		EdifPort clkPort = ff_type.getPort("C");
+//		if (clkPort == null) {
+//			System.err.println("Can't find C port on cell " + ff_type);
+//			System.exit(1);
+//		}
+//		EdifSingleBitPort clkESBP = clkPort.getSingleBitPort(0);
+//		for (int i = 0; i < 16; i++) {
+//			EdifPortRef clkEPR = new EdifPortRef(clk, clkESBP, ffInstances[i]);
+//			clk.addPortConnection(clkEPR);
+//		}
+		
 		/****** Step 6. Wire up clocks ******/
-		EdifPort clkPort = ff_type.getPort("C");
+		EdifCellInterface ffInterface = new EdifCellInterface(ff_type);
+		EdifPort clkPort = null;
+		try {
+			clkPort = new EdifPort(ffInterface, "C", 1, 1);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (clkPort == null) {
 			System.err.println("Can't find C port on cell " + ff_type);
 			System.exit(1);
@@ -156,10 +177,31 @@ public class SRL_Replacement {
 			clk.addPortConnection(clkEPR);
 		}
 		
+//		/****** Step 7. Wire up enable signals, if the cell is an "E" type cell******/
+//		if (srlType == SRLType.SRL16E || srlType == SRLType.SRL16E_1 || 
+//				srlType == SRLType.SRLC16E || srlType ==SRLType.SRLC16E_1) {
+//			EdifPort cePort = ff_type.getPort("CE");
+//			if (cePort == null) {
+//				System.err.println("Can't find CE port on cell " + ff_type);
+//				System.exit(1);
+//			}
+//			EdifSingleBitPort ceESBP = cePort.getSingleBitPort(0);
+//			for(int i = 0; i < 16; i++) {
+//				EdifPortRef ceEPR = new EdifPortRef(ce, ceESBP, ffInstances[i]);
+//				ce.addPortConnection(ceEPR);
+//			}
+//		}
+		
 		/****** Step 7. Wire up enable signals, if the cell is an "E" type cell******/
 		if (srlType == SRLType.SRL16E || srlType == SRLType.SRL16E_1 || 
 				srlType == SRLType.SRLC16E || srlType ==SRLType.SRLC16E_1) {
-			EdifPort cePort = ff_type.getPort("CE");
+			EdifPort cePort = null;
+			try {
+				cePort = new EdifPort(ffInterface, "CE", 1, 1);
+			} catch (InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			}
 			if (cePort == null) {
 				System.err.println("Can't find CE port on cell " + ff_type);
 				System.exit(1);
@@ -171,9 +213,47 @@ public class SRL_Replacement {
 			}
 		}
 
+//		/****** Step 8. Wire up nets between flip-flops ******/
+//		// Hook up the FF net to the Q port
+//		EdifPort qPort = ff_type.getPort("Q");
+//		if (qPort == null) {
+//			System.err.println("Can't find Q port on cell " + ff_type);
+//			System.exit(1);
+//		}
+//		EdifSingleBitPort qESBP = qPort.getSingleBitPort(0);
+//		for (int i = 0; i < 16; i++) {
+//			EdifPortRef qEPR = new EdifPortRef(ffOutputNets[i], qESBP, ffInstances[i]);
+//			ffOutputNets[i].addPortConnection(qEPR);
+//
+//			// Hook up the inputs to the FF
+//			EdifPort dPort = ff_type.getPort("D");
+//			EdifNet inputNet = null;
+//			if (dPort == null) {
+//				System.err.println("Can't find D port on cell " + ff_type);
+//				System.exit(1);
+//			}
+//			EdifSingleBitPort dESBP = dPort.getSingleBitPort(0);
+//
+//			if (i == 0) {
+//				// input to the first FF is the d input to the SRL
+//				inputNet = d;
+//			} else {
+//				// input to the other FFs is the output net of the previous FF
+//				inputNet = ffOutputNets[i-1];
+//			}
+//			EdifPortRef dEPR = new EdifPortRef(inputNet, dESBP, ffInstances[i]);
+//			inputNet.addPortConnection(dEPR);			
+//		}
+		
 		/****** Step 8. Wire up nets between flip-flops ******/
 		// Hook up the FF net to the Q port
-		EdifPort qPort = ff_type.getPort("Q");
+		EdifPort qPort = null;
+		try {
+			qPort = new EdifPort(ffInterface, "Q", 1, 2);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (qPort == null) {
 			System.err.println("Can't find Q port on cell " + ff_type);
 			System.exit(1);
@@ -184,10 +264,16 @@ public class SRL_Replacement {
 			ffOutputNets[i].addPortConnection(qEPR);
 
 			// Hook up the inputs to the FF
-			EdifPort dPort = ff_type.getPort("D");
+			EdifPort dPort = null;
 			EdifNet inputNet = null;
+			try {
+				dPort = new EdifPort(ffInterface, "D", 1, 1);
+			} catch (InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			}
 			if (dPort == null) {
-				System.err.println("Can't find D port on cell "+ff_type);
+				System.err.println("Can't find D port on cell " + ff_type);
 				System.exit(1);
 			}
 			EdifSingleBitPort dESBP = dPort.getSingleBitPort(0);
@@ -203,7 +289,43 @@ public class SRL_Replacement {
 			inputNet.addPortConnection(dEPR);			
 		}
 		
-		/****** Step 10. Add optional Q15 output ******/
+//		/****** Step 9. Add optional Q15 output ******/
+//		// If the SRL is a "C" type, add to the q15 output
+//		if (srlType == SRLType.SRLC16 || srlType == SRLType.SRLC16_1 || 
+//				srlType == SRLType.SRLC16E || srlType == SRLType.SRLC16E_1) {
+//			// Create a "buf" edifcellinstance
+//			String bufName = namePrefix + "_BUF";
+//			EdifNameable bufNameable = NamedObject.createValidEdifNameable(bufName);
+//			bufNameable = parent.getUniqueNetNameable(bufNameable);
+//			EdifCellInstance q15_buf = new EdifCellInstance(bufNameable, parent, BUF);
+//			try {
+//				parent.addSubCell(q15_buf);
+//			} catch (EdifNameConflictException e) {
+//				// Should not get here
+//			}
+//			
+//			// connect ffOutputNets[15] (i.e. output of FF[15] to the "I" input of the buf
+//			EdifPort iPort = BUF.getPort("I");
+//			if (iPort == null) {
+//				System.err.println("Can't find I port on cell " + BUF);
+//				System.exit(1);
+//			}
+//			EdifSingleBitPort iESBP = iPort.getSingleBitPort(0);
+//			EdifPortRef iEPR = new EdifPortRef(ffOutputNets[15], iESBP, q15_buf);
+//			ffOutputNets[15].addPortConnection(iEPR);
+//			
+//			// connect the q15 net (passed in above) to the "O" output of the buf
+//			EdifPort oPort = BUF.getPort("O");
+//			if (oPort == null) {
+//				System.err.println("Can't find O port on cell " + BUF);
+//				System.exit(1);
+//			}
+//			EdifSingleBitPort oESBP = oPort.getSingleBitPort(0);
+//			EdifPortRef oEPR = new EdifPortRef(q15, oESBP, q15_buf);
+//			q15.addPortConnection(oEPR);
+//		}
+		
+		/****** Step 9. Add optional Q15 output ******/
 		// If the SRL is a "C" type, add to the q15 output
 		if (srlType == SRLType.SRLC16 || srlType == SRLType.SRLC16_1 || 
 				srlType == SRLType.SRLC16E || srlType == SRLType.SRLC16E_1) {
@@ -219,7 +341,14 @@ public class SRL_Replacement {
 			}
 			
 			// connect ffOutputNets[15] (i.e. output of FF[15] to the "I" input of the buf
-			EdifPort iPort = BUF.getPort("I");
+			EdifCellInterface bufInterface = new EdifCellInterface(BUF);
+			EdifPort iPort = null;
+			try {
+				iPort = new EdifPort(bufInterface, "I", 1, 1);
+			} catch (InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			}
 			if (iPort == null) {
 				System.err.println("Can't find I port on cell " + BUF);
 				System.exit(1);
@@ -229,7 +358,13 @@ public class SRL_Replacement {
 			ffOutputNets[15].addPortConnection(iEPR);
 			
 			// connect the q15 net (passed in above) to the "O" output of the buf
-			EdifPort oPort = BUF.getPort("O");
+			EdifPort oPort = null;
+			try {
+				oPort = new EdifPort(bufInterface, "O", 1, 2);
+			} catch (InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			}
 			if (oPort == null) {
 				System.err.println("Can't find O port on cell " + BUF);
 				System.exit(1);
@@ -239,24 +374,127 @@ public class SRL_Replacement {
 			q15.addPortConnection(oEPR);
 		}
 
-		/****** Step 11. Hook up the muxes ******/
+//		/****** Step 10. Hook up the muxes ******/
+//		// Get port information
+//		EdifPort i0Port = MUXF5.getPort("I0");
+//		if (i0Port == null) {
+//			System.err.println("Can't find I0 port on cell " + MUXF5);
+//			System.exit(1);
+//		}
+//		EdifPort i1Port = MUXF5.getPort("I1");
+//		if (i1Port == null) {
+//			System.err.println("Can't find I1 port on cell " + MUXF5);
+//			System.exit(1);
+//		}
+//		EdifPort sPort = MUXF5.getPort("S");
+//		if (sPort == null) {
+//			System.err.println("Can't find S port on cell " + MUXF5);
+//			System.exit(1);
+//		}
+//		EdifPort oPort = MUXF5.getPort("O");
+//		if (oPort == null) {
+//			System.err.println("Can't find O port on cell " + MUXF5);
+//			System.exit(1);
+//		}
+//		EdifSingleBitPort i0ESBP = i0Port.getSingleBitPort(0);
+//		EdifSingleBitPort i1ESBP = i1Port.getSingleBitPort(0);
+//		EdifSingleBitPort sESBP = sPort.getSingleBitPort(0);
+//		EdifSingleBitPort oESBP = oPort.getSingleBitPort(0);
+//		
+//		// Hook up 2-1 muxes to get a 16-1 mux
+//		for (int i = 0; i < 14; i++) {
+//			int muxNumber;
+//			if(i%2 == 0) {
+//				muxNumber = (i+16) / 2;
+//				EdifPortRef i0EPR = new EdifPortRef(muxOutputNets[i], i0ESBP, muxInstances[muxNumber]);
+//				muxOutputNets[i].addPortConnection(i0EPR);
+//			} else {
+//				muxNumber = (i+15) / 2;
+//				EdifPortRef i1EPR = new EdifPortRef(muxOutputNets[i], i1ESBP, muxInstances[muxNumber]);
+//				muxOutputNets[i].addPortConnection(i1EPR);
+//			}
+//			EdifPortRef oEPR = new EdifPortRef(muxOutputNets[i], oESBP, muxInstances[i]);
+//			muxOutputNets[i].addPortConnection(oEPR);
+//		}
+//		
+//		// Hook up FFs and the 16-1 mux
+//		for (int i = 0; i < 16; i++) {
+//			if(i%2 ==0) {
+//				EdifPortRef i0EPR = new EdifPortRef(ffOutputNets[i], i0ESBP, muxInstances[i/2]);
+//				ffOutputNets[i].addPortConnection(i0EPR);
+//			} else {
+//				EdifPortRef i1EPR = new EdifPortRef(ffOutputNets[i], i1ESBP, muxInstances[i/2]);
+//				ffOutputNets[i].addPortConnection(i1EPR);
+//			}
+//		}
+//		
+//		// Hook up select signals a0, a1, a2, a3
+//		for (int i = 0; i < 15; i++) {
+//			EdifNet aNet = null;
+//			if (i >= 0 && i <= 7) {
+//				aNet = a0;
+//			} else if (i >= 8 && i <= 11) {
+//				aNet = a1;
+//			} else if (i == 12 || i == 13) {
+//				aNet = a2;
+//			} else {
+//				aNet = a3;
+//			}
+//			EdifPortRef sEPR = new EdifPortRef(aNet, sESBP, muxInstances[i]);
+//			aNet.addPortConnection(sEPR);
+//		}
+//		
+//		// Hook up mux output to SRL output (q)
+//		EdifPortRef oEPR = new EdifPortRef(q, oESBP, muxInstances[14]);
+//		q.addPortConnection(oEPR);
+		
+		/****** Step 10. Hook up the muxes ******/
 		// Get port information
-		EdifPort i0Port = MUXF5.getPort("I0");
+		EdifCellInterface muxInterface = new EdifCellInterface(MUXF5);
+		// I0
+		EdifPort i0Port = null;
+		try {
+			i0Port = new EdifPort(muxInterface, "I0", 1, 1);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (i0Port == null) {
 			System.err.println("Can't find I0 port on cell " + MUXF5);
 			System.exit(1);
 		}
-		EdifPort i1Port = MUXF5.getPort("I1");
+		// I1
+		EdifPort i1Port = null;
+		try {
+			i1Port = new EdifPort(muxInterface, "I1", 1, 1);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (i1Port == null) {
 			System.err.println("Can't find I1 port on cell " + MUXF5);
 			System.exit(1);
 		}
-		EdifPort sPort = MUXF5.getPort("S");
+		// S
+		EdifPort sPort = null;
+		try {
+			sPort = new EdifPort(muxInterface, "S", 1, 1);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (sPort == null) {
 			System.err.println("Can't find S port on cell " + MUXF5);
 			System.exit(1);
 		}
-		EdifPort oPort = MUXF5.getPort("O");
+		// O
+		EdifPort oPort = null;
+		try {
+			oPort = new EdifPort(muxInterface, "O", 1, 2);
+		} catch (InvalidEdifNameException e) {
+			System.out.println("InvalidEdifNameException caught");
+			System.exit(1);
+		}
 		if (oPort == null) {
 			System.err.println("Can't find O port on cell " + MUXF5);
 			System.exit(1);
@@ -313,7 +551,7 @@ public class SRL_Replacement {
 		EdifPortRef oEPR = new EdifPortRef(q, oESBP, muxInstances[14]);
 		q.addPortConnection(oEPR);
 		
-		/****** Step 12. set INIT string  ******/
+		/****** Step 11. set INIT string  ******/
 		boolean isInit;
 		int initCount = 0;
 		StringTypedValue valueZero = new StringTypedValue("0");
