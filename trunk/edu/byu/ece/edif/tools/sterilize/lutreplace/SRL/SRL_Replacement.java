@@ -46,29 +46,20 @@ public class SRL_Replacement {
 	
 	public static void Replace(EdifLibraryManager libManager, String srlType, 
 			EdifCell parent, String namePrefix, long INIT,
-			EdifNet d,  EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, EdifNet q15) {
+			EdifNet d,  EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, 
+			EdifNet q15, int srlReplacementCount) {
 		SRLType type = StringToSRLType(srlType);
 		if (type == null)
 			return;
-		Replace(libManager, type, parent, namePrefix, INIT, d, ce, clk, a0, a1, a2, a3, q, q15);
+		Replace(libManager, type, parent, namePrefix, INIT, d, ce, clk, a0, a1, a2, a3, q, q15, srlReplacementCount);
 	}
 	
 	public static void Replace(EdifLibraryManager libManager, SRLType srlType, 
 			EdifCell parent, String namePrefix, long INIT,
-			EdifNet d, EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, EdifNet q15) {
+			EdifNet d, EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, 
+			EdifNet q15, int srlReplacementCount) {
 
-		/** Issues to consider when coding:
-		 *  - Don't provide all of your try/catch clauses around the entire program. Use them
-		 *    internall to allow better error handling
-		 *  - Use more loops to reduce the code (there is a lot of code without loops
-		 */
-		/** Things to do to clean up code:
-		 * - Make a single file that works for all replacement types
-		 */
-		
 		/****** Step 1. Create/Find Xilinx primitive Cells needed for this replacement ******/
-		// I think you should just add all of the cells that are needed for all of the different
-		// cases. Even if you do not need the cell it is no harm to put it in the library.	
 		EdifCell FD = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "FD");
 		EdifCell FD_1 = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "FD_1");
 		EdifCell FDE = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "FDE");
@@ -76,8 +67,7 @@ public class SRL_Replacement {
 		EdifCell MUXF5 = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "MUXF5");
 		EdifCell BUF = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "BUF");
 		
-		/****** Step 2. Create the FF instances ******/
-		EdifCellInstance ffInstances[] = new EdifCellInstance[16];		
+		/****** Step 2. Create the FF instances ******/	
 		EdifCell ff_type = null;
 		// Determine which flip-flop type to use
 		switch(srlType) {
@@ -90,6 +80,35 @@ public class SRL_Replacement {
 		   case SRLC16E: 	ff_type = FDE; 		break;
 		   case SRLC16E_1: 	ff_type = FDE_1;
 		}
+		// Add input and output ports to FF's interface, but only once
+		if(srlReplacementCount == 0)
+		{
+			try
+			{
+				FD.addPort("C", 1, 1);
+				FD.addPort("D", 1, 1);
+				FD.addPort("Q", 1, 2);
+				FD_1.addPort("C", 1, 1);
+				FD_1.addPort("D", 1, 1);
+				FD_1.addPort("Q", 1, 2);
+				FDE.addPort("C", 1, 1);
+				FDE.addPort("CE", 1, 1);
+				FDE.addPort("D", 1, 1);
+				FDE.addPort("Q", 1, 2);
+				FDE_1.addPort("C", 1, 1);
+				FDE_1.addPort("CE", 1, 1);
+				FDE_1.addPort("D", 1, 1);
+				FDE_1.addPort("Q", 1, 2);
+			} catch(InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
+		}
+		// Create FF instances
+		EdifCellInstance ffInstances[] = new EdifCellInstance[16];	
 		for (int i = 0; i < 16; i++) {
 			String ffInstanceName = namePrefix + "_FF_" + Integer.toString(i);
 			EdifNameable ffInstanceNameable = NamedObject.createValidEdifNameable(ffInstanceName);
@@ -103,6 +122,24 @@ public class SRL_Replacement {
 		}
 		
 		/****** Step 3. Create the Mux instances ******/
+		// Add input and output ports to MUX's interface, but only once
+		if(srlReplacementCount == 0)
+		{
+			try
+			{
+				MUXF5.addPort("I0", 1, 1);
+				MUXF5.addPort("I1", 1, 1);
+				MUXF5.addPort("S", 1, 1);
+				MUXF5.addPort("O", 1, 2);
+			} catch(InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
+		}
+		// Create MUXF5 instances
 		EdifCellInstance muxInstances[] = new EdifCellInstance[15];
 		for (int i = 0; i < 15; i++) {
 			String muxInstanceName = namePrefix + "_MUX_" + Integer.toString(i);
@@ -163,6 +200,12 @@ public class SRL_Replacement {
 		EdifPort clkPort = null;
 		try {
 			clkPort = new EdifPort(ffInterface, "C", 1, 1);
+			try {
+				ffInterface.addPort("C", 1, 1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
 		} catch (InvalidEdifNameException e) {
 			System.out.println("InvalidEdifNameException caught");
 			System.exit(1);
@@ -329,7 +372,21 @@ public class SRL_Replacement {
 		// If the SRL is a "C" type, add to the q15 output
 		if (srlType == SRLType.SRLC16 || srlType == SRLType.SRLC16_1 || 
 				srlType == SRLType.SRLC16E || srlType == SRLType.SRLC16E_1) {
-			// Create a "buf" edifcellinstance
+			// Add input and output ports to BUF interface, but only once
+			if(srlReplacementCount == 0)
+			{
+				try{
+					BUF.addPort("I", 1, 1);
+					BUF.addPort("O", 1, 2);
+				} catch(InvalidEdifNameException e) {
+					System.out.println("InvalidEdifNameException caught");
+					System.exit(1);
+				} catch (EdifNameConflictException e) {
+					System.out.println("EdifNameConflictException caught");
+					System.exit(1);
+				}
+			}
+			// Create a "buf" EdifCellInstance
 			String bufName = namePrefix + "_BUF";
 			EdifNameable bufNameable = NamedObject.createValidEdifNameable(bufName);
 			bufNameable = parent.getUniqueNetNameable(bufNameable);
