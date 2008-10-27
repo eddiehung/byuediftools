@@ -15,6 +15,7 @@ import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.core.EdifPrintWriter;
+import java.io.*;
 
 public class LUTReplacer{
 
@@ -195,7 +196,7 @@ public class LUTReplacer{
 		 * The value of the string printed out when there is a problem with the
 		 * argument string.
 		 **********************************************************************/
-		String usageString = "Usage: java EdifMergeParser <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
+		String usageString = "Usage: java LUTreplacer <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
 
 		if (args.length < 1) {
 			LogFile.out().println(usageString);
@@ -211,7 +212,11 @@ public class LUTReplacer{
 		String outputFileName;
 		int pos = inputFileName.indexOf('.');
 		outputFileName = inputFileName.substring(0, pos) + "_new.edf";
+		File f = new File(outputFileName);
 		System.out.println("Output File: " + outputFileName);
+		if (f.exists())
+			System.out.println("Note: existing file will be overwritten");
+
 		try{
 			FileOutputStream outputStream = new FileOutputStream(outputFileName);
 			EdifPrintWriter epw = new EdifPrintWriter(outputStream);
@@ -219,7 +224,7 @@ public class LUTReplacer{
 			epw.close();
 		} catch (FileNotFoundException e){
 			System.out.println("FileNotFoundException caught");
-		}
+		} 
 		System.out.println("done");
 
 		// DONE!
