@@ -39,7 +39,9 @@ import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
  * This class is used represent the command line options for specifying an
  * output file.
  * 
- * @author Derrick Gibelyou TODO
+ * @author Derrick Gibelyou
+ * 
+ * TODO
  * <ul>
  * <li> Allow a modification of the help for each option
  * <li> Provide mechanism for parsing the extension and automatically inferring
