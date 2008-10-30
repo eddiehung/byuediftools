@@ -30,7 +30,7 @@
 #   6. Report success or failure (send e-mail on failure)
 # 
 # Authors: James Carroll <jcarroll@byu.net>
-# $Id: regression_test.sh 85 2008-05-30 16:42:16Z brianpratt $
+# $Id$
 # 
 #####################################################################
 
