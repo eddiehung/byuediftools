@@ -51,10 +51,10 @@ import edu.byu.ece.edif.util.jsap.TechnologyCommandGroup;
 public class EdifTMR extends EDIFMain {
 
     /**
-     * @param args
+     * @param args Command-line arguments. For a complete listing of argument,
+     * please see the documentation edu/byu/ece/edif/doc/jedif/JEdifTools.pdf
      */
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
         PrintStream out = System.out;
         PrintStream err = System.out;
         // Print executable heading
