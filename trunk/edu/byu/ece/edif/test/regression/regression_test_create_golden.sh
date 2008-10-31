@@ -27,7 +27,7 @@
 #   3. Strip the timeStamp from all .edf files
 # 
 # Author: James Carroll <jcarroll@byu.net>
-# $Id: regression_test.sh 4 2008-04-16 22:31:52Z mrspud $
+# $Id$
 # 
 #####################################################################
 
