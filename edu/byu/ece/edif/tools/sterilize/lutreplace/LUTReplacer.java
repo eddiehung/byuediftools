@@ -1,3 +1,25 @@
+/*
+ * Removes SRLs from an EDIF file.
+ * 
+ * Copyright (c) 2008 Brigham Young University
+ * 
+ * This file is part of the BYU EDIF Tools.
+ * 
+ * BYU EDIF Tools is free software: you may redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * BYU EDIF Tools is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * A copy of the GNU General Public License is included with the BYU EDIF Tools.
+ * It can be found at /edu/byu/edif/doc/gpl2.txt. You may also get a copy of the
+ * license at <http://www.gnu.org/licenses/>.
+ * 
+ */
 package edu.byu.ece.edif.tools.sterilize.lutreplace;
 
 import java.util.ArrayList;
@@ -17,8 +39,29 @@ import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 import java.io.*;
 
+/**
+ * Removes SRLs from an EDIF file.
+ * <p>
+ * This class provides a command-line executable interface (it has a main
+ * method). The user specifies the EDIF file, following the conventions of the
+ * JEdif tools. The resulting EDIF file carries the same filename as the
+ * original, with "_noSRL" appended. The resulting top-level EdifCell has the
+ * same name as the original EdifCell.
+ * <p>
+ * For a precise list of the cells replaced by this class, please see the source
+ * code. Examples include RAM16X1D, RAM16X1D_1, SRLC16, SRLC16E_1.
+ * <p>
+ * TODO: Rename this class? Shouldn't it be SRLRemover, not LUTReplacer?
+ * 
+ * @author yuboli
+ */
 public class LUTReplacer{
 
+	/**
+	 * @param env EdifEnvironment containing shift registers (SRLs) 
+	 * @param out output PrintStream object 
+	 * @return EdifEnvironment in which all SRLs have been replaced with LUTs
+	 */
 	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream out) {
 		System.out.println("Replacing LUTs . . .");
 		// Create list of instances to replace
@@ -187,14 +230,13 @@ public class LUTReplacer{
 			}
 		}
 
-		System.out.print("Done"+'\n');
+		System.out.println("Done");
 		return newEnv;
 	}
 
 	public static void main(String[] args) {
 		/***********************************************************************
-		 * The value of the string printed out when there is a problem with the
-		 * argument string.
+		 * The String printed when there is a problem with the argument string.
 		 **********************************************************************/
 		String usageString = "Usage: java LUTreplacer <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
 
@@ -211,7 +253,7 @@ public class LUTReplacer{
 		String inputFileName = args[0];
 		String outputFileName;
 		int pos = inputFileName.indexOf('.');
-		outputFileName = inputFileName.substring(0, pos) + "_new.edf";
+		outputFileName = inputFileName.substring(0, pos) + "_noSRL.edf";
 		File f = new File(outputFileName);
 		System.out.println("Output File: " + outputFileName);
 		if (f.exists())
