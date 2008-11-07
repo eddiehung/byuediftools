@@ -27,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.byu.ece.edif.test.regression.EdifDifference;
 
 //////////////////////////////////////////////////////////////////////////
 ////EdifEnvironment

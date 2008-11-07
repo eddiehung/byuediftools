@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import edu.byu.ece.edif.test.regression.EdifDifference;
-
 //////////////////////////////////////////////////////////////////////////
 ////EdifCell
 /**
