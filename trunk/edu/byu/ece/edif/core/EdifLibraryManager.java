@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import edu.byu.ece.edif.test.regression.EdifDifference;
 
 //////////////////////////////////////////////////////////////////////////
 ////EdifLibraryManager
