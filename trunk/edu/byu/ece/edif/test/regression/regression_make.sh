@@ -47,6 +47,13 @@ script_dir=`pwd`
 #####################################################################
 
 #
+# Email address for bad build notification
+#
+
+user=`whoami`
+email="${user}@localhost"
+
+#
 # Classpath
 #
 
@@ -88,8 +95,6 @@ build="golden"
 # Only change the following if you know what you are doing.
 #####################################################################
 
-user=`whoami`
-email="${user}@localhost"
 
 test_dir="./test"
 golden_dir="./golden"
