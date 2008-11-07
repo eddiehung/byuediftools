@@ -165,7 +165,6 @@ public class RLOCRemove {
      * @param args the command-line arguments
      */
     private static void _parseArgs(String[] args) {
-        int idx = 0;
 
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-design")) {

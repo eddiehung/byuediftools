@@ -1,4 +1,4 @@
-/*
+/* A simple implementation of the ReplacementContext interface.
  * 
  * Copyright (c) 2008 Brigham Young University
  * 
@@ -29,7 +29,8 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 
-/** A simple implementation of the ReplacementContext interface.
+/**
+ * A simple implementation of the ReplacementContext interface.
  * 
  */
 public class SimpleReplacementContext implements ReplacementContext {
