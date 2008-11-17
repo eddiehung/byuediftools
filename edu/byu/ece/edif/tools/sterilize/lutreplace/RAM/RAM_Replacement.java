@@ -37,6 +37,13 @@ import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.PropertyList;
 import edu.byu.ece.edif.core.StringTypedValue;
 
+/*
+ * TODO: Needs to be modified to keep up with the changes in XilinxLibrary.java
+ *       Needs to add ports to each primitive's interface
+ *       Needs to use new EdifPort method to get a specific port of a primitive, 
+ *       rather than using the .getPort method which is used now.
+ */
+
 public class RAM_Replacement {
 
 	/** Enumerate all of the RAM types */

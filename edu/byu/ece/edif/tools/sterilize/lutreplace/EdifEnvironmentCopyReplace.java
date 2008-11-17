@@ -69,7 +69,7 @@ public class EdifEnvironmentCopyReplace extends EdifEnvironmentCopy {
 	}
 	/**
 	 * Overrides the parent addChildEdifCellInstance method. This method
-	 * wll check to see if the instance is of a type that needs to be 
+	 * will check to see if the instance is of a type that needs to be 
 	 * replaced. If so, it will not add the instance and create a
 	 * ReplacementContext for this instance. If it doesn't match, the
 	 * instance will be added as usual.
