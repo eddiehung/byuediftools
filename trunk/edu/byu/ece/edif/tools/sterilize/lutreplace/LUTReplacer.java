@@ -52,7 +52,8 @@ import java.io.*;
  * code. Examples include RAM16X1D, RAM16X1D_1, SRLC16, SRLC16E_1.
  * <p>
  * TODO: Rename this class? Shouldn't it be SRLRemover, not LUTReplacer?
- * 
+ * 		 Yubo Li: This class also contains a method to replace all the RAMs
+ * 				  with flip-flops, so it is not just a SRL remover.
  * @author yuboli
  */
 public class LUTReplacer{
@@ -267,7 +268,7 @@ public class LUTReplacer{
 		} catch (FileNotFoundException e){
 			System.out.println("FileNotFoundException caught");
 		} 
-		System.out.println("done");
+		System.out.println("Replacement done");
 
 		// DONE!
 	}
