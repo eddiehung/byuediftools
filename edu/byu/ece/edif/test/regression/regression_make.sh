@@ -24,7 +24,7 @@
 #####################################################################
 # Regression test bash script using makefiles
 #
-# This script is used to test for regression testing of the
+# This script is used to regression test the
 # BYU EDIF Tools, especially the JEdif toolchain.
 #
 # This script runs each of the test designs 
@@ -36,10 +36,9 @@
 # along with an "options.mk" file that specifies the options to send
 # to the JEdif tools
 #
-# This script has the ability to create golden copies, 
-# previously been created. Thus, the two copies of each design can
-# be compared (using the `diff' utility) for any differences.  Note
-# that the "timeStamp" is removed from all .edf files.
+# This script has the ability to create golden copies.
+# Using the test and golden copy, we can quickly and easily find any
+# differences by simply using the `diff' utility. 
 #
 # Outline:
 #   0. Set up all the variables and options (REQUIRED)
@@ -65,57 +64,57 @@ script_dir=`pwd`
 
 #####################################################################
 # You MUST set the values below.  Defaults will NOT "just work".
+# Each variable lists sample defaults
 #####################################################################
 
 #
 # Email address for bad build notification
 #
 
-user=`whoami`
-email="${user}@localhost"
-
-#
-# Classpath
-#
-
-# Chose jar or working copy (golden or repository). Examples:
-#jar="${HOME}/jars/byuediftools-0.4.0.jar "
-#jar="/fpga2/jars/byuediftools-0.4.0.jar "
-jar=
-cp_golden=
-
-#workspace="${HOME}/workspace/sf_edif/:/fpga2/jars/JSAP-2.1.jar "
-workspace=
-cp_local
-
-#repository="${script_dir}/trunk:/fpga2/jars/JSAP-2.1.jar "
-repository=
-cp_repository
-
-# Dependencies
-# JSAP: Java Simple Argument Parser (martiansoftware.com/jsap/)
-#jsap_jar="/fpga2/jars/JSAP-latest.jar "
-jsap_jar=
-
-# JHDL (jhdl.org)
-#jhdl_jar="/fpga2/jars/JHDL.jar "
-jhdl_jar=
+#user=`whoami`
+#email="${user}@localhost"
+email=jcarroll@byu.net
+#email=user@domain.com
 
 #
 # What type of build do you want?
 #
 
-# golden: create the golden files in the golden directory from the jar file
-# local: create test files from local code
+# golden: create golden files in the golden directory from the jar file
+# local: create test files from local source code
 # repository: create test files from the repository
-build="golden"
-#build="local"
-#build="repository"
+#build=golden
+#build=local
+build=repository
+
+#
+# Classpath
+#
+
+# Dependencies
+# JSAP: Java Simple Argument Parser (martiansoftware.com/jsap/)
+jsap_jar="/fpga2/jars/JSAP-latest.jar"
+#jsap_jar=
+
+# JHDL (jhdl.org)
+jhdl_jar="/fpga2/jars/JHDL.jar"
+#jhdl_jar=
+
+
+# Chose golden jar.
+#jar="${HOME}/jars/byuediftools-0.4.0.jar "
+jar="/fpga2/jars/byuediftools-0.4.0.jar:$jsap_jar:$jhdl_jar "
+
+#workspace="${HOME}/workspace/sf_edif/:/fpga2/jars/JSAP-2.1.jar "
+workspace="~/Documents/career/fpga/workspace/byuediftools/:$jsap_jar:$jhdl_jar "
+
+repository="${script_dir}/trunk:$jsap_jar:$jhdl_jar "
+#repository=
+
 
 #####################################################################
 # Only change the following if you know what you are doing.
 #####################################################################
-
 
 test_dir="./test"
 golden_dir="./golden"
@@ -164,13 +163,14 @@ if [ $build = "repository" ]; then
 #
 # 2. Check out the current repository
 #
-echo -n "Checking out latest source from SourceForge..."
-sleep 5
+sleep 1
 echo -n "..."
 if [ -d trunk ]; then
+    echo -n "Updating source from SourceForge..."
     cd trunk; svn update; cd ..
     echo
 else
+    echo -n "Checking out latest source from SourceForge..."
     svn checkout http://byuediftools.svn.sourceforge.net/svnroot/byuediftools/trunk
 fi
 
@@ -179,7 +179,7 @@ fi
 #
 echo -n "Building from source..."
 find . -name '*.class' -print | xargs rm
-find . -name '*.java' -print | xargs javac -cp /fpga2/jars/JSAP-latest.jar:/fpga2/jars/JHDL.jar &> java_build.log
+find . -name '*.java' -print | xargs javac -J-Xmx512 -cp /fpga2/jars/JSAP-latest.jar:/fpga2/jars/JHDL.jar &> java_build.log
 # Check for error in the build
 if [ "$?" -eq 0 ]; then
   echo "Java build succeeded"

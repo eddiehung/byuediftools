@@ -17,8 +17,8 @@
 #  details.
 #  
 #  A copy of the GNU General Public License is included with the BYU EDIF Tools.
-#  It can be found at /edu/byu/edif/doc/gpl2.txt. You may also get a copy of the
-#  license at <http://www.gnu.org/licenses/>.
+#  It can be found at /edu/byu/ece/edif/doc/gpl2.txt. You may also get a copy of
+#  the license at <http://www.gnu.org/licenses/>.
 ################################################################################
 
 #####################################################################
@@ -95,7 +95,6 @@ for infile in $files; do
 
 
 # Process each file with the golden code
-# FIXME: Do not modify the following block of code; rather, create a bash function to encapsulate this!
 dir=$golden_dir
 echo "
 build.sh: Workspace JEdif toolchain"

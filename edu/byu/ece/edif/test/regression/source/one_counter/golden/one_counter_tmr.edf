@@ -1,0 +1,1825 @@
+(edif (rename one_counter "testCounter")
+  (edifVersion 2 0 0)
+  (edifLevel 0)
+  (keywordMap (keywordLevel 0))
+  (status
+    (written
+      (
+      (author "BYU Configurable Computing Laboratory")
+      (program "JEdifTMR" (version "v0.4.0"))
+    )
+  )
+  (library VIRTEX
+    (edifLevel 0)
+    (technology (numberDefinition ))
+    (cell IBUFG
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port O (direction OUTPUT))
+          (port I (direction INPUT))
+        )
+      )
+    )
+    (cell IBUF
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port O (direction OUTPUT))
+          (port I (direction INPUT))
+        )
+      )
+    )
+    (cell OBUF
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port O (direction OUTPUT))
+          (port I (direction INPUT))
+        )
+      )
+    )
+    (cell LUT3
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port I0 (direction INPUT))
+          (port I1 (direction INPUT))
+          (port I2 (direction INPUT))
+          (port O (direction OUTPUT))
+        )
+      )
+    )
+    (cell XORCY
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port LI (direction INPUT))
+          (port CI (direction INPUT))
+          (port O (direction OUTPUT))
+        )
+      )
+    )
+    (cell MUXCY_L
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port DI (direction INPUT))
+          (port CI (direction INPUT))
+          (port S (direction INPUT))
+          (port LO (direction OUTPUT))
+        )
+      )
+    )
+    (cell BUFG
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port I (direction INPUT))
+          (port O (direction OUTPUT))
+        )
+      )
+    )
+  )
+  (library UNILIB
+    (edifLevel 0)
+    (technology (numberDefinition ))
+    (cell FD
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port Q (direction OUTPUT))
+          (port D (direction INPUT))
+          (port C (direction INPUT))
+        )
+      )
+    )
+    (cell FDC
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port Q (direction OUTPUT))
+          (port D (direction INPUT))
+          (port C (direction INPUT))
+          (port CLR (direction INPUT))
+        )
+      )
+    )
+    (cell INV
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port I (direction INPUT))
+          (port O (direction OUTPUT))
+        )
+      )
+    )
+    (cell GND
+      (cellType GENERIC)
+      (view PRIM
+        (viewType NETLIST)
+        (interface
+          (port G (direction OUTPUT))
+        )
+      )
+    )
+  )
+  (library work
+    (edifLevel 0)
+    (technology (numberDefinition ))
+    (cell one_counter_flat_TMR
+      (cellType GENERIC)
+      (view netlist
+        (viewType NETLIST)
+        (interface
+          (port (array (rename xp_in "XP_IN(7:0)") 8) (direction INPUT))
+          (port (array (rename xp_out "XP_OUT(7:0)") 8) (direction OUTPUT))
+          (port XP_PCLK (direction INPUT))
+          (port XP_RST (direction INPUT))
+        )
+        (contents
+          (instance reset_i_TMR_0
+            (viewRef PRIM (cellRef INV (libraryRef UNILIB)))
+          )
+          (instance reset_i_TMR_1
+            (viewRef PRIM (cellRef INV (libraryRef UNILIB)))
+          )
+          (instance reset_i_TMR_2
+            (viewRef PRIM (cellRef INV (libraryRef UNILIB)))
+          )
+          (instance reset_buf_TMR_0
+            (viewRef PRIM (cellRef FD (libraryRef UNILIB)))
+          )
+          (instance reset_buf_TMR_1
+            (viewRef PRIM (cellRef FD (libraryRef UNILIB)))
+          )
+          (instance reset_buf_TMR_2
+            (viewRef PRIM (cellRef FD (libraryRef UNILIB)))
+          )
+          (instance (rename outBufs_5_outBit "outBufs.5.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_4_outBit "outBufs.4.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_3_outBit "outBufs.3.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_6_outBit "outBufs.6.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_2_outBit "outBufs.2.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_1_outBit "outBufs.1.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_7_outBit "outBufs.7.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename outBufs_0_outBit "outBufs.0.outBit")
+            (viewRef PRIM (cellRef OBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_5_inBit "inBufs.5.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_6_inBit "inBufs.6.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_4_inBit "inBufs.4.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_3_inBit "inBufs.3.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_1_inBit "inBufs.1.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_7_inBit "inBufs.7.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_0_inBit "inBufs.0.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance (rename inBufs_2_inBit "inBufs.2.inBit")
+            (viewRef PRIM (cellRef IBUF (libraryRef VIRTEX)))
+          )
+          (instance RST_BUFG_TMR_0
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance RST_BUFG_TMR_1
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance RST_BUFG_TMR_2
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance RST_IBUFG
+            (viewRef PRIM (cellRef IBUFG (libraryRef VIRTEX)))
+          )
+          (instance CLK_BUFG_TMR_0
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance CLK_BUFG_TMR_1
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance CLK_BUFG_TMR_2
+            (viewRef PRIM (cellRef BUFG (libraryRef VIRTEX)))
+          )
+          (instance CLK_IBUFG
+            (viewRef PRIM (cellRef IBUFG (libraryRef VIRTEX)))
+          )
+          (instance count_qxu_0_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_0_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_0_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_1_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_1_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_1_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_2_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_2_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_2_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_3_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_3_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_3_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_4_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_4_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_4_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_5_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_5_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_5_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_6_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_6_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_6_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_0_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_0_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_0_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_1_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_1_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_1_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_2_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_2_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_2_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_3_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_3_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_3_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_4_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_4_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_4_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_5_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_5_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_5_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_6_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_6_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_6_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_7_TMR_0
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_7_TMR_1
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_7_TMR_2
+            (viewRef PRIM (cellRef FDC (libraryRef UNILIB)))
+          )
+          (instance count_s_7_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_7_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_7_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_qxu_7_TMR_0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_7_TMR_1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_qxu_7_TMR_2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "AC"))
+          )
+          (instance count_s_6_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_6_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_6_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_6_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_6_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_6_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_5_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_5_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_5_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_5_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_5_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_5_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_4_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_4_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_4_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_4_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_4_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_4_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_3_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_3_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_3_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_3_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_3_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_3_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_2_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_2_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_2_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_2_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_2_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_2_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_1_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_1_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_1_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_1_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_1_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_1_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_s_0_TMR_0
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_0_TMR_1
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_s_0_TMR_2
+            (viewRef PRIM (cellRef XORCY (libraryRef VIRTEX)))
+          )
+          (instance count_cry_0_TMR_0
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_0_TMR_1
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance count_cry_0_TMR_2
+            (viewRef PRIM (cellRef MUXCY_L (libraryRef VIRTEX)))
+          )
+          (instance GND_TMR_0
+            (viewRef PRIM (cellRef GND (libraryRef UNILIB)))
+          )
+          (instance GND_TMR_1
+            (viewRef PRIM (cellRef GND (libraryRef UNILIB)))
+          )
+          (instance GND_TMR_2
+            (viewRef PRIM (cellRef GND (libraryRef UNILIB)))
+          )
+          (instance output_5_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_5_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_5_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_4_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_4_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_4_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_3_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_3_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_3_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_6_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_6_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_6_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_2_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_2_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_2_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_1_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_1_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_1_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_7_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_7_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_7_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_0_VOTER0
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_0_VOTER1
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (instance output_0_VOTER2
+            (viewRef PRIM (cellRef LUT3 (libraryRef VIRTEX)))
+            (property init (string "E8"))
+          )
+          (net (rename xp_pclk "XP_PCLK")
+            (joined
+              (portRef XP_PCLK)
+              (portRef I (instanceRef CLK_IBUFG))
+            )
+          )
+          (net (rename xp_rst "XP_RST")
+            (joined
+              (portRef XP_RST)
+              (portRef I (instanceRef RST_IBUFG))
+            )
+          )
+          (net (rename xp_in_0 "XP_IN(0)")
+            (joined
+              (portRef (member xp_in 7))
+              (portRef I (instanceRef inBufs_0_inBit))
+            )
+          )
+          (net (rename xp_in_1 "XP_IN(1)")
+            (joined
+              (portRef (member xp_in 6))
+              (portRef I (instanceRef inBufs_1_inBit))
+            )
+          )
+          (net (rename xp_in_2 "XP_IN(2)")
+            (joined
+              (portRef (member xp_in 5))
+              (portRef I (instanceRef inBufs_2_inBit))
+            )
+          )
+          (net (rename xp_in_3 "XP_IN(3)")
+            (joined
+              (portRef (member xp_in 4))
+              (portRef I (instanceRef inBufs_3_inBit))
+            )
+          )
+          (net (rename xp_in_4 "XP_IN(4)")
+            (joined
+              (portRef (member xp_in 3))
+              (portRef I (instanceRef inBufs_4_inBit))
+            )
+          )
+          (net (rename xp_in_5 "XP_IN(5)")
+            (joined
+              (portRef (member xp_in 2))
+              (portRef I (instanceRef inBufs_5_inBit))
+            )
+          )
+          (net (rename xp_in_6 "XP_IN(6)")
+            (joined
+              (portRef (member xp_in 1))
+              (portRef I (instanceRef inBufs_6_inBit))
+            )
+          )
+          (net (rename xp_in_7 "XP_IN(7)")
+            (joined
+              (portRef (member xp_in 0))
+              (portRef I (instanceRef inBufs_7_inBit))
+            )
+          )
+          (net (rename xp_out_0 "XP_OUT(0)")
+            (joined
+              (portRef O (instanceRef outBufs_0_outBit))
+              (portRef (member xp_out 7))
+            )
+          )
+          (net (rename xp_out_1 "XP_OUT(1)")
+            (joined
+              (portRef O (instanceRef outBufs_1_outBit))
+              (portRef (member xp_out 6))
+            )
+          )
+          (net (rename xp_out_2 "XP_OUT(2)")
+            (joined
+              (portRef O (instanceRef outBufs_2_outBit))
+              (portRef (member xp_out 5))
+            )
+          )
+          (net (rename xp_out_3 "XP_OUT(3)")
+            (joined
+              (portRef O (instanceRef outBufs_3_outBit))
+              (portRef (member xp_out 4))
+            )
+          )
+          (net (rename xp_out_4 "XP_OUT(4)")
+            (joined
+              (portRef O (instanceRef outBufs_4_outBit))
+              (portRef (member xp_out 3))
+            )
+          )
+          (net (rename xp_out_5 "XP_OUT(5)")
+            (joined
+              (portRef O (instanceRef outBufs_5_outBit))
+              (portRef (member xp_out 2))
+            )
+          )
+          (net (rename xp_out_6 "XP_OUT(6)")
+            (joined
+              (portRef O (instanceRef outBufs_6_outBit))
+              (portRef (member xp_out 1))
+            )
+          )
+          (net (rename xp_out_7 "XP_OUT(7)")
+            (joined
+              (portRef O (instanceRef outBufs_7_outBit))
+              (portRef (member xp_out 0))
+            )
+          )
+          (net reset_TMR_0
+            (joined
+              (portRef O (instanceRef RST_BUFG_TMR_0))
+              (portRef I (instanceRef reset_i_TMR_0))
+              (portRef I2 (instanceRef count_qxu_7_TMR_0))
+              (portRef CLR (instanceRef count_7_TMR_0))
+              (portRef CLR (instanceRef count_6_TMR_0))
+              (portRef CLR (instanceRef count_5_TMR_0))
+              (portRef CLR (instanceRef count_4_TMR_0))
+              (portRef CLR (instanceRef count_3_TMR_0))
+              (portRef CLR (instanceRef count_2_TMR_0))
+              (portRef CLR (instanceRef count_1_TMR_0))
+              (portRef CLR (instanceRef count_0_TMR_0))
+              (portRef I2 (instanceRef count_qxu_6_TMR_0))
+              (portRef I2 (instanceRef count_qxu_5_TMR_0))
+              (portRef I2 (instanceRef count_qxu_4_TMR_0))
+              (portRef I2 (instanceRef count_qxu_3_TMR_0))
+              (portRef I2 (instanceRef count_qxu_2_TMR_0))
+              (portRef I2 (instanceRef count_qxu_1_TMR_0))
+              (portRef I2 (instanceRef count_qxu_0_TMR_0))
+            )
+          )
+          (net reset_TMR_1
+            (joined
+              (portRef O (instanceRef RST_BUFG_TMR_1))
+              (portRef I (instanceRef reset_i_TMR_1))
+              (portRef I2 (instanceRef count_qxu_7_TMR_1))
+              (portRef CLR (instanceRef count_7_TMR_1))
+              (portRef CLR (instanceRef count_6_TMR_1))
+              (portRef CLR (instanceRef count_5_TMR_1))
+              (portRef CLR (instanceRef count_4_TMR_1))
+              (portRef CLR (instanceRef count_3_TMR_1))
+              (portRef CLR (instanceRef count_2_TMR_1))
+              (portRef CLR (instanceRef count_1_TMR_1))
+              (portRef CLR (instanceRef count_0_TMR_1))
+              (portRef I2 (instanceRef count_qxu_6_TMR_1))
+              (portRef I2 (instanceRef count_qxu_5_TMR_1))
+              (portRef I2 (instanceRef count_qxu_4_TMR_1))
+              (portRef I2 (instanceRef count_qxu_3_TMR_1))
+              (portRef I2 (instanceRef count_qxu_2_TMR_1))
+              (portRef I2 (instanceRef count_qxu_1_TMR_1))
+              (portRef I2 (instanceRef count_qxu_0_TMR_1))
+            )
+          )
+          (net reset_TMR_2
+            (joined
+              (portRef O (instanceRef RST_BUFG_TMR_2))
+              (portRef I (instanceRef reset_i_TMR_2))
+              (portRef I2 (instanceRef count_qxu_7_TMR_2))
+              (portRef CLR (instanceRef count_7_TMR_2))
+              (portRef CLR (instanceRef count_6_TMR_2))
+              (portRef CLR (instanceRef count_5_TMR_2))
+              (portRef CLR (instanceRef count_4_TMR_2))
+              (portRef CLR (instanceRef count_3_TMR_2))
+              (portRef CLR (instanceRef count_2_TMR_2))
+              (portRef CLR (instanceRef count_1_TMR_2))
+              (portRef CLR (instanceRef count_0_TMR_2))
+              (portRef I2 (instanceRef count_qxu_6_TMR_2))
+              (portRef I2 (instanceRef count_qxu_5_TMR_2))
+              (portRef I2 (instanceRef count_qxu_4_TMR_2))
+              (portRef I2 (instanceRef count_qxu_3_TMR_2))
+              (portRef I2 (instanceRef count_qxu_2_TMR_2))
+              (portRef I2 (instanceRef count_qxu_1_TMR_2))
+              (portRef I2 (instanceRef count_qxu_0_TMR_2))
+            )
+          )
+          (net (rename reset_iZ0_TMR_0 "reset_i_TMR_0")
+            (joined
+              (portRef O (instanceRef reset_i_TMR_0))
+              (portRef CI (instanceRef count_cry_0_TMR_0))
+              (portRef CI (instanceRef count_s_0_TMR_0))
+            )
+          )
+          (net (rename reset_iZ0_TMR_1 "reset_i_TMR_1")
+            (joined
+              (portRef O (instanceRef reset_i_TMR_1))
+              (portRef CI (instanceRef count_cry_0_TMR_1))
+              (portRef CI (instanceRef count_s_0_TMR_1))
+            )
+          )
+          (net (rename reset_iZ0_TMR_2 "reset_i_TMR_2")
+            (joined
+              (portRef O (instanceRef reset_i_TMR_2))
+              (portRef CI (instanceRef count_cry_0_TMR_2))
+              (portRef CI (instanceRef count_s_0_TMR_2))
+            )
+          )
+          (net (rename reset_bufZ0_TMR_0 "reset_buf_TMR_0")
+            (joined
+              (portRef Q (instanceRef reset_buf_TMR_0))
+              (portRef I (instanceRef RST_BUFG_TMR_0))
+            )
+          )
+          (net (rename reset_bufZ0_TMR_1 "reset_buf_TMR_1")
+            (joined
+              (portRef Q (instanceRef reset_buf_TMR_1))
+              (portRef I (instanceRef RST_BUFG_TMR_1))
+            )
+          )
+          (net (rename reset_bufZ0_TMR_2 "reset_buf_TMR_2")
+            (joined
+              (portRef Q (instanceRef reset_buf_TMR_2))
+              (portRef I (instanceRef RST_BUFG_TMR_2))
+            )
+          )
+          (net reset_in
+            (joined
+              (portRef O (instanceRef RST_IBUFG))
+              (portRef D (instanceRef reset_buf_TMR_0))
+              (portRef D (instanceRef reset_buf_TMR_1))
+              (portRef D (instanceRef reset_buf_TMR_2))
+            )
+          )
+          (net clk_TMR_0
+            (joined
+              (portRef O (instanceRef CLK_BUFG_TMR_0))
+              (portRef C (instanceRef reset_buf_TMR_0))
+              (portRef C (instanceRef count_7_TMR_0))
+              (portRef C (instanceRef count_6_TMR_0))
+              (portRef C (instanceRef count_5_TMR_0))
+              (portRef C (instanceRef count_4_TMR_0))
+              (portRef C (instanceRef count_3_TMR_0))
+              (portRef C (instanceRef count_2_TMR_0))
+              (portRef C (instanceRef count_1_TMR_0))
+              (portRef C (instanceRef count_0_TMR_0))
+            )
+          )
+          (net clk_TMR_1
+            (joined
+              (portRef O (instanceRef CLK_BUFG_TMR_1))
+              (portRef C (instanceRef reset_buf_TMR_1))
+              (portRef C (instanceRef count_7_TMR_1))
+              (portRef C (instanceRef count_6_TMR_1))
+              (portRef C (instanceRef count_5_TMR_1))
+              (portRef C (instanceRef count_4_TMR_1))
+              (portRef C (instanceRef count_3_TMR_1))
+              (portRef C (instanceRef count_2_TMR_1))
+              (portRef C (instanceRef count_1_TMR_1))
+              (portRef C (instanceRef count_0_TMR_1))
+            )
+          )
+          (net clk_TMR_2
+            (joined
+              (portRef O (instanceRef CLK_BUFG_TMR_2))
+              (portRef C (instanceRef reset_buf_TMR_2))
+              (portRef C (instanceRef count_7_TMR_2))
+              (portRef C (instanceRef count_6_TMR_2))
+              (portRef C (instanceRef count_5_TMR_2))
+              (portRef C (instanceRef count_4_TMR_2))
+              (portRef C (instanceRef count_3_TMR_2))
+              (portRef C (instanceRef count_2_TMR_2))
+              (portRef C (instanceRef count_1_TMR_2))
+              (portRef C (instanceRef count_0_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_5 "output_TMR_0(5)")
+            (joined
+              (portRef Q (instanceRef count_5_TMR_0))
+              (portRef I0 (instanceRef output_5_VOTER0))
+              (portRef I0 (instanceRef output_5_VOTER1))
+              (portRef I0 (instanceRef output_5_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_5 "output_TMR_1(5)")
+            (joined
+              (portRef Q (instanceRef count_5_TMR_1))
+              (portRef I1 (instanceRef output_5_VOTER0))
+              (portRef I1 (instanceRef output_5_VOTER1))
+              (portRef I1 (instanceRef output_5_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_5 "output_TMR_2(5)")
+            (joined
+              (portRef Q (instanceRef count_5_TMR_2))
+              (portRef I2 (instanceRef output_5_VOTER0))
+              (portRef I2 (instanceRef output_5_VOTER1))
+              (portRef I2 (instanceRef output_5_VOTER2))
+            )
+          )
+          (net output_5_VOTER0
+            (joined
+              (portRef O (instanceRef output_5_VOTER0))
+              (portRef I (instanceRef outBufs_5_outBit))
+              (portRef I1 (instanceRef count_qxu_5_TMR_0))
+            )
+          )
+          (net output_5_VOTER1
+            (joined
+              (portRef O (instanceRef output_5_VOTER1))
+              (portRef I1 (instanceRef count_qxu_5_TMR_1))
+            )
+          )
+          (net output_5_VOTER2
+            (joined
+              (portRef O (instanceRef output_5_VOTER2))
+              (portRef I1 (instanceRef count_qxu_5_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_4 "output_TMR_0(4)")
+            (joined
+              (portRef Q (instanceRef count_4_TMR_0))
+              (portRef I0 (instanceRef output_4_VOTER0))
+              (portRef I0 (instanceRef output_4_VOTER1))
+              (portRef I0 (instanceRef output_4_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_4 "output_TMR_1(4)")
+            (joined
+              (portRef Q (instanceRef count_4_TMR_1))
+              (portRef I1 (instanceRef output_4_VOTER0))
+              (portRef I1 (instanceRef output_4_VOTER1))
+              (portRef I1 (instanceRef output_4_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_4 "output_TMR_2(4)")
+            (joined
+              (portRef Q (instanceRef count_4_TMR_2))
+              (portRef I2 (instanceRef output_4_VOTER0))
+              (portRef I2 (instanceRef output_4_VOTER1))
+              (portRef I2 (instanceRef output_4_VOTER2))
+            )
+          )
+          (net output_4_VOTER0
+            (joined
+              (portRef O (instanceRef output_4_VOTER0))
+              (portRef I (instanceRef outBufs_4_outBit))
+              (portRef I1 (instanceRef count_qxu_4_TMR_0))
+            )
+          )
+          (net output_4_VOTER1
+            (joined
+              (portRef O (instanceRef output_4_VOTER1))
+              (portRef I1 (instanceRef count_qxu_4_TMR_1))
+            )
+          )
+          (net output_4_VOTER2
+            (joined
+              (portRef O (instanceRef output_4_VOTER2))
+              (portRef I1 (instanceRef count_qxu_4_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_3 "output_TMR_0(3)")
+            (joined
+              (portRef Q (instanceRef count_3_TMR_0))
+              (portRef I0 (instanceRef output_3_VOTER0))
+              (portRef I0 (instanceRef output_3_VOTER1))
+              (portRef I0 (instanceRef output_3_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_3 "output_TMR_1(3)")
+            (joined
+              (portRef Q (instanceRef count_3_TMR_1))
+              (portRef I1 (instanceRef output_3_VOTER0))
+              (portRef I1 (instanceRef output_3_VOTER1))
+              (portRef I1 (instanceRef output_3_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_3 "output_TMR_2(3)")
+            (joined
+              (portRef Q (instanceRef count_3_TMR_2))
+              (portRef I2 (instanceRef output_3_VOTER0))
+              (portRef I2 (instanceRef output_3_VOTER1))
+              (portRef I2 (instanceRef output_3_VOTER2))
+            )
+          )
+          (net output_3_VOTER0
+            (joined
+              (portRef O (instanceRef output_3_VOTER0))
+              (portRef I (instanceRef outBufs_3_outBit))
+              (portRef I1 (instanceRef count_qxu_3_TMR_0))
+            )
+          )
+          (net output_3_VOTER1
+            (joined
+              (portRef O (instanceRef output_3_VOTER1))
+              (portRef I1 (instanceRef count_qxu_3_TMR_1))
+            )
+          )
+          (net output_3_VOTER2
+            (joined
+              (portRef O (instanceRef output_3_VOTER2))
+              (portRef I1 (instanceRef count_qxu_3_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_6 "output_TMR_0(6)")
+            (joined
+              (portRef Q (instanceRef count_6_TMR_0))
+              (portRef I0 (instanceRef output_6_VOTER0))
+              (portRef I0 (instanceRef output_6_VOTER1))
+              (portRef I0 (instanceRef output_6_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_6 "output_TMR_1(6)")
+            (joined
+              (portRef Q (instanceRef count_6_TMR_1))
+              (portRef I1 (instanceRef output_6_VOTER0))
+              (portRef I1 (instanceRef output_6_VOTER1))
+              (portRef I1 (instanceRef output_6_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_6 "output_TMR_2(6)")
+            (joined
+              (portRef Q (instanceRef count_6_TMR_2))
+              (portRef I2 (instanceRef output_6_VOTER0))
+              (portRef I2 (instanceRef output_6_VOTER1))
+              (portRef I2 (instanceRef output_6_VOTER2))
+            )
+          )
+          (net output_6_VOTER0
+            (joined
+              (portRef O (instanceRef output_6_VOTER0))
+              (portRef I (instanceRef outBufs_6_outBit))
+              (portRef I1 (instanceRef count_qxu_6_TMR_0))
+            )
+          )
+          (net output_6_VOTER1
+            (joined
+              (portRef O (instanceRef output_6_VOTER1))
+              (portRef I1 (instanceRef count_qxu_6_TMR_1))
+            )
+          )
+          (net output_6_VOTER2
+            (joined
+              (portRef O (instanceRef output_6_VOTER2))
+              (portRef I1 (instanceRef count_qxu_6_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_2 "output_TMR_0(2)")
+            (joined
+              (portRef Q (instanceRef count_2_TMR_0))
+              (portRef I0 (instanceRef output_2_VOTER0))
+              (portRef I0 (instanceRef output_2_VOTER1))
+              (portRef I0 (instanceRef output_2_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_2 "output_TMR_1(2)")
+            (joined
+              (portRef Q (instanceRef count_2_TMR_1))
+              (portRef I1 (instanceRef output_2_VOTER0))
+              (portRef I1 (instanceRef output_2_VOTER1))
+              (portRef I1 (instanceRef output_2_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_2 "output_TMR_2(2)")
+            (joined
+              (portRef Q (instanceRef count_2_TMR_2))
+              (portRef I2 (instanceRef output_2_VOTER0))
+              (portRef I2 (instanceRef output_2_VOTER1))
+              (portRef I2 (instanceRef output_2_VOTER2))
+            )
+          )
+          (net output_2_VOTER0
+            (joined
+              (portRef O (instanceRef output_2_VOTER0))
+              (portRef I (instanceRef outBufs_2_outBit))
+              (portRef I1 (instanceRef count_qxu_2_TMR_0))
+            )
+          )
+          (net output_2_VOTER1
+            (joined
+              (portRef O (instanceRef output_2_VOTER1))
+              (portRef I1 (instanceRef count_qxu_2_TMR_1))
+            )
+          )
+          (net output_2_VOTER2
+            (joined
+              (portRef O (instanceRef output_2_VOTER2))
+              (portRef I1 (instanceRef count_qxu_2_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_1 "output_TMR_0(1)")
+            (joined
+              (portRef Q (instanceRef count_1_TMR_0))
+              (portRef I0 (instanceRef output_1_VOTER0))
+              (portRef I0 (instanceRef output_1_VOTER1))
+              (portRef I0 (instanceRef output_1_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_1 "output_TMR_1(1)")
+            (joined
+              (portRef Q (instanceRef count_1_TMR_1))
+              (portRef I1 (instanceRef output_1_VOTER0))
+              (portRef I1 (instanceRef output_1_VOTER1))
+              (portRef I1 (instanceRef output_1_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_1 "output_TMR_2(1)")
+            (joined
+              (portRef Q (instanceRef count_1_TMR_2))
+              (portRef I2 (instanceRef output_1_VOTER0))
+              (portRef I2 (instanceRef output_1_VOTER1))
+              (portRef I2 (instanceRef output_1_VOTER2))
+            )
+          )
+          (net output_1_VOTER0
+            (joined
+              (portRef O (instanceRef output_1_VOTER0))
+              (portRef I (instanceRef outBufs_1_outBit))
+              (portRef I1 (instanceRef count_qxu_1_TMR_0))
+            )
+          )
+          (net output_1_VOTER1
+            (joined
+              (portRef O (instanceRef output_1_VOTER1))
+              (portRef I1 (instanceRef count_qxu_1_TMR_1))
+            )
+          )
+          (net output_1_VOTER2
+            (joined
+              (portRef O (instanceRef output_1_VOTER2))
+              (portRef I1 (instanceRef count_qxu_1_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_7 "output_TMR_0(7)")
+            (joined
+              (portRef Q (instanceRef count_7_TMR_0))
+              (portRef I0 (instanceRef output_7_VOTER0))
+              (portRef I0 (instanceRef output_7_VOTER1))
+              (portRef I0 (instanceRef output_7_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_7 "output_TMR_1(7)")
+            (joined
+              (portRef Q (instanceRef count_7_TMR_1))
+              (portRef I1 (instanceRef output_7_VOTER0))
+              (portRef I1 (instanceRef output_7_VOTER1))
+              (portRef I1 (instanceRef output_7_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_7 "output_TMR_2(7)")
+            (joined
+              (portRef Q (instanceRef count_7_TMR_2))
+              (portRef I2 (instanceRef output_7_VOTER0))
+              (portRef I2 (instanceRef output_7_VOTER1))
+              (portRef I2 (instanceRef output_7_VOTER2))
+            )
+          )
+          (net output_7_VOTER0
+            (joined
+              (portRef O (instanceRef output_7_VOTER0))
+              (portRef I (instanceRef outBufs_7_outBit))
+              (portRef I1 (instanceRef count_qxu_7_TMR_0))
+            )
+          )
+          (net output_7_VOTER1
+            (joined
+              (portRef O (instanceRef output_7_VOTER1))
+              (portRef I1 (instanceRef count_qxu_7_TMR_1))
+            )
+          )
+          (net output_7_VOTER2
+            (joined
+              (portRef O (instanceRef output_7_VOTER2))
+              (portRef I1 (instanceRef count_qxu_7_TMR_2))
+            )
+          )
+          (net (rename output_TMR_0_0 "output_TMR_0(0)")
+            (joined
+              (portRef Q (instanceRef count_0_TMR_0))
+              (portRef I0 (instanceRef output_0_VOTER0))
+              (portRef I0 (instanceRef output_0_VOTER1))
+              (portRef I0 (instanceRef output_0_VOTER2))
+            )
+          )
+          (net (rename output_TMR_1_0 "output_TMR_1(0)")
+            (joined
+              (portRef Q (instanceRef count_0_TMR_1))
+              (portRef I1 (instanceRef output_0_VOTER0))
+              (portRef I1 (instanceRef output_0_VOTER1))
+              (portRef I1 (instanceRef output_0_VOTER2))
+            )
+          )
+          (net (rename output_TMR_2_0 "output_TMR_2(0)")
+            (joined
+              (portRef Q (instanceRef count_0_TMR_2))
+              (portRef I2 (instanceRef output_0_VOTER0))
+              (portRef I2 (instanceRef output_0_VOTER1))
+              (portRef I2 (instanceRef output_0_VOTER2))
+            )
+          )
+          (net output_0_VOTER0
+            (joined
+              (portRef O (instanceRef output_0_VOTER0))
+              (portRef I (instanceRef outBufs_0_outBit))
+              (portRef I1 (instanceRef count_qxu_0_TMR_0))
+            )
+          )
+          (net output_0_VOTER1
+            (joined
+              (portRef O (instanceRef output_0_VOTER1))
+              (portRef I1 (instanceRef count_qxu_0_TMR_1))
+            )
+          )
+          (net output_0_VOTER2
+            (joined
+              (portRef O (instanceRef output_0_VOTER2))
+              (portRef I1 (instanceRef count_qxu_0_TMR_2))
+            )
+          )
+          (net (rename load_num_5 "load_num(5)")
+            (joined
+              (portRef O (instanceRef inBufs_5_inBit))
+              (portRef I0 (instanceRef count_qxu_5_TMR_0))
+              (portRef I0 (instanceRef count_qxu_5_TMR_1))
+              (portRef I0 (instanceRef count_qxu_5_TMR_2))
+            )
+          )
+          (net (rename load_num_6 "load_num(6)")
+            (joined
+              (portRef O (instanceRef inBufs_6_inBit))
+              (portRef I0 (instanceRef count_qxu_6_TMR_0))
+              (portRef I0 (instanceRef count_qxu_6_TMR_1))
+              (portRef I0 (instanceRef count_qxu_6_TMR_2))
+            )
+          )
+          (net (rename load_num_4 "load_num(4)")
+            (joined
+              (portRef O (instanceRef inBufs_4_inBit))
+              (portRef I0 (instanceRef count_qxu_4_TMR_0))
+              (portRef I0 (instanceRef count_qxu_4_TMR_1))
+              (portRef I0 (instanceRef count_qxu_4_TMR_2))
+            )
+          )
+          (net (rename load_num_3 "load_num(3)")
+            (joined
+              (portRef O (instanceRef inBufs_3_inBit))
+              (portRef I0 (instanceRef count_qxu_3_TMR_0))
+              (portRef I0 (instanceRef count_qxu_3_TMR_1))
+              (portRef I0 (instanceRef count_qxu_3_TMR_2))
+            )
+          )
+          (net (rename load_num_1 "load_num(1)")
+            (joined
+              (portRef O (instanceRef inBufs_1_inBit))
+              (portRef I0 (instanceRef count_qxu_1_TMR_0))
+              (portRef I0 (instanceRef count_qxu_1_TMR_1))
+              (portRef I0 (instanceRef count_qxu_1_TMR_2))
+            )
+          )
+          (net (rename load_num_7 "load_num(7)")
+            (joined
+              (portRef O (instanceRef inBufs_7_inBit))
+              (portRef I0 (instanceRef count_qxu_7_TMR_0))
+              (portRef I0 (instanceRef count_qxu_7_TMR_1))
+              (portRef I0 (instanceRef count_qxu_7_TMR_2))
+            )
+          )
+          (net (rename load_num_0 "load_num(0)")
+            (joined
+              (portRef O (instanceRef inBufs_0_inBit))
+              (portRef I0 (instanceRef count_qxu_0_TMR_0))
+              (portRef I0 (instanceRef count_qxu_0_TMR_1))
+              (portRef I0 (instanceRef count_qxu_0_TMR_2))
+            )
+          )
+          (net (rename load_num_2 "load_num(2)")
+            (joined
+              (portRef O (instanceRef inBufs_2_inBit))
+              (portRef I0 (instanceRef count_qxu_2_TMR_0))
+              (portRef I0 (instanceRef count_qxu_2_TMR_1))
+              (portRef I0 (instanceRef count_qxu_2_TMR_2))
+            )
+          )
+          (net clk_buf
+            (joined
+              (portRef O (instanceRef CLK_IBUFG))
+              (portRef I (instanceRef CLK_BUFG_TMR_0))
+              (portRef I (instanceRef CLK_BUFG_TMR_1))
+              (portRef I (instanceRef CLK_BUFG_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_0 "count_qxu_TMR_0(0)")
+            (joined
+              (portRef O (instanceRef count_qxu_0_TMR_0))
+              (portRef S (instanceRef count_cry_0_TMR_0))
+              (portRef LI (instanceRef count_s_0_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_0 "count_qxu_TMR_1(0)")
+            (joined
+              (portRef O (instanceRef count_qxu_0_TMR_1))
+              (portRef S (instanceRef count_cry_0_TMR_1))
+              (portRef LI (instanceRef count_s_0_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_0 "count_qxu_TMR_2(0)")
+            (joined
+              (portRef O (instanceRef count_qxu_0_TMR_2))
+              (portRef S (instanceRef count_cry_0_TMR_2))
+              (portRef LI (instanceRef count_s_0_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_1 "count_qxu_TMR_0(1)")
+            (joined
+              (portRef O (instanceRef count_qxu_1_TMR_0))
+              (portRef S (instanceRef count_cry_1_TMR_0))
+              (portRef LI (instanceRef count_s_1_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_1 "count_qxu_TMR_1(1)")
+            (joined
+              (portRef O (instanceRef count_qxu_1_TMR_1))
+              (portRef S (instanceRef count_cry_1_TMR_1))
+              (portRef LI (instanceRef count_s_1_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_1 "count_qxu_TMR_2(1)")
+            (joined
+              (portRef O (instanceRef count_qxu_1_TMR_2))
+              (portRef S (instanceRef count_cry_1_TMR_2))
+              (portRef LI (instanceRef count_s_1_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_2 "count_qxu_TMR_0(2)")
+            (joined
+              (portRef O (instanceRef count_qxu_2_TMR_0))
+              (portRef S (instanceRef count_cry_2_TMR_0))
+              (portRef LI (instanceRef count_s_2_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_2 "count_qxu_TMR_1(2)")
+            (joined
+              (portRef O (instanceRef count_qxu_2_TMR_1))
+              (portRef S (instanceRef count_cry_2_TMR_1))
+              (portRef LI (instanceRef count_s_2_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_2 "count_qxu_TMR_2(2)")
+            (joined
+              (portRef O (instanceRef count_qxu_2_TMR_2))
+              (portRef S (instanceRef count_cry_2_TMR_2))
+              (portRef LI (instanceRef count_s_2_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_3 "count_qxu_TMR_0(3)")
+            (joined
+              (portRef O (instanceRef count_qxu_3_TMR_0))
+              (portRef S (instanceRef count_cry_3_TMR_0))
+              (portRef LI (instanceRef count_s_3_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_3 "count_qxu_TMR_1(3)")
+            (joined
+              (portRef O (instanceRef count_qxu_3_TMR_1))
+              (portRef S (instanceRef count_cry_3_TMR_1))
+              (portRef LI (instanceRef count_s_3_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_3 "count_qxu_TMR_2(3)")
+            (joined
+              (portRef O (instanceRef count_qxu_3_TMR_2))
+              (portRef S (instanceRef count_cry_3_TMR_2))
+              (portRef LI (instanceRef count_s_3_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_4 "count_qxu_TMR_0(4)")
+            (joined
+              (portRef O (instanceRef count_qxu_4_TMR_0))
+              (portRef S (instanceRef count_cry_4_TMR_0))
+              (portRef LI (instanceRef count_s_4_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_4 "count_qxu_TMR_1(4)")
+            (joined
+              (portRef O (instanceRef count_qxu_4_TMR_1))
+              (portRef S (instanceRef count_cry_4_TMR_1))
+              (portRef LI (instanceRef count_s_4_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_4 "count_qxu_TMR_2(4)")
+            (joined
+              (portRef O (instanceRef count_qxu_4_TMR_2))
+              (portRef S (instanceRef count_cry_4_TMR_2))
+              (portRef LI (instanceRef count_s_4_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_5 "count_qxu_TMR_0(5)")
+            (joined
+              (portRef O (instanceRef count_qxu_5_TMR_0))
+              (portRef S (instanceRef count_cry_5_TMR_0))
+              (portRef LI (instanceRef count_s_5_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_5 "count_qxu_TMR_1(5)")
+            (joined
+              (portRef O (instanceRef count_qxu_5_TMR_1))
+              (portRef S (instanceRef count_cry_5_TMR_1))
+              (portRef LI (instanceRef count_s_5_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_5 "count_qxu_TMR_2(5)")
+            (joined
+              (portRef O (instanceRef count_qxu_5_TMR_2))
+              (portRef S (instanceRef count_cry_5_TMR_2))
+              (portRef LI (instanceRef count_s_5_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_6 "count_qxu_TMR_0(6)")
+            (joined
+              (portRef O (instanceRef count_qxu_6_TMR_0))
+              (portRef S (instanceRef count_cry_6_TMR_0))
+              (portRef LI (instanceRef count_s_6_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_6 "count_qxu_TMR_1(6)")
+            (joined
+              (portRef O (instanceRef count_qxu_6_TMR_1))
+              (portRef S (instanceRef count_cry_6_TMR_1))
+              (portRef LI (instanceRef count_s_6_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_6 "count_qxu_TMR_2(6)")
+            (joined
+              (portRef O (instanceRef count_qxu_6_TMR_2))
+              (portRef S (instanceRef count_cry_6_TMR_2))
+              (portRef LI (instanceRef count_s_6_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_0 "count_s_TMR_0(0)")
+            (joined
+              (portRef O (instanceRef count_s_0_TMR_0))
+              (portRef D (instanceRef count_0_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_0 "count_s_TMR_1(0)")
+            (joined
+              (portRef O (instanceRef count_s_0_TMR_1))
+              (portRef D (instanceRef count_0_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_0 "count_s_TMR_2(0)")
+            (joined
+              (portRef O (instanceRef count_s_0_TMR_2))
+              (portRef D (instanceRef count_0_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_1 "count_s_TMR_0(1)")
+            (joined
+              (portRef O (instanceRef count_s_1_TMR_0))
+              (portRef D (instanceRef count_1_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_1 "count_s_TMR_1(1)")
+            (joined
+              (portRef O (instanceRef count_s_1_TMR_1))
+              (portRef D (instanceRef count_1_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_1 "count_s_TMR_2(1)")
+            (joined
+              (portRef O (instanceRef count_s_1_TMR_2))
+              (portRef D (instanceRef count_1_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_2 "count_s_TMR_0(2)")
+            (joined
+              (portRef O (instanceRef count_s_2_TMR_0))
+              (portRef D (instanceRef count_2_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_2 "count_s_TMR_1(2)")
+            (joined
+              (portRef O (instanceRef count_s_2_TMR_1))
+              (portRef D (instanceRef count_2_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_2 "count_s_TMR_2(2)")
+            (joined
+              (portRef O (instanceRef count_s_2_TMR_2))
+              (portRef D (instanceRef count_2_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_3 "count_s_TMR_0(3)")
+            (joined
+              (portRef O (instanceRef count_s_3_TMR_0))
+              (portRef D (instanceRef count_3_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_3 "count_s_TMR_1(3)")
+            (joined
+              (portRef O (instanceRef count_s_3_TMR_1))
+              (portRef D (instanceRef count_3_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_3 "count_s_TMR_2(3)")
+            (joined
+              (portRef O (instanceRef count_s_3_TMR_2))
+              (portRef D (instanceRef count_3_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_4 "count_s_TMR_0(4)")
+            (joined
+              (portRef O (instanceRef count_s_4_TMR_0))
+              (portRef D (instanceRef count_4_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_4 "count_s_TMR_1(4)")
+            (joined
+              (portRef O (instanceRef count_s_4_TMR_1))
+              (portRef D (instanceRef count_4_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_4 "count_s_TMR_2(4)")
+            (joined
+              (portRef O (instanceRef count_s_4_TMR_2))
+              (portRef D (instanceRef count_4_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_5 "count_s_TMR_0(5)")
+            (joined
+              (portRef O (instanceRef count_s_5_TMR_0))
+              (portRef D (instanceRef count_5_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_5 "count_s_TMR_1(5)")
+            (joined
+              (portRef O (instanceRef count_s_5_TMR_1))
+              (portRef D (instanceRef count_5_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_5 "count_s_TMR_2(5)")
+            (joined
+              (portRef O (instanceRef count_s_5_TMR_2))
+              (portRef D (instanceRef count_5_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_6 "count_s_TMR_0(6)")
+            (joined
+              (portRef O (instanceRef count_s_6_TMR_0))
+              (portRef D (instanceRef count_6_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_6 "count_s_TMR_1(6)")
+            (joined
+              (portRef O (instanceRef count_s_6_TMR_1))
+              (portRef D (instanceRef count_6_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_6 "count_s_TMR_2(6)")
+            (joined
+              (portRef O (instanceRef count_s_6_TMR_2))
+              (portRef D (instanceRef count_6_TMR_2))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_0_7 "count_s_TMR_0(7)")
+            (joined
+              (portRef O (instanceRef count_s_7_TMR_0))
+              (portRef D (instanceRef count_7_TMR_0))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_1_7 "count_s_TMR_1(7)")
+            (joined
+              (portRef O (instanceRef count_s_7_TMR_1))
+              (portRef D (instanceRef count_7_TMR_1))
+            )
+          )
+          (net (rename count_sZ0Z_TMR_2_7 "count_s_TMR_2(7)")
+            (joined
+              (portRef O (instanceRef count_s_7_TMR_2))
+              (portRef D (instanceRef count_7_TMR_2))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_0_7 "count_qxu_TMR_0(7)")
+            (joined
+              (portRef O (instanceRef count_qxu_7_TMR_0))
+              (portRef LI (instanceRef count_s_7_TMR_0))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_1_7 "count_qxu_TMR_1(7)")
+            (joined
+              (portRef O (instanceRef count_qxu_7_TMR_1))
+              (portRef LI (instanceRef count_s_7_TMR_1))
+            )
+          )
+          (net (rename count_qxuZ0Z_TMR_2_7 "count_qxu_TMR_2(7)")
+            (joined
+              (portRef O (instanceRef count_qxu_7_TMR_2))
+              (portRef LI (instanceRef count_s_7_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_6 "count_cry_TMR_0(6)")
+            (joined
+              (portRef LO (instanceRef count_cry_6_TMR_0))
+              (portRef CI (instanceRef count_s_7_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_6 "count_cry_TMR_1(6)")
+            (joined
+              (portRef LO (instanceRef count_cry_6_TMR_1))
+              (portRef CI (instanceRef count_s_7_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_6 "count_cry_TMR_2(6)")
+            (joined
+              (portRef LO (instanceRef count_cry_6_TMR_2))
+              (portRef CI (instanceRef count_s_7_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_5 "count_cry_TMR_0(5)")
+            (joined
+              (portRef LO (instanceRef count_cry_5_TMR_0))
+              (portRef CI (instanceRef count_cry_6_TMR_0))
+              (portRef CI (instanceRef count_s_6_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_5 "count_cry_TMR_1(5)")
+            (joined
+              (portRef LO (instanceRef count_cry_5_TMR_1))
+              (portRef CI (instanceRef count_cry_6_TMR_1))
+              (portRef CI (instanceRef count_s_6_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_5 "count_cry_TMR_2(5)")
+            (joined
+              (portRef LO (instanceRef count_cry_5_TMR_2))
+              (portRef CI (instanceRef count_cry_6_TMR_2))
+              (portRef CI (instanceRef count_s_6_TMR_2))
+            )
+          )
+          (net (rename GNDZ0_TMR_0 "GND_TMR_0")
+            (joined
+              (portRef G (instanceRef GND_TMR_0))
+              (portRef DI (instanceRef count_cry_0_TMR_0))
+              (portRef DI (instanceRef count_cry_1_TMR_0))
+              (portRef DI (instanceRef count_cry_2_TMR_0))
+              (portRef DI (instanceRef count_cry_3_TMR_0))
+              (portRef DI (instanceRef count_cry_4_TMR_0))
+              (portRef DI (instanceRef count_cry_5_TMR_0))
+              (portRef DI (instanceRef count_cry_6_TMR_0))
+            )
+          )
+          (net (rename GNDZ0_TMR_1 "GND_TMR_1")
+            (joined
+              (portRef G (instanceRef GND_TMR_1))
+              (portRef DI (instanceRef count_cry_0_TMR_1))
+              (portRef DI (instanceRef count_cry_1_TMR_1))
+              (portRef DI (instanceRef count_cry_2_TMR_1))
+              (portRef DI (instanceRef count_cry_3_TMR_1))
+              (portRef DI (instanceRef count_cry_4_TMR_1))
+              (portRef DI (instanceRef count_cry_5_TMR_1))
+              (portRef DI (instanceRef count_cry_6_TMR_1))
+            )
+          )
+          (net (rename GNDZ0_TMR_2 "GND_TMR_2")
+            (joined
+              (portRef G (instanceRef GND_TMR_2))
+              (portRef DI (instanceRef count_cry_0_TMR_2))
+              (portRef DI (instanceRef count_cry_1_TMR_2))
+              (portRef DI (instanceRef count_cry_2_TMR_2))
+              (portRef DI (instanceRef count_cry_3_TMR_2))
+              (portRef DI (instanceRef count_cry_4_TMR_2))
+              (portRef DI (instanceRef count_cry_5_TMR_2))
+              (portRef DI (instanceRef count_cry_6_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_4 "count_cry_TMR_0(4)")
+            (joined
+              (portRef LO (instanceRef count_cry_4_TMR_0))
+              (portRef CI (instanceRef count_cry_5_TMR_0))
+              (portRef CI (instanceRef count_s_5_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_4 "count_cry_TMR_1(4)")
+            (joined
+              (portRef LO (instanceRef count_cry_4_TMR_1))
+              (portRef CI (instanceRef count_cry_5_TMR_1))
+              (portRef CI (instanceRef count_s_5_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_4 "count_cry_TMR_2(4)")
+            (joined
+              (portRef LO (instanceRef count_cry_4_TMR_2))
+              (portRef CI (instanceRef count_cry_5_TMR_2))
+              (portRef CI (instanceRef count_s_5_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_3 "count_cry_TMR_0(3)")
+            (joined
+              (portRef LO (instanceRef count_cry_3_TMR_0))
+              (portRef CI (instanceRef count_cry_4_TMR_0))
+              (portRef CI (instanceRef count_s_4_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_3 "count_cry_TMR_1(3)")
+            (joined
+              (portRef LO (instanceRef count_cry_3_TMR_1))
+              (portRef CI (instanceRef count_cry_4_TMR_1))
+              (portRef CI (instanceRef count_s_4_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_3 "count_cry_TMR_2(3)")
+            (joined
+              (portRef LO (instanceRef count_cry_3_TMR_2))
+              (portRef CI (instanceRef count_cry_4_TMR_2))
+              (portRef CI (instanceRef count_s_4_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_2 "count_cry_TMR_0(2)")
+            (joined
+              (portRef LO (instanceRef count_cry_2_TMR_0))
+              (portRef CI (instanceRef count_cry_3_TMR_0))
+              (portRef CI (instanceRef count_s_3_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_2 "count_cry_TMR_1(2)")
+            (joined
+              (portRef LO (instanceRef count_cry_2_TMR_1))
+              (portRef CI (instanceRef count_cry_3_TMR_1))
+              (portRef CI (instanceRef count_s_3_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_2 "count_cry_TMR_2(2)")
+            (joined
+              (portRef LO (instanceRef count_cry_2_TMR_2))
+              (portRef CI (instanceRef count_cry_3_TMR_2))
+              (portRef CI (instanceRef count_s_3_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_1 "count_cry_TMR_0(1)")
+            (joined
+              (portRef LO (instanceRef count_cry_1_TMR_0))
+              (portRef CI (instanceRef count_cry_2_TMR_0))
+              (portRef CI (instanceRef count_s_2_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_1 "count_cry_TMR_1(1)")
+            (joined
+              (portRef LO (instanceRef count_cry_1_TMR_1))
+              (portRef CI (instanceRef count_cry_2_TMR_1))
+              (portRef CI (instanceRef count_s_2_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_1 "count_cry_TMR_2(1)")
+            (joined
+              (portRef LO (instanceRef count_cry_1_TMR_2))
+              (portRef CI (instanceRef count_cry_2_TMR_2))
+              (portRef CI (instanceRef count_s_2_TMR_2))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_0_0 "count_cry_TMR_0(0)")
+            (joined
+              (portRef LO (instanceRef count_cry_0_TMR_0))
+              (portRef CI (instanceRef count_cry_1_TMR_0))
+              (portRef CI (instanceRef count_s_1_TMR_0))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_1_0 "count_cry_TMR_1(0)")
+            (joined
+              (portRef LO (instanceRef count_cry_0_TMR_1))
+              (portRef CI (instanceRef count_cry_1_TMR_1))
+              (portRef CI (instanceRef count_s_1_TMR_1))
+            )
+          )
+          (net (rename count_cryZ0Z_TMR_2_0 "count_cry_TMR_2(0)")
+            (joined
+              (portRef LO (instanceRef count_cry_0_TMR_2))
+              (portRef CI (instanceRef count_cry_1_TMR_2))
+              (portRef CI (instanceRef count_s_1_TMR_2))
+            )
+          )
+        )
+      )
+    )
+  )
+  (design one_counter_flat_TMR
+    (cellRef one_counter_flat_TMR (libraryRef work))
+    (property PART (string "xcv1000fg680-5"))
+  )
+)

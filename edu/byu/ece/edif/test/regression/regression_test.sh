@@ -17,33 +17,38 @@
 #  details.
 #  
 #  A copy of the GNU General Public License is included with the BYU EDIF Tools.
-#  It can be found at /edu/byu/edif/doc/gpl2.txt. You may also get a copy of the
-#  license at <http://www.gnu.org/licenses/>.
+#  It can be found at /edu/byu/ece/edif/doc/gpl2.txt. You may also get a copy of
+#  the license at <http://www.gnu.org/licenses/>.
 ################################################################################
 
 #####################################################################
 # Regression test bash script
 #
-# This script is used to test for non-deterministic behavior in the
-# BYU EDIF Tools JEdif toolchain.
+# This script is used to test for undesired functional changes in the
+# BYU EDIF Tools JEdif toolchain. It is run nightly at BYU and any 
+# failures are reported.  We encourage you to run this script
+# on your own development copy of the BYU EDIF Tools.
 #
 # This script runs each of the test designs (listed in "files")
 # through each of the tools in the JEdif Toolchain (JEdifBuild,
 # JEdifNetList, JEdifSterilize, JEdifCutset, etc.). At each possible
-# stopping point, the script produces an output file. 
+# stopping point, the script produces an output file. Each output 
+# file is compared to a "golden" output file, created by the script
+# regression_test_create_golden.sh, found in the same directory as 
+# this file.
 #
 # This script assumes that golden copies of each of these files has
 # previously been created. Thus, the two copies of each design can
 # be compared (using the `diff' utility) for any differences.  Note
-# that the "timeStamp" is removed from all .edf files.
+# that the EDIF "timeStamp" property is removed from all .edf files.
 #
 # Outline:
-#   1. Set up all the variables and options
+#   1. Set up variables and options
 #   2. Checkout SVN source and build a new JAR to test against
 #   3. For each design:
-#      A. Run each of the tools in the tool chain and output to test directory
+#      A. Run each tool in the tool chain; output to test directory
 #   4. Strip the timeStamp from all .edf files
-#   5. Print results to screen and to log files
+#   5. Print differences to screen and to log files
 #   6. Report success or failure (send e-mail on failure)
 # 
 # Author: James Carroll <jcarroll@byu.net>
@@ -125,7 +130,6 @@ for infile in $files; do
 
 
 # Process each file with the current build of the code for testing
-# FIXME: Do not modify the following block of code; rather, create a bash function to encapsulate this!
 dir=$test_dir
 echo "
 build.sh: Workspace JEdif toolchain"
