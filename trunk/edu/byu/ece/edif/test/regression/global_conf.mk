@@ -16,8 +16,8 @@
 #  details.
 #  
 #  A copy of the GNU General Public License is included with the BYU EDIF Tools.
-#  It can be found at /edu/byu/edif/doc/gpl2.txt. You may also get a copy of the
-#  license at <http://www.gnu.org/licenses/>.
+#  It can be found at /edu/byu/ece/edif/doc/gpl2.txt. You may also get a copy of
+#  the license at <http://www.gnu.org/licenses/>.
 ################################################################################
   
 #####################################################################
@@ -25,7 +25,7 @@
 #
 # User *must* edit this file to set environment variables
 #
-# Author: Derrick Gibelyou, James Carroll <jcarroll@byu.net>
+# Authors: Derrick Gibelyou, James Carroll <jcarroll@byu.net>
 #
 # $Id$
 #####################################################################
@@ -34,14 +34,14 @@
 JAVA=java
 
 # Your home folder (used for _______)
-HOME="/fpga1/users/dsgib/ "
+HOME=/home/james/
 
 # byuediftools path, jar files
-CLASSPATH="-cp $(HOME)/workspace/sf_edif/:$(HOME)/jars/JSAP.jar "
+CLASSPATH=-cp $(HOME)/Documents/career/fpga/workspace/byuediftools/:/fpga2/jars/JSAP.jar 
 
 # Parameter options for JRE 
-JAVA_OPTS="-Xmx512M "
+JAVA_OPTS=-Xmx512M -Xms512M 
 
 # Modelsim executable director (usually ends with `/bin/')
-MODELSIM="/fpga2/modeltech/bin/ "
+MODELSIM=/fpga2/modeltech/bin/ 
 

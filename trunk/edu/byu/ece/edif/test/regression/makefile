@@ -16,11 +16,17 @@
 #  details.
 #  
 #  A copy of the GNU General Public License is included with the BYU EDIF Tools.
-#  It can be found at /edu/byu/edif/doc/gpl2.txt. You may also get a copy of the
-#  license at <http://www.gnu.org/licenses/>.
+#  It can be found at /edu/byu/ece/edif/doc/gpl2.txt. You may also get a copy of
+#  the license at <http://www.gnu.org/licenses/>.
+#
 ################################################################################
-  
-default: tmr 
+
+all:        default 
+default:    tmr 
+
+# `$@' is the target file name
+# `$<' is the name of the first pre-requisite
+# See http://www.gnu.org/software/make/manual/make.html#Automatic-Variables
 
 query: $(DESIGN).jedif
 	$(JAVA) $(CLASSPATH) $(JAVA_OPTS) \
@@ -31,6 +37,9 @@ cutset: $(DESIGN).ptmr $(DESIGN).jedif
 analysis: $(DESIGN).ptsd $(DESIGN).iob
 sterilize: $(DESIGN).jedif
 build: $(DESIGN)_dirty.jedif
+no_srl: $(DESIGN)_no_srl.edf
+jedif: $(DESIGN).jedif
+
 
 $(PE_TMR).edf: $(DESIGN).jedif $(DESIGN).ptmr
 	$(JAVA) $(CLASSPATH) $(JAVA_OPTS) \
@@ -65,7 +74,11 @@ jedif2edf:
 	edu.byu.ece.edif.jedif.JEdifNetlist \
 	$(DESIGN).jedif -o $@
 
-
+$(DESIGN)_no_srl.edf: 
+	$(JAVA) $(CLASSPATH) $(JAVA_OPTS) \
+	edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer \
+	$(DESIGN).edf -o $(DESIGN)_no_srl.edf
+	
 clean:
 	rm *.jedif
 	rm *.ptmr
