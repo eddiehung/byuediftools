@@ -40,7 +40,7 @@ HOME=/home/james/
 CLASSPATH=-cp $(HOME)/Documents/career/fpga/workspace/byuediftools/:/fpga2/jars/JSAP.jar 
 
 # Parameter options for JRE 
-JAVA_OPTS=-Xmx512M -Xms512M 
+JAVA_OPTS=-Xmx512M
 
 # Modelsim executable director (usually ends with `/bin/')
 MODELSIM=/fpga2/modeltech/bin/ 

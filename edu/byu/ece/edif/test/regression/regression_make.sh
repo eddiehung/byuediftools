@@ -103,12 +103,12 @@ jhdl_jar="/fpga2/jars/JHDL.jar"
 
 # Chose golden jar.
 #jar="${HOME}/jars/byuediftools-0.4.0.jar "
-jar="/fpga2/jars/byuediftools-0.4.0.jar:$jsap_jar:$jhdl_jar "
+jar="/fpga2/jars/byuediftools-0.4.0.jar:$jsap_jar"
 
 #workspace="${HOME}/workspace/sf_edif/:/fpga2/jars/JSAP-2.1.jar "
-workspace="~/Documents/career/fpga/workspace/byuediftools/:$jsap_jar:$jhdl_jar "
+workspace="~/Documents/career/fpga/workspace/byuediftools/:$jsap_jar"
 
-repository="${script_dir}/trunk:$jsap_jar:$jhdl_jar "
+repository="${script_dir}/trunk:$jsap_jar"
 #repository=
 
 
@@ -179,7 +179,8 @@ fi
 #
 echo -n "Building from source..."
 find . -name '*.class' -print | xargs rm
-find . -name '*.java' -print | xargs javac -J-Xmx512 -cp /fpga2/jars/JSAP-latest.jar:/fpga2/jars/JHDL.jar &> java_build.log
+mv java_build.log java_build.log.1
+for file in `find . -name '*.java' -print`; do javac -cp ./trunk:/fpga2/jars/JSAP-latest.jar:/fpga2/jars/JHDL.jar $file &>> java_build.log; done
 # Check for error in the build
 if [ "$?" -eq 0 ]; then
   echo "Java build succeeded"
