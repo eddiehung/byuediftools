@@ -88,10 +88,10 @@ import java.util.Set;
  * <br>
  * <h2>EdifLibrary containsCell(EdifCell)</h2>
  * <ul>
- * <li> change to “getLibraryContainingCell”. </li>
+ * <li> change to "getLibraryContainingCell". </li>
  * <li> Return null if there is no library that contains the cell. This method
- * performs a search based on reference, not name. Note that the “boolean
- * EdifLibrary.containsCell(EdifCell)” method called by this method does not
+ * performs a search based on reference, not name. Note that the "boolean
+ * EdifLibrary.containsCell(EdifCell)" method called by this method does not
  * need a name change. </li>
  * </ul>
  * <br>
@@ -101,7 +101,7 @@ import java.util.Set;
  * <li> We need a better way of managing the deletion of cells in the libraries.
  * It is possible that a cell is deleted but there are still references to the
  * cell. We would want to generate an exception when this occurs
- * (“ReferencedCell deletion exception”). </li>
+ * ("ReferencedCell deletion exception"). </li>
  * <li> The delete code would need to check all successor libraries to see if
  * the cell was referenced and if it was, generate an exception. </li>
  * </ul>
@@ -121,8 +121,8 @@ import java.util.Set;
  * EdifCell.findCellInstancesOf(EdifCell) (This is worth doing at some point)
  * </li>
  * <li> Only findEarliestPositionToAdd is used by any method (addLibrary). All
- * of these methods can be removed so long as the “library ordering” problem is
- * solved. This ordering is needed by “addLibrary” to make sure a library is
+ * of these methods can be removed so long as the "library ordering" problem is
+ * solved. This ordering is needed by "addLibrary" to make sure a library is
  * added at the proper time (this goes under the addLibrary issue). </li>
  * </ul>
  * <br>
@@ -154,7 +154,7 @@ import java.util.Set;
  * <ul>
  * <li> this method has problems as it is possible to have more than one
  * EdifCell with the same name but in different libraries. Need to use
- * “getCells” method and fix all references to this method. </li>
+ * "getCells" method and fix all references to this method. </li>
  * </ul>
  * <br>
  * <h2>getCells()</h2>
