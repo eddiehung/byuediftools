@@ -88,14 +88,14 @@ public class LUTReplacer{
 		// Get new environment and new library manager
 		EdifEnvironment newEnv = ecr.getNewEnvironment();
 		EdifLibraryManager newLibManager = newEnv.getLibraryManager();
-		int srlReplacementCount = 0;
 
 		for (ReplacementContext context : ecr.getReplacementContexts()) {
-			System.out.println("********************");
-			System.out.println("Need to replace instance " +
+			System.out.println("****************************************");
+			System.out.println("Need to replace instance " + 
+					context.getOldInstanceToReplace().getParent().getName() + "." + 
 					context.getOldInstanceToReplace().getName() +" (" +
 					context.getOldCellToReplace().getName()+")");
-			System.out.println("********************");
+			System.out.println("****************************************");
 
 			// Get original cell that we're replacing to know which code to call
 			EdifCell oldCell = context.getOldCellToReplace();
@@ -219,8 +219,7 @@ public class LUTReplacer{
 					oldCell.getName().equals("SRLC16") || oldCell.getName().equals("SRLC16_1") || 
 					oldCell.getName().equals("SRLC16E") || oldCell.getName().equals("SRLC16E_1")) {
 				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.Replace(newLibManager, oldCell.getName(), newParent,
-						oldInstance.getName(), INIT, D, CE, CLK, A0, A1, A2, A3, Q, Q15, srlReplacementCount);
-				srlReplacementCount++;
+						oldInstance.getName(), INIT, D, CE, CLK, A0, A1, A2, A3, Q, Q15);
 			} else {
 				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.Replace(newLibManager, oldCell.getName(), newParent, 
 						oldInstance.getName(), INIT, INIT_00, INIT_01, INIT_02, INIT_03, INIT_04, INIT_05, INIT_06, INIT_07, INIT_HIGH, 

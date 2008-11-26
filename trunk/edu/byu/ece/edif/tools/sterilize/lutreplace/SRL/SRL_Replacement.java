@@ -68,17 +68,17 @@ public class SRL_Replacement {
 	public static void Replace(EdifLibraryManager libManager, String srlType, 
 			EdifCell parent, String namePrefix, long INIT,
 			EdifNet d,  EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, 
-			EdifNet q15, int srlReplacementCount) {
+			EdifNet q15) {
 		SRLType type = StringToSRLType(srlType);
 		if (type == null)
 			return;
-		Replace(libManager, type, parent, namePrefix, INIT, d, ce, clk, a0, a1, a2, a3, q, q15, srlReplacementCount);
+		Replace(libManager, type, parent, namePrefix, INIT, d, ce, clk, a0, a1, a2, a3, q, q15);
 	}
 	
 	public static void Replace(EdifLibraryManager libManager, SRLType srlType, 
 			EdifCell parent, String namePrefix, long INIT,
 			EdifNet d, EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, 
-			EdifNet q15, int srlReplacementCount) {
+			EdifNet q15) {
 
 		/****** Step 1. Create/Find Xilinx primitive Cells needed for this replacement ******/
 		EdifCell FD = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "FD");
@@ -102,24 +102,12 @@ public class SRL_Replacement {
 		   case SRLC16E_1: 	ff_type = FDE_1;
 		}
 		// Add input and output ports to FF's interface, but only once
-		if(srlReplacementCount == 0)
-		{
-			try
-			{
+		if(FD.getInterface().getPortList().isEmpty()) {
+			try {
 				FD.addPort("C", 1, 1);
 				FD.addPort("D", 1, 1);
 				FD.addPort("Q", 1, 2);
-				FD_1.addPort("C", 1, 1);
-				FD_1.addPort("D", 1, 1);
-				FD_1.addPort("Q", 1, 2);
-				FDE.addPort("C", 1, 1);
-				FDE.addPort("CE", 1, 1);
-				FDE.addPort("D", 1, 1);
-				FDE.addPort("Q", 1, 2);
-				FDE_1.addPort("C", 1, 1);
-				FDE_1.addPort("CE", 1, 1);
-				FDE_1.addPort("D", 1, 1);
-				FDE_1.addPort("Q", 1, 2);
+				
 			} catch(InvalidEdifNameException e) {
 				System.out.println("InvalidEdifNameException caught");
 				System.exit(1);
@@ -127,7 +115,48 @@ public class SRL_Replacement {
 				System.out.println("EdifNameConflictException caught");
 				System.exit(1);
 			}
-		}
+		} else if (FD_1.getInterface().getPortList().isEmpty()) {
+			try {
+				FD_1.addPort("C", 1, 1);
+				FD_1.addPort("D", 1, 1);
+				FD_1.addPort("Q", 1, 2);
+				
+			} catch(InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
+		} else if (FDE.getInterface().getPortList().isEmpty()) {
+			try {
+				FDE.addPort("C", 1, 1);
+				FDE.addPort("CE", 1, 1);
+				FDE.addPort("D", 1, 1);
+				FDE.addPort("Q", 1, 2);
+				
+			} catch(InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
+		} else if (FDE_1.getInterface().getPortList().isEmpty()) {
+			try {
+				FDE_1.addPort("C", 1, 1);
+				FDE_1.addPort("CE", 1, 1);
+				FDE_1.addPort("D", 1, 1);
+				FDE_1.addPort("Q", 1, 2);
+				
+			} catch(InvalidEdifNameException e) {
+				System.out.println("InvalidEdifNameException caught");
+				System.exit(1);
+			} catch (EdifNameConflictException e) {
+				System.out.println("EdifNameConflictException caught");
+				System.exit(1);
+			}
+		}	
 		// Create FF instances
 		EdifCellInstance ffInstances[] = new EdifCellInstance[16];	
 		for (int i = 0; i < 16; i++) {
@@ -144,10 +173,8 @@ public class SRL_Replacement {
 		
 		/****** Step 3. Create the Mux instances ******/
 		// Add input and output ports to MUX's interface, but only once
-		if(srlReplacementCount == 0)
-		{
-			try
-			{
+		if(MUXF5.getInterface().getPortList().isEmpty()) {
+			try	{
 				MUXF5.addPort("I0", 1, 1);
 				MUXF5.addPort("I1", 1, 1);
 				MUXF5.addPort("S", 1, 1);
@@ -299,7 +326,7 @@ public class SRL_Replacement {
 		if (srlType == SRLType.SRLC16 || srlType == SRLType.SRLC16_1 || 
 				srlType == SRLType.SRLC16E || srlType == SRLType.SRLC16E_1) {
 			// Add input and output ports to BUF interface, but only once
-			if(srlReplacementCount == 0)
+			if(BUF.getInterface().getPortList().isEmpty())
 			{
 				try{
 					BUF.addPort("I", 1, 1);
