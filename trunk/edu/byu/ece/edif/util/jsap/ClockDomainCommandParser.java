@@ -59,7 +59,6 @@ public class ClockDomainCommandParser extends JSAP {
      * Create a new ClockDomainCommandParser.
      */
     public ClockDomainCommandParser() {
-
         /*
          * Parent constructor sets up common Parameters such as --help,
          * --version, --writeConfig, --useConfig, etc.

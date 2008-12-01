@@ -41,8 +41,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
-
 import edu.byu.ece.edif.arch.xilinx.XilinxTools;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
@@ -76,6 +76,8 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  */
 
 public class ClockDomainParser {
+
+    protected PrintStream output = System.out;
 
     /**
      * A map whose keys are EdifNets that have been classified as clocks. The
@@ -115,12 +117,12 @@ public class ClockDomainParser {
      * ClockDomainCommandParser used to parse the command-line arguments of
      * ClockDomainArchitectureImpl.
      */
-    protected static ClockDomainCommandParser _parser;
+    protected ClockDomainCommandParser _parser;
 
     /**
      * JSAPResult used to access the command-line arguments after being parsed.
      */
-    protected static JSAPResult _result;
+    protected JSAPResult _result;
 
     protected static final String BAR = "-----------------------------------";
 
@@ -145,9 +147,9 @@ public class ClockDomainParser {
     public ClockDomainParser(FlattenedEdifCell flatCell) throws InvalidEdifNameException {
         init(flatCell);
 
-        System.out.print("Generating EdifCellInstanceGraph Graph...");
+        output.print("Generating EdifCellInstanceGraph Graph...");
         _ecic = new EdifCellInstanceGraph(_top.getTopCell(), true);
-        System.out.println("done");
+        output.println("done");
     }
 
     /**
@@ -186,9 +188,13 @@ public class ClockDomainParser {
                 .asList(dirs), Arrays.asList(files), xilinxLib);
         init(new FlattenedEdifCell(edif_file.getTopCell()));
 
-        System.out.print("Generating EdifCellInstanceGraph Graph...");
+        output.print("Generating EdifCellInstanceGraph Graph...");
         _ecic = new EdifCellInstanceGraph(_top.getTopCell(), true);
-        System.out.println("done");
+        output.println("done");
+    }
+
+    public void setOutput(PrintStream out) {
+        output = out;
     }
 
     /**
@@ -404,8 +410,7 @@ public class ClockDomainParser {
         SCCDepthFirstSearch scc = new SCCDepthFirstSearch(_ecic);
 
         if (noIOBFB) {
-            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(),
-                    _ecic);
+            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(), _ecic);
             Collection<EdifCellInstanceEdge> possibleIOBFeedbackEdges = iobAnalyzer.getIOBFeedbackEdges();
 
             // Find the possible feedback edges that are contained in the SCCs
@@ -428,10 +433,11 @@ public class ClockDomainParser {
             // 2. Remove these edges from the graph and recompute the SCCs
             //    (If the user has chosen this option)
             if (iobFeedbackEdges.size() > 0) {
-                System.out.println("");
-                System.out.println("The following IOBs were found in feedback structures: "
-                        + iobAnalyzer.getFeedbackIOBs());
-                System.out.println("\tThese IOBs will be excluded from feedback analysis.");
+                output.println("");
+                output
+                        .println("The following IOBs were found in feedback structures: "
+                                + iobAnalyzer.getFeedbackIOBs());
+                output.println("\tThese IOBs will be excluded from feedback analysis.");
 
                 _ecic.removeEdges(iobFeedbackEdges);
                 scc = new SCCDepthFirstSearch(_ecic);
@@ -504,7 +510,7 @@ public class ClockDomainParser {
                                 }
                             }
                         }
-                        if (key != "") {
+                        if (key.length() > 0) {
                             key = key.toLowerCase();
                             if (!domainCrossMap.containsKey(key))
                                 domainCrossMap.put(key, new TreeSet<String>());
@@ -550,7 +556,7 @@ public class ClockDomainParser {
      * @param scc The SCC to analyze
      * @param output The PrintStream to write the summary to
      */
-    protected void analyzeSCCs(SCCDepthFirstSearch scc, PrintStream output) {
+    protected void analyzeSCCs(SCCDepthFirstSearch scc) {
         output.println("Total sccs in design: " + scc.getTopologicallySortedTreeList().size());
 
         List<DepthFirstTree> list = scc.getTopologicallySortedTreeList();
@@ -597,27 +603,42 @@ public class ClockDomainParser {
     }
 
     public static void main(String[] args) throws ParseException, FileNotFoundException, EdifException {
-        _parser = new ClockDomainCommandParser();
-        _result = _parser.parse(args);
-
-        ClockDomainParser cda = new ClockDomainParser(_result.getString(ClockDomainCommandParser.INPUT_FILE), _result
-                .getStringArray(ClockDomainCommandParser.DIR), _result.getStringArray(ClockDomainCommandParser.FILE));
         PrintStream output = System.out;
-        if (_result.contains(ClockDomainCommandParser.OUTPUT_FILE))
-            output = new PrintStream(_result.getString(ClockDomainCommandParser.OUTPUT_FILE));
+        JSAP parser = new ClockDomainCommandParser();
+
+        JSAPResult result = parser.parse(args);
+
+        ClockDomainParser cda = new ClockDomainParser(result.getString(ClockDomainCommandParser.INPUT_FILE), result
+                .getStringArray(ClockDomainCommandParser.DIR), result.getStringArray(ClockDomainCommandParser.FILE));
+        cda.parseCommandlineOptions(result);
+        cda.setOutput(output);
+
+        if (result.contains(ClockDomainCommandParser.OUTPUT_FILE))
+            output = new PrintStream(result.getString(ClockDomainCommandParser.OUTPUT_FILE));
+
+        cda.exec(output);
+
+    }
+
+    public void parseCommandlineOptions(JSAPResult result) {
+        _result = result;
+    }
+
+    public void exec(PrintStream out) {
+        output = out;
         String[] clocksToShow = _result.getStringArray(ClockDomainCommandParser.DOMAIN);
         Set<EdifNet> clocks = null;
 
-        cda.classifyNets();
+        classifyNets();
         // This array is guaranteed to have at least one element due to
         // the command parser, so the following won't be out of bounds
         if (clocksToShow[0].toLowerCase().equals(ALL))
-            clocks = new LinkedHashSet<EdifNet>(cda._clkToNetMap.keySet());
+            clocks = new LinkedHashSet<EdifNet>(_clkToNetMap.keySet());
         else {
             clocks = new LinkedHashSet<EdifNet>();
             for (int i = 0; i < clocksToShow.length; i++) {
                 boolean match = false;
-                for (EdifNet net : cda._clkToNetMap.keySet()) {
+                for (EdifNet net : _clkToNetMap.keySet()) {
                     if (net.getName().toLowerCase().equals(clocksToShow[i].toLowerCase())) {
                         match = true;
                         clocks.add(net);
@@ -630,136 +651,60 @@ public class ClockDomainParser {
         }
 
         output.println(BAR + "\nDesign clocks\n" + BAR);
-        for (EdifNet net : cda._clkToNetMap.keySet())
+        for (EdifNet net : _clkToNetMap.keySet())
             output.println("  " + net);
         output.println();
 
         if (_result.getBoolean(ClockDomainCommandParser.SHOW_GATED_CLOCKS)) {
-            boolean found = false;
-            output.println(BAR + "\nGated clocks\n" + BAR);
-            for (EdifNet net : cda._clkToNetMap.keySet()) {
-                String str = "";
-                for (EdifPortRef epr : net.getOutputPortRefs()) {
-                    if (!cda.isClockDriver(epr.getCellInstance().getCellType())) {
-                        str += ((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName() + " ("
-                                + epr.getCellInstance().getCellType() + ")";
-                        found = true;
-                    }
-                }
-                if (!str.equals(""))
-                    output.println("  " + net + ": driven by " + str);
-            }
-            if (!found)
-                output.println("  No gated clocks");
-            output.println();
+            show_gated_clocks();
         }
 
         if (_result.getBoolean(ClockDomainCommandParser.SHOW_NETS)) {
-            output.println(BAR + "\nClassified Nets\n" + BAR);
-            for (EdifNet net : clocks) {
-                output.println("NET: " + net + " (" + cda._clkToNetMap.get(net).size() + " nets in domain)");
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifNet n : cda._clkToNetMap.get(net)) {
-                    Set<String> driverSet = new TreeSet<String>();
-                    for (EdifPortRef epr : n.getOutputPortRefs()) {
-                        if (epr.getCellInstance() != null)
-                            driverSet.add(((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName()
-                                    + " (" + epr.getCellInstance().getType() + ")");
-                    }
-                    strSet.add(net + ": " + n.getName() + " driven by " + driverSet);
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
-            if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
-                output.println("No Domain (" + cda._noClockNets.size() + " nets)");
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifNet n : cda._noClockNets) {
-                    Set<String> driverSet = new TreeSet<String>();
-                    for (EdifPortRef epr : n.getOutputPortRefs()) {
-                        if (epr.getCellInstance() != null)
-                            driverSet.add(((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName()
-                                    + " (" + epr.getCellInstance().getType() + ")");
-                    }
-                    strSet.add("No domain: " + n.getName() + " driven by " + driverSet);
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
+            showNets(clocks);
         }
 
-        cda.classifyECIs();
+        classifyECIs();
 
         if (_result.getBoolean(ClockDomainCommandParser.SHOW_CELLS)) {
-            output.println(BAR + "\nClassified Edif Cells\n" + BAR);
-            for (EdifNet net : clocks) {
-                output.println("NET: " + net + " (" + cda._clkToECIMap.get(net).size() + " cells in domain)");
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._clkToECIMap.get(net)) {
-                    strSet.add(net + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
-                            + eci.getCellType().getName() + ")");
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
-            if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
-                output.println("No Domain (" + cda._noClockECIs.size() + " cells)");
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._noClockECIs) {
-                    strSet.add("No domain: " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
-                            + eci.getCellType().getName() + ")");
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
+            showCells(clocks);
         }
 
         if (_result.getBoolean(ClockDomainCommandParser.SHOW_SYNCHRONOUS)) {
-            output.println(BAR + "\nClassified Synchronous Edif Cells\n" + BAR);
-            for (EdifNet net : clocks) {
-                output.println("NET: " + net);
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._clkToECIMap.get(net)) {
-                    if (cda.isSequential(eci.getCellType()))
-                        strSet.add(net + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
-                                + eci.getCellType().getName() + ")");
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
-            if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
-                output.println("No Domain");
-                Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._noClockECIs) {
-                    if (cda.isSequential(eci.getCellType()))
-                        strSet.add("No domain: " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
-                                + eci.getCellType().getName() + ")");
-                }
-                for (String s : strSet) {
-                    output.println("  " + s);
-                }
-                output.println();
-            }
+            showSyncronous(clocks);
         }
 
-        if (_result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS)) {
+        boolean async, async_reset, async_reset_cells;
+        async = _result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS);
+        async_reset = _result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS_RESETS);
+        async_reset_cells = _result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS_RESET_CELLS);
+
+        showAsync(clocks, async, async_reset, async_reset_cells);
+
+        if (_result.contains(ClockDomainCommandParser.SHOW_CLOCK_CROSSINGS)) {
+            showClockCrossings();
+        }
+
+        if (_result.getBoolean(ClockDomainCommandParser.DO_SCC_ANALYSIS)) {
+            SCCDepthFirstSearch scc = doSCCAnalysis(_result.getBoolean(ClockDomainCommandParser.NO_IOB_FEEDBACK));
+            output.println(BAR + "\nSCC Analysis\n" + BAR);
+            analyzeSCCs(scc);
+            output.println();
+        }
+
+        if (_result.contains(ClockDomainCommandParser.CREATE_DOTTY_GRAPH)) {
+            showDottyGraph();
+        }
+    }
+
+    private void showAsync(Set<EdifNet> clocks, boolean async, boolean async_reset, boolean async_reset_cells) {
+        if (async) {
             output.println(BAR + "\nClassified Asynchronous Edif Cells\n" + BAR);
-            for (EdifNet net : clocks) {
-                output.println("NET: " + net);
+            for (EdifNet net1 : clocks) {
+                output.println("NET: " + net1);
                 Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._clkToECIMap.get(net)) {
-                    if (!cda.isSequential(eci.getCellType()))
-                        strSet.add(net + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
+                for (EdifCellInstance eci : _clkToECIMap.get(net1)) {
+                    if (!isSequential(eci.getCellType()))
+                        strSet.add(net1 + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
                                 + eci.getCellType().getName() + ")");
                 }
                 for (String s : strSet) {
@@ -770,8 +715,8 @@ public class ClockDomainParser {
             if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
                 output.println("No Domain");
                 Set<String> strSet = new TreeSet<String>();
-                for (EdifCellInstance eci : cda._noClockECIs) {
-                    if (!cda.isSequential(eci.getCellType()))
+                for (EdifCellInstance eci : _noClockECIs) {
+                    if (!isSequential(eci.getCellType()))
                         strSet.add("No domain: " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
                                 + eci.getCellType().getName() + ")");
                 }
@@ -782,9 +727,9 @@ public class ClockDomainParser {
             }
         }
 
-        if (_result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS_RESETS)) {
+        if (async_reset) {
             output.println(BAR + "\nAsynchronous Resets\n" + BAR);
-            Map<EdifNet, Set<EdifCellInstance>> asynchResetMap = cda.getAsynchronousResets();
+            Map<EdifNet, Set<EdifCellInstance>> asynchResetMap = getAsynchronousResets();
             if (asynchResetMap.size() > 0) {
                 for (EdifNet net : asynchResetMap.keySet()) {
                     output.println("  " + net);
@@ -794,9 +739,9 @@ public class ClockDomainParser {
             output.println();
         }
 
-        if (_result.getBoolean(ClockDomainCommandParser.SHOW_ASYNCHRONOUS_RESET_CELLS)) {
+        if (async_reset_cells) {
             output.println(BAR + "\nAsynchronous Reset Cells\n" + BAR);
-            Map<EdifNet, Set<EdifCellInstance>> asynchResetMap = cda.getAsynchronousResets();
+            Map<EdifNet, Set<EdifCellInstance>> asynchResetMap = getAsynchronousResets();
             if (asynchResetMap.size() > 0) {
                 for (EdifNet net : asynchResetMap.keySet()) {
                     Set<String> strSet = new TreeSet<String>();
@@ -813,121 +758,230 @@ public class ClockDomainParser {
                 output.println("None");
             output.println();
         }
+    }
 
-        if (_result.contains(ClockDomainCommandParser.SHOW_CLOCK_CROSSINGS)) {
-            output.println(BAR + "\nClock Domain Crossings\n" + BAR);
-
-            Set<String> crossingsToShow = new TreeSet<String>();
-            String[] params = _result.getStringArray(ClockDomainCommandParser.SHOW_CLOCK_CROSSINGS);
-            int i = 0;
-            // print out any names that don't match clocks
-            while (i < params.length) {
-                params[i] = params[i].toLowerCase();
-                if (!params[i].equals(ALL)) {
-                    boolean valid = false;
-                    for (EdifNet n : cda._clkToNetMap.keySet()) {
-                        if (n.getName().toLowerCase().equals(params[i]))
-                            valid = true;
-                    }
-                    if (!valid)
-                        output.println("*** " + params[i] + " not a clock");
-                }
-                i++;
-            }
-            i = 0;
-            while (i < params.length) {
-                Set<String> tempSet = new TreeSet<String>();
-                if (params[i].equals(ALL)) {
-                    for (EdifNet net : cda._clkToNetMap.keySet()) {
-                        tempSet.add(net + " to ");
-                    }
-                } else {
-                    tempSet.add(params[i] + " to ");
-                }
-                if (params[i + 1].equals(ALL)) {
-                    for (String from : tempSet) {
-                        for (EdifNet net : cda._clkToNetMap.keySet()) {
-                            if (!from.contains(net.toString())) // don't include "clka to clka" as a crossing
-                                crossingsToShow.add(from + net);
+    private void showDottyGraph() {
+        String[] params = _result.getStringArray(ClockDomainCommandParser.CREATE_DOTTY_GRAPH);
+        int i = 0;
+        while (i < params.length) {
+            boolean found = false;
+            for (EdifCellInstance eci : _top.getTopCell().getSubCellList()) {
+                if (((FlattenedEdifCellInstance) eci).getHierarchicalEdifName().toLowerCase().equals(
+                        params[i].toLowerCase())) {
+                    Stack<EdifCellInstance> myStack = new Stack<EdifCellInstance>();
+                    Set<EdifCellInstance> eciSet = new LinkedHashSet<EdifCellInstance>();
+                    eciSet.add(eci);
+                    for (EdifPortRef epr : eci.getInputEPRs()) {
+                        if (epr.getPort().getName().toLowerCase().equals(params[i + 1].toLowerCase())) {
+                            myStack.addAll(_ecic.getPredecessors(eci, epr));
                         }
                     }
-                } else {
-                    for (String from : tempSet) {
-                        if (!from.contains(params[i + 1])) // don't include "clka to clka" as a crossing
-                            crossingsToShow.add(from + params[i + 1]);
+                    while (!myStack.isEmpty()) {
+                        try {
+                            EdifCellInstance e = myStack.pop();
+                            if (!eciSet.contains(e) && !isSequential(e.getCellType())) {
+                                myStack.addAll(_ecic.getPredecessors(e));
+                            }
+                            eciSet.add(e);
+                        } catch (ClassCastException e) {
+                        }
                     }
-                }
-                i += 2;
-            }
-            Map<String, Set<String>> strMap = cda.getClockCrossings();
-            for (String key : crossingsToShow) {
-                key = key.toLowerCase();
-                if (strMap.keySet().contains(key)) {
-                    output.println(key + " (" + strMap.get(key).size() + " crossings)");
-                    for (String s : strMap.get(key)) {
-                        output.println("  " + s);
-                    }
-                    output.println();
-                }
-            }
-            if (strMap.keySet().size() == 0)
-                output.println("None\n");
-        }
+                    String name = eci.getName() + "_" + eciSet.size() + ".dot";
+                    AbstractGraphToDotty agtd = new AbstractGraphToDotty();
 
-        if (_result.getBoolean(ClockDomainCommandParser.DO_SCC_ANALYSIS)) {
-            SCCDepthFirstSearch scc = cda.doSCCAnalysis(_result.getBoolean(ClockDomainCommandParser.NO_IOB_FEEDBACK));
-            output.println(BAR + "\nSCC Analysis\n" + BAR);
-            cda.analyzeSCCs(scc, output);
+                    String data = agtd.createDottyBody(_ecic.getSubGraph(eciSet), _clkToECIMap);
+                    try {
+                        FileWriter fw = new FileWriter(name);
+                        fw.write(data);
+                        fw.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                output.println(params[i] + " not found");
+            }
+            i += 2;
+        }
+    }
+
+    private void showClockCrossings() {
+        output.println(BAR + "\nClock Domain Crossings\n" + BAR);
+
+        Set<String> crossingsToShow = new TreeSet<String>();
+        String[] params = _result.getStringArray(ClockDomainCommandParser.SHOW_CLOCK_CROSSINGS);
+        int i = 0;
+        // print out any names that don't match clocks
+        while (i < params.length) {
+            params[i] = params[i].toLowerCase();
+            if (!params[i].equals(ALL)) {
+                boolean valid = false;
+                for (EdifNet n : _clkToNetMap.keySet()) {
+                    if (n.getName().toLowerCase().equals(params[i]))
+                        valid = true;
+                }
+                if (!valid)
+                    output.println("*** " + params[i] + " not a clock");
+            }
+            i++;
+        }
+        i = 0;
+        while (i < params.length) {
+            Set<String> tempSet = new TreeSet<String>();
+            if (params[i].equals(ALL)) {
+                for (EdifNet net : _clkToNetMap.keySet()) {
+                    tempSet.add(net + " to ");
+                }
+            } else {
+                tempSet.add(params[i] + " to ");
+            }
+            if (params[i + 1].equals(ALL)) {
+                for (String from : tempSet) {
+                    for (EdifNet net : _clkToNetMap.keySet()) {
+                        if (!from.contains(net.toString())) // don't include "clka to clka" as a crossing
+                            crossingsToShow.add(from + net);
+                    }
+                }
+            } else {
+                for (String from : tempSet) {
+                    if (!from.contains(params[i + 1])) // don't include "clka to clka" as a crossing
+                        crossingsToShow.add(from + params[i + 1]);
+                }
+            }
+            i += 2;
+        }
+        Map<String, Set<String>> strMap = getClockCrossings();
+        for (String key : crossingsToShow) {
+            key = key.toLowerCase();
+            if (strMap.keySet().contains(key)) {
+                output.println(key + " (" + strMap.get(key).size() + " crossings)");
+                for (String s : strMap.get(key)) {
+                    output.println("  " + s);
+                }
+                output.println();
+            }
+        }
+        if (strMap.keySet().size() == 0)
+            output.println("None\n");
+    }
+
+    private void showSyncronous(Set<EdifNet> clocks) {
+        output.println(BAR + "\nClassified Synchronous Edif Cells\n" + BAR);
+        for (EdifNet net : clocks) {
+            output.println("NET: " + net);
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifCellInstance eci : _clkToECIMap.get(net)) {
+                if (isSequential(eci.getCellType()))
+                    strSet.add(net + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
+                            + eci.getCellType().getName() + ")");
+            }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
             output.println();
         }
-
-        if (_result.contains(ClockDomainCommandParser.CREATE_DOTTY_GRAPH)) {
-            String[] params = _result.getStringArray(ClockDomainCommandParser.CREATE_DOTTY_GRAPH);
-            int i = 0;
-            while (i < params.length) {
-                boolean found = false;
-                for (EdifCellInstance eci : cda._top.getTopCell().getSubCellList()) {
-                    if (((FlattenedEdifCellInstance) eci).getHierarchicalEdifName().toLowerCase().equals(
-                            params[i].toLowerCase())) {
-                        Stack<EdifCellInstance> myStack = new Stack<EdifCellInstance>();
-                        Set<EdifCellInstance> eciSet = new LinkedHashSet<EdifCellInstance>();
-                        eciSet.add(eci);
-                        for (EdifPortRef epr : eci.getInputEPRs()) {
-                            if (epr.getPort().getName().toLowerCase().equals(params[i + 1].toLowerCase())) {
-                                myStack.addAll(cda._ecic.getPredecessors(eci, epr));
-                            }
-                        }
-                        while (!myStack.isEmpty()) {
-                            try {
-                                EdifCellInstance e = myStack.pop();
-                                if (!eciSet.contains(e) && !cda.isSequential(e.getCellType())) {
-                                    myStack.addAll(cda._ecic.getPredecessors(e));
-                                }
-                                eciSet.add(e);
-                            } catch (ClassCastException e) {
-                            }
-                        }
-                        String name = eci.getName() + "_" + eciSet.size() + ".dot";
-                        AbstractGraphToDotty agtd = new AbstractGraphToDotty();
-
-                        String data = agtd.createDottyBody(cda._ecic.getSubGraph(eciSet), cda._clkToECIMap);
-                        try {
-                            FileWriter fw = new FileWriter(name);
-                            fw.write(data);
-                            fw.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            System.exit(-1);
-                        }
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    output.println(params[i] + " not found");
-                }
-                i += 2;
+        if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
+            output.println("No Domain");
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifCellInstance eci : _noClockECIs) {
+                if (isSequential(eci.getCellType()))
+                    strSet.add("No domain: " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
+                            + eci.getCellType().getName() + ")");
             }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
+            output.println();
         }
+    }
+
+    private void showCells(Set<EdifNet> clocks) {
+        output.println(BAR + "\nClassified Edif Cells\n" + BAR);
+        for (EdifNet net : clocks) {
+            output.println("NET: " + net + " (" + _clkToECIMap.get(net).size() + " cells in domain)");
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifCellInstance eci : _clkToECIMap.get(net)) {
+                strSet.add(net + ": " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
+                        + eci.getCellType().getName() + ")");
+            }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
+            output.println();
+        }
+        if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
+            output.println("No Domain (" + _noClockECIs.size() + " cells)");
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifCellInstance eci : _noClockECIs) {
+                strSet.add("No domain: " + ((FlattenedEdifCellInstance) eci).getHierarchicalEdifName() + " ("
+                        + eci.getCellType().getName() + ")");
+            }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
+            output.println();
+        }
+    }
+
+    private void showNets(Set<EdifNet> clocks) {
+        output.println(BAR + "\nClassified Nets\n" + BAR);
+        for (EdifNet net : clocks) {
+            output.println("NET: " + net + " (" + _clkToNetMap.get(net).size() + " nets in domain)");
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifNet n : _clkToNetMap.get(net)) {
+                Set<String> driverSet = new TreeSet<String>();
+                for (EdifPortRef epr : n.getOutputPortRefs()) {
+                    if (epr.getCellInstance() != null)
+                        driverSet.add(((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName()
+                                + " (" + epr.getCellInstance().getType() + ")");
+                }
+                strSet.add(net + ": " + n.getName() + " driven by " + driverSet);
+            }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
+            output.println();
+        }
+        if (_result.getBoolean(ClockDomainCommandParser.SHOW_NO_DOMAIN)) {
+            output.println("No Domain (" + _noClockNets.size() + " nets)");
+            Set<String> strSet = new TreeSet<String>();
+            for (EdifNet n : _noClockNets) {
+                Set<String> driverSet = new TreeSet<String>();
+                for (EdifPortRef epr : n.getOutputPortRefs()) {
+                    if (epr.getCellInstance() != null)
+                        driverSet.add(((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName()
+                                + " (" + epr.getCellInstance().getType() + ")");
+                }
+                strSet.add("No domain: " + n.getName() + " driven by " + driverSet);
+            }
+            for (String s : strSet) {
+                output.println("  " + s);
+            }
+            output.println();
+        }
+    }
+
+    private void show_gated_clocks() {
+        boolean found = false;
+        output.println(BAR + "\nGated clocks\n" + BAR);
+        for (EdifNet net : _clkToNetMap.keySet()) {
+            String str = "";
+            for (EdifPortRef epr : net.getOutputPortRefs()) {
+                if (!isClockDriver(epr.getCellInstance().getCellType())) {
+                    str += ((FlattenedEdifCellInstance) epr.getCellInstance()).getHierarchicalEdifName() + " ("
+                            + epr.getCellInstance().getCellType() + ")";
+                    found = true;
+                }
+            }
+            if (!str.equals(""))
+                output.println("  " + net + ": driven by " + str);
+        }
+        if (!found)
+            output.println("  No gated clocks");
+        output.println();
     }
 }
