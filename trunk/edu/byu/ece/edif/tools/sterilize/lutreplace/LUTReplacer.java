@@ -64,7 +64,7 @@ public class LUTReplacer{
 	 * @return EdifEnvironment in which all SRLs have been replaced with LUTs
 	 */
 	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream out) {
-		System.out.println("Replacing LUTs . . .");
+		//System.out.println("Replacing LUTs . . .");
 		// Create list of instances to replace
 		ArrayList<EdifCell> cellsToReplace = new ArrayList<EdifCell>();
 		EdifLibrary primitiveLibrary = XilinxGenLib.library;
@@ -90,16 +90,16 @@ public class LUTReplacer{
 		EdifLibraryManager newLibManager = newEnv.getLibraryManager();
 
 		for (ReplacementContext context : ecr.getReplacementContexts()) {
-			System.out.println("****************************************");
-			System.out.println("Need to replace instance " + 
+			out.println("****************************************");
+			out.println("Need to replace instance " + 
 					context.getOldInstanceToReplace().getParent().getName() + "." + 
 					context.getOldInstanceToReplace().getName() +" (" +
 					context.getOldCellToReplace().getName()+")");
-			System.out.println("****************************************");
+			out.println("****************************************");
 
 			// Get original cell that we're replacing to know which code to call
 			EdifCell oldCell = context.getOldCellToReplace();
-			System.out.println("Old Cell: " + oldCell.getName());
+			out.println("Old Cell: " + oldCell.getName());
 
 			// Get info needed to replace cell: parent cell , library manager,
 			// dangling nets that need to be wired up, and INIT value.
@@ -230,7 +230,7 @@ public class LUTReplacer{
 			}
 		}
 
-		System.out.println("Done");
+		//System.out.println("Done");
 		return newEnv;
 	}
 

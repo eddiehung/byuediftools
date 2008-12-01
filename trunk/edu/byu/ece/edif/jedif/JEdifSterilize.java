@@ -189,7 +189,7 @@ public class JEdifSterilize extends EDIFMain {
         	/**
         	 * TODO: write into log file
         	 */
-        	LogFile.out().println("\tRemoved FMAPs");
+        	LogFile.out().println("Removed FMAPs");
         }
         
         if (JEdifSterilizeCommandGroup.getReplaceLuts(result)) {
@@ -197,7 +197,7 @@ public class JEdifSterilize extends EDIFMain {
         	/**
         	 * TODO: write into log file
         	 */
-        	LogFile.out().println("\tReplaced LUT RAMs");
+        	LogFile.out().println("Replaced LUT RAMs");
         }
         
         if (JEdifSterilizeCommandGroup.getRemoveRLOCs(result)) {
@@ -205,7 +205,7 @@ public class JEdifSterilize extends EDIFMain {
         	/**
         	 * TODO: write into log file
         	 */
-        	LogFile.out().println("\tRemoved RLOCs");
+        	LogFile.out().println("Removed RLOCs");
         }
         
         /**
