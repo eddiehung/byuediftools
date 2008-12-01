@@ -123,8 +123,6 @@ public class LogFileCommandGroup extends AbstractCommandGroup {
                     e.printStackTrace();
                 }
             }
-        } else {
-            debug = null;
         }
         //return 
         LogFile.InitializeLog(debug, log, log_level);

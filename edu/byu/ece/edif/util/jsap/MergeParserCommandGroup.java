@@ -35,6 +35,7 @@ import com.martiansoftware.jsap.Switch;
 import edu.byu.ece.edif.arch.xilinx.XilinxLibrary;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibrary;
+import edu.byu.ece.edif.jedif.JEdifParserCommandGroup;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.util.merge.EdifMergeParser;
 import edu.byu.ece.edif.util.parse.ParseException;
@@ -47,7 +48,7 @@ import edu.byu.ece.edif.util.parse.ParseException;
  * <li> Allow for different primitive libraries
  * </ul>
  */
-public class MergeParserCommandGroup extends InputFileCommandGroup {
+public class MergeParserCommandGroup extends JEdifParserCommandGroup {
 
     public MergeParserCommandGroup() {
         super();
@@ -108,21 +109,29 @@ public class MergeParserCommandGroup extends InputFileCommandGroup {
     public static EdifEnvironment getEdifEnvironment(JSAPResult result) {
         EdifLibrary primitiveLibrary = XilinxLibrary.library;
         EdifEnvironment top = null;
-        boolean quitOnError = !result.getBoolean(BLACK_BOX_OK_SWITCH);
-        boolean allow_open_pins = !result.getBoolean(NO_OPEN_PINS_SWITCH);
 
-        LogFile.out().println("Parsing");
-        try {
-            Set<String> searchDirs = EdifMergeParser.createDefaultDirs();
-            searchDirs.addAll(getDirectoryCollection(result));
-            top = EdifMergeParser.parseAndMergeEdif(getInputFileName(result), searchDirs,
-                    getIncludeFileCollection(result), primitiveLibrary, allow_open_pins, quitOnError);
-        } catch (FileNotFoundException e) {
-            LogFile.err().println(e.toString());
-            System.exit(1);
-        } catch (ParseException e) {
-            LogFile.err().println("\n" + e);
-            System.exit(1);
+        //Allows MergeParser to open jedif files.
+        if (getInputFileName(result).contains(".jedif")) {
+            top = JEdifParserCommandGroup.getEdifEnvironment(result, LogFile.out());
+        }
+        //parse the edif files if nessisary
+        else {
+            boolean quitOnError = !result.getBoolean(BLACK_BOX_OK_SWITCH);
+            boolean allow_open_pins = !result.getBoolean(NO_OPEN_PINS_SWITCH);
+
+            LogFile.out().println("Parsing");
+            try {
+                Set<String> searchDirs = EdifMergeParser.createDefaultDirs();
+                searchDirs.addAll(getDirectoryCollection(result));
+                top = EdifMergeParser.parseAndMergeEdif(getInputFileName(result), searchDirs,
+                        getIncludeFileCollection(result), primitiveLibrary, allow_open_pins, quitOnError);
+            } catch (FileNotFoundException e) {
+                LogFile.err().println(e.toString());
+                System.exit(1);
+            } catch (ParseException e) {
+                LogFile.err().println("\n" + e);
+                System.exit(1);
+            }
         }
         return top;
     }
