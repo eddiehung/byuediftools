@@ -92,7 +92,7 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
      */
     public static void getPartFromEDIF(JSAPResult result, EdifEnvironment env) throws IllegalArgumentException {
         // TODO Auto-generated method stub
-        if (!result.userSpecified(PART)) {
+        if (result.getString(PART) == null) {
             try {
                 Property part = env.getTopDesign().getProperty("PART");
                 part_str = part.getValue().toString();
