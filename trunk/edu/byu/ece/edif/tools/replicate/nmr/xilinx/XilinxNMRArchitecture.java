@@ -141,6 +141,8 @@ public abstract class XilinxNMRArchitecture extends AbstractNMRArchitecture {
 
         _badCutConnections.addBadCutConnection("DCM", "PSEN", "*", "*");
 
+        _badCutConnections.addBadCutConnection("*", "*", "DCM", "CLKFB");
+
     }
 
     /**

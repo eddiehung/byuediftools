@@ -326,7 +326,7 @@ public class XilinxTools {
             "SRD8RE", "SRD16RE", "SRD4RLE", "SRD8RLE", "SRD16RLE", "SRD4RLED", "SRD8RLED", "SRD16RLED", "SRL16_1",
             "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1" };
 
-    public static List registerList = Arrays.asList(registers);
+    public static List<String> registerList = Arrays.asList(registers);
 
     /**
      * A list of all the Xilinx 'special' registers. A register is special if it
@@ -353,47 +353,47 @@ public class XilinxTools {
             "SRD8RE", "SRD16RE", "SRD4RLE", "SRD8RLE", "SRD16RLE", "SRD4RLED", "SRD8RLED", "SRD16RLED", "SRL16_1",
             "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1" };
 
-    public static List specialRegisterList = Arrays.asList(specialRegisters);
+    public static List<String> specialRegisterList = Arrays.asList(specialRegisters);
 
     /**
      * A list of all the register input ports that often are connected to GND
      */
     public static String[] constantGNDFFPorts = { "CLR", /* "L", */"PRE" /*
-                                                                             * ,
-                                                                             * "R",
-                                                                             * "S"
-                                                                             */
+     * ,
+     * "R",
+     * "S"
+     */
     };
 
-    public static List constantGNDFFPortsList = Arrays.asList(constantGNDFFPorts);
+    public static List<String> constantGNDFFPortsList = Arrays.asList(constantGNDFFPorts);
 
     /**
      * A list of all the register input ports that are often connected to VCC
      */
     public static String[] constantVCCFFPorts = { "CE" };
 
-    public static List constantVCCFFPortsList = Arrays.asList(constantVCCFFPorts);
+    public static List<String> constantVCCFFPortsList = Arrays.asList(constantVCCFFPorts);
 
     /**
      * A list of all FF input ports that lead to 'fake' edges
      */
     public static String[] fakeFFInputPorts = { "CE", "CLR", "R", "PRE", "S", "L" };
 
-    public static List fakeFFInputPortsList = Arrays.asList(fakeFFInputPorts);
+    public static List<String> fakeFFInputPortsList = Arrays.asList(fakeFFInputPorts);
 
     /**
      * A list of all the clock port names for any given register
      */
     public static String[] clkPorts = { "C", "C0", "C1", "WCLK", "CLK", "CLKA", "CLKB" };
 
-    public static List clkPortsList = Arrays.asList(clkPorts);
+    public static List<String> clkPortsList = Arrays.asList(clkPorts);
 
     /**
      * A list of the constant source EdifCells
      */
     public static String[] constantEdifCells = { "GND", "PULLDOWN", "PULLUP", "VCC" };
 
-    public static List constantEdifCellsList = Arrays.asList(constantEdifCells);
+    public static List<String> constantEdifCellsList = Arrays.asList(constantEdifCells);
 
     /**
      * Xilinx CLB primitives
