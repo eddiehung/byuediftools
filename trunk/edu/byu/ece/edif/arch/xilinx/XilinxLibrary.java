@@ -28,7 +28,9 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
+import edu.byu.ece.edif.core.Property;
 
 /**
  * This class will create a Xilinx primitive library.
@@ -108,6 +110,11 @@ public class XilinxLibrary extends XilinxGenLib {
             //return xilinx_cell;
             try {
                 result = new EdifCell(xilinxLibrary, xilinx_cell.getName());
+                for (EdifPort port : xilinx_cell.getPortList()) {
+                    EdifPort newPort = result.addPort(port.getEdifNameable(), port.getWidth(), port.getDirection());
+                    newPort.copyProperties(port);
+                }
+                result.copyProperties(xilinx_cell);
             } catch (EdifNameConflictException e) {
                 e.toRuntime();
             } catch (InvalidEdifNameException e) {
