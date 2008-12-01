@@ -6,9 +6,14 @@ Electron Release - Version 0.4.1 (Future)
 
 New Features:
 
+    * New LUT RAM/SRL replacement tool integrated with JEdif Tools
+    * Added Xilinx QPro parts to the set of valid devices
+
 Bug Fixes:
 
-	* Fixed --tmr_p option. --tmr_p will now include the listed ports.
+	* Fixed --tmr_p option. --tmr_p will now include the listed ports
+	* Tool now handles case-insensitive matches of *.ngc files
+	* Fixed bug related to tying of DCM ports with half-latch safe constants
 
 Enhancements / Other:
 
