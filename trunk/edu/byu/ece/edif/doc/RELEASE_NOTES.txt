@@ -1,6 +1,12 @@
 
  Release Notes for BYU EDIF Tools
 
+Electron Release - Version 0.4.1 (1 Dec 2008)
+
+This is a maintaince release of "electron". There have been a few minor bug
+fixes and new features, most notably including a new LUT RAM/SRL replacer, and 
+better handling of DCMs.
+
 
 Electron Release - Version 0.4.0 (30 May 2008)
 
