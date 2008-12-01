@@ -90,8 +90,6 @@ public class JEdifBuild extends EDIFMain {
         }
         // TODO: check to see if top is null
 
-        replace_srls_rlocs(result, out, top);
-
         // Flatten netlist if necessary
         if (MergeParserCommandGroup.performFlatten(result)) {
             out.print("Flattening . . .");
@@ -162,20 +160,6 @@ public class JEdifBuild extends EDIFMain {
         //        }
         //        out.println("Done");
 
-    }
-
-    public static void replace_srls_rlocs(JSAPResult result, PrintStream out, EdifEnvironment myEnv) {
-        if (MergeParserCommandGroup.getReplaceSrls(result)) {
-            out.println("Replacing SRL LUT RAMs...");
-            replaceLutRam rlr = new replaceLutRam(myEnv);
-            rlr.replaceLutRams();
-            out.println("Finished replacing SRL LUT RAMs.");
-        }
-
-        if (MergeParserCommandGroup.getRemoveRlocs(result)) {
-            out.println("Removing RLOCs...");
-            out.println("Finished removing RLOCs.");
-        }
     }
 
 }

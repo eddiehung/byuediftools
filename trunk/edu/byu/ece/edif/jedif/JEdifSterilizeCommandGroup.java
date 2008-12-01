@@ -67,9 +67,7 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
         _remove_fmaps_option.setShortFlag(JSAP.NO_SHORTFLAG);
         _remove_fmaps_option.setLongFlag(REMOVE_FMAPS);
         _remove_fmaps_option.setDefault(FALSE);
-        _remove_fmaps_option.setHelp("Remove FMAPS in the input design before performing NMR. \nNOTE: Not"
-                + " *all* FMAPS can be removed at the EDIF level for all architectures. Some"
-                + " post-processing may be necessary.");
+        _remove_fmaps_option.setHelp("Remove FMAPS in the input design before performing NMR.");
         this.addCommand(_remove_fmaps_option);
         
         _replace_lut_option = new Switch(REPLACE_LUTS);
@@ -79,6 +77,13 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
         _replace_lut_option.setHelp("Replace all the SRLs and RAMs instantiatied by LUTs with actual"
                 + " flip-flops");
         this.addCommand(_replace_lut_option);
+
+        _remove_rlocs_option = new Switch(REMOVE_RLOCS);
+        _remove_rlocs_option.setShortFlag(JSAP.NO_SHORTFLAG);
+        _remove_rlocs_option.setLongFlag(REMOVE_RLOCS);
+        _remove_rlocs_option.setDefault(FALSE);
+        _remove_rlocs_option.setHelp("Remove *all* RLOCs in the design.");
+        this.addCommand(_remove_rlocs_option);
     }
     
     /**
@@ -96,6 +101,10 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
     
     public static boolean getReplaceLuts(JSAPResult result) {
         return result.getBoolean(REPLACE_LUTS);
+    }
+
+    public static boolean getRemoveRLOCs(JSAPResult result) {
+        return result.getBoolean(REMOVE_RLOCS);
     }
 
     public static int getHLConstant(JSAPResult result) {
@@ -116,6 +125,8 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
     
     protected Switch _replace_lut_option;
 
+    protected Switch _remove_rlocs_option;
+
     public static final String REMOVE_HL = "remove_hl";
 
     public static final String HL_CONSTANT = "hl_constant";
@@ -127,6 +138,8 @@ public class JEdifSterilizeCommandGroup extends AbstractCommandGroup {
     public static final String REMOVE_FMAPS = "remove_fmaps";
     
     public static final String REPLACE_LUTS = "replace_luts";
+
+    public static final String REMOVE_RLOCS = "remove_rlocs";
 
     public static final String FALSE = "false";
 

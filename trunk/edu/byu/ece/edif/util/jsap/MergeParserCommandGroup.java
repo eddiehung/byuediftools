@@ -99,21 +99,6 @@ public class MergeParserCommandGroup extends InputFileCommandGroup {
         blackboxes_ok_option.setHelp("Allow parser to continue if blackbox definitions are not found");
         this.addCommand(blackboxes_ok_option);
 
-        _replace_srls_option = new Switch(REPLACE_SRLS);
-        _replace_srls_option.setShortFlag(JSAP.NO_SHORTFLAG);
-        _replace_srls_option.setLongFlag(REPLACE_SRLS);
-        _replace_srls_option.setDefault(FALSE);
-        _replace_srls_option.setHelp("Replace LUT RAMs acting as SRLs in the design with actual SRLs."
-                + " Normally the tool will not replace these LUT RAMs, but if this option is set it will.");
-        this.addCommand(_replace_srls_option);
-
-        _remove_rlocs_option = new Switch(REMOVE_RLOCS);
-        _remove_rlocs_option.setShortFlag(JSAP.NO_SHORTFLAG);
-        _remove_rlocs_option.setLongFlag(REMOVE_RLOCS);
-        _remove_rlocs_option.setDefault(FALSE);
-        _remove_rlocs_option.setHelp("Remove *all* RLOCs in the design.");
-        this.addCommand(_remove_rlocs_option);
-
     }
 
     public static Collection<String> getDirectoryCollection(JSAPResult result) {
@@ -146,14 +131,6 @@ public class MergeParserCommandGroup extends InputFileCommandGroup {
         return Arrays.asList(result.getStringArray(TMRCommandParser.FILE));
     }
 
-    public static boolean getReplaceSrls(JSAPResult result) {
-        return result.getBoolean(REPLACE_SRLS);
-    }
-
-    public static boolean getRemoveRlocs(JSAPResult result) {
-        return result.getBoolean(REMOVE_RLOCS);
-    }
-
     public static boolean performFlatten(JSAPResult result) {
         return !result.getBoolean(NO_FLATTEN_FLAG);
     }
@@ -173,13 +150,5 @@ public class MergeParserCommandGroup extends InputFileCommandGroup {
     public static final String NO_FLATTEN_FLAG = "no_flatten";
 
     public static final String NO_OPEN_PINS_SWITCH = "no_open_pins";
-
-    public static final String REPLACE_SRLS = "replace_srls";
-
-    public static final String REMOVE_RLOCS = "remove_rlocs";
-
-    protected Switch _replace_srls_option;
-
-    protected Switch _remove_rlocs_option;
 
 }
