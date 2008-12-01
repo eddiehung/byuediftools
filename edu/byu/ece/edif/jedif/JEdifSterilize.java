@@ -51,6 +51,7 @@ import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
 import edu.byu.ece.edif.util.jsap.OutputFileCommandGroup;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.RLOCRemove;
 
 public class JEdifSterilize extends EDIFMain {
 
@@ -93,9 +94,6 @@ public class JEdifSterilize extends EDIFMain {
             LogFile.err().println("Invalid JEdif file");
             System.exit(1);
         }
-
-        // This function has been moved to JEdifBuild.
-        //replace_srls_rlocs(result, logger, myEnv);
 
         flatten_sterilize(result, myEnv, out);
 
@@ -191,6 +189,7 @@ public class JEdifSterilize extends EDIFMain {
         	/**
         	 * TODO: write into log file
         	 */
+        	LogFile.out().println("\tRemoved FMAPs");
         }
         
         if (JEdifSterilizeCommandGroup.getReplaceLuts(result)) {
@@ -198,6 +197,15 @@ public class JEdifSterilize extends EDIFMain {
         	/**
         	 * TODO: write into log file
         	 */
+        	LogFile.out().println("\tReplaced LUT RAMs");
+        }
+        
+        if (JEdifSterilizeCommandGroup.getRemoveRLOCs(result)) {
+        	RLOCRemove rlocRemover = new RLOCRemove(flatCell.getLibrary().getLibraryManager().getEdifEnvironment());
+        	/**
+        	 * TODO: write into log file
+        	 */
+        	LogFile.out().println("\tRemoved RLOCs");
         }
         
         /**
