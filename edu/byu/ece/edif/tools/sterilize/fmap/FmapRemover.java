@@ -83,7 +83,7 @@ public abstract class FmapRemover {
      * @return true if the EdifEnvironment was modified.
      */
     public static int removeFmaps(EdifEnvironment environment) {
-    	System.out.print("Removing fmaps . . .");
+    	//System.out.print("Removing fmaps . . .");
         int fmapCount = 0;
         /* Iterate over all the EdifCells in all the EdifLibraries. */
         for (EdifLibrary library : environment.getLibraryManager().getLibraries()) {
@@ -157,7 +157,7 @@ public abstract class FmapRemover {
             	library.deleteCell(cell, true);
             }
         }
-        System.out.print("Done"+'\n');
+        //System.out.print("Done"+'\n');
         return fmapCount;
     }
 }
