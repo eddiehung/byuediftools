@@ -18,6 +18,7 @@ Options:
   [--pack_registers <{i|o|b|n}>]
 
   [--remove_fmaps]
+	[--replace_luts]
 
   <input_file>
   [(-o|--output) <output_file>]
@@ -64,6 +65,9 @@ both input and output registers.
 Remove FMAPS in the input design before performing NMR.
 NOTE: Not *all* FMAPS can be removed at the EDIF level for all
 architectures. Some post-processing may be necessary.
+
+\subsubsection{\texttt{--replace\_luts}}
+Replace all the SRLs and RAMs instantiatied by LUTs with actual flip-flops
 
 \subsection{File Options}
 
