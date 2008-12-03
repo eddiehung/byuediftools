@@ -237,8 +237,8 @@ public class TMRDWCEdifCell extends IJMREdifCell {
     							+ "_OFD_" + railNum));
     					ofdNet = new EdifNet(ofdNetName, this);
     					ofdName = comparatorString + "_" + railNum + "_OFD";
-    					obufName = comparatorString + "_" + railNum + "_OBUF";
     				}
+    				obufName = comparatorString + "_" + railNum + "_OBUF";
 
     				try {
     					addNet(outNet);
