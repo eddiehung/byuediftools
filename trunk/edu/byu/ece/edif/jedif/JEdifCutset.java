@@ -34,6 +34,7 @@ import java.util.List;
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
+import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
@@ -41,6 +42,7 @@ import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
 import edu.byu.ece.edif.tools.replicate.ReplicationException;
+import edu.byu.ece.edif.tools.replicate.ReplicationType;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRGraphUtilities;
 import edu.byu.ece.edif.util.graph.AbstractEdifGraph;
@@ -129,7 +131,8 @@ public class JEdifCutset extends EDIFMain {
             e.toRuntime();
         }
 
-        Collection<EdifPortRef> PRGcuts = getValidCutset(result, flatCell, iobAnalysis);
+        Collection<EdifPortRef> PRGcuts = getValidCutset(result, flatCell, iobAnalysis, ptmr);
+        //System.out.println(PRGcuts); // DEBUG for removeNonTMRNodes method
         ptmr.portRefsToCut = PRGcuts;
 
         //create pTMR data file for next step
@@ -166,7 +169,7 @@ public class JEdifCutset extends EDIFMain {
      */
 
     public static Collection<EdifPortRef> getValidCutset(JSAPResult result, EdifCell flatCell,
-            SharedIOBAnalysis iobAnalysis) {
+            SharedIOBAnalysis iobAnalysis, PartialReplicationDescription ptmr) {
         boolean debug = false;
 
         //get command-line options
@@ -193,6 +196,8 @@ public class JEdifCutset extends EDIFMain {
             removeClockFeedback(graph);
 
             removeIOBFeedback(flatCell, iobAnalysis, graph);
+
+            removeNonTMRNodes(flatCell, ptmr, graph);
 
             //			  // DEBUG (BHP)
             //            // Create DebugSubGraph
@@ -249,6 +254,8 @@ public class JEdifCutset extends EDIFMain {
             LogFile.out().println("SCC Decomposition. . .");
             //if(iobAnalysis != null) {
             removeIOBFeedback(flatCell, iobAnalysis, eciConnectivityGraph);
+
+            removeNonTMRNodes(flatCell, ptmr, eciConnectivityGraph);
 
             //			// DEBUG (BHP)
             //            // Create DebugSubGraph
@@ -350,6 +357,75 @@ public class JEdifCutset extends EDIFMain {
                 }
             }
         }
+    }
+
+    /**
+     * Takes an EdifCollectionGraph or a EdifOutputPortRefGraph and removes all
+     * nodes (instances) from the original cell that are not in the TMR list.
+     * This will speed up finding the cutset, particularly in cases where the
+     * user has not requested much TMR or the device does not allow for very
+     * much TMR.
+     * 
+     * @param flatCell: EdifCell for getting the list of all EdifCellInstances
+     * @param ptmr: PartialReplicationDescription for getting the list of
+     * EdifCellInstances that are scheduled for TMR, the "set difference"
+     * between this list and the flatCell list will be the list of
+     * EdifCellInstances that are removed from the graph
+     * @param graph: EdifCollectionGraph or a EdifOutputPortRefGraph from which
+     * all non-TMR nodes will be removed
+     */
+    private static void removeNonTMRNodes(EdifCell flatCell, PartialReplicationDescription ptmr, AbstractEdifGraph graph) {
+        Collection<EdifCellInstance> all_ecis = flatCell.getCellInstanceList();
+        Collection<EdifCellInstance> ptmr_ecis = ptmr.getInstances(ReplicationType.TRIPLICATE);
+        //        graph.toDotty("before_removal.dty");
+        System.out.print("Removing non-TMR ECIs from graph");
+        int num_ecis = all_ecis.size();
+        int count = 0;
+        // Iterate over all of the ECIs in the original cell (flatCell)
+        for (EdifCellInstance eci : all_ecis) {
+            // This block of code is used to simply print out a dot for 
+            // every 10 percent of the flatCell that has been analyzed
+            count = count + 1;
+            if ((float) count / (float) num_ecis > 0.10) {
+                System.out.print(" . ");
+                count = 0;
+            }
+            // If the specified ECI is NOT in the list of ECIs that
+            // are schedule to be TMR'd, then remove from the graph 
+            // the respective node and associated edges (to and from)
+            if (ptmr_ecis.contains(eci) == false) {
+                // Since the graph can be one of two types, we have to
+                // account for that by removing the ECI in a different
+                // way depending on the type of graph
+                if (graph instanceof EdifOutputPortRefGraph) {
+                    // For an EdifOutputPortRefGraph we get all of the
+                    // EdifPortRefs associated with the ECI since
+                    // the EdifPortRefs are the nodes in this type
+                    // of graph.
+                    Collection<EdifPortRef> eprs = eci.getAllEPRs();
+                    for (EdifPortRef epr : eprs) {
+                        // Once we have the list of EdifPortRefs
+                        // then we iterate over them and delete all
+                        // of the edges going into and out of the
+                        // node for that EPR and then remove the node
+                        graph.removeEdges(graph.getInputEdges(epr));
+                        graph.removeEdges(graph.getOutputEdges(epr));
+                        graph.removeNode(epr);
+                    }
+                }
+                if (graph instanceof EdifCellInstanceGraph) {
+                    // For an EdifCellInstanceGraph we can simply
+                    // grab the ECI and remove the edges going
+                    // into and out of the node for that ECI
+                    // and then remove the node itself
+                    graph.removeEdges(graph.getInputEdges(eci));
+                    graph.removeEdges(graph.getOutputEdges(eci));
+                    graph.removeNode(eci);
+                }
+            }
+        }
+        System.out.println("Done");
+        //        graph.toDotty("after_removal.dty");
     }
 
     /**
