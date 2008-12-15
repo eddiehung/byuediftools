@@ -103,7 +103,7 @@ public class EdifTMR extends EDIFMain {
         // Get IOB analysis information
         SharedIOBAnalysis iobAnalysis = JEdifTMRAnalysis.getSharedIOB();
 
-        Collection<EdifPortRef> PRGcuts = JEdifCutset.getValidCutset(result, flatCell, iobAnalysis);
+        Collection<EdifPortRef> PRGcuts = JEdifCutset.getValidCutset(result, flatCell, iobAnalysis, ptmr);
         ptmr.portRefsToCut = PRGcuts;
         //tmr
         JEdifTMR.tmr(result, env, ptmr);
