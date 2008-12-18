@@ -155,66 +155,6 @@ public class SRL_Replacement {
 		   case SRLC16E: 	ff_type = FDE; 		break;
 		   case SRLC16E_1: 	ff_type = FDE_1;
 		}
-		// Add input and output ports to FF's interface, but only once
-
-		// TODO: We shouldn't need to do this. Lets figure out why these
-		// primitives do not have the ports that are needed.
-		
-		if(FD.getInterface().getPortList().isEmpty()) {
-			try {
-				FD.addPort("C", 1, 1);
-				FD.addPort("D", 1, 1);
-				FD.addPort("Q", 1, 2);
-				
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		} else if (FD_1.getInterface().getPortList().isEmpty()) {
-			try {
-				FD_1.addPort("C", 1, 1);
-				FD_1.addPort("D", 1, 1);
-				FD_1.addPort("Q", 1, 2);
-				
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		} else if (FDE.getInterface().getPortList().isEmpty()) {
-			try {
-				FDE.addPort("C", 1, 1);
-				FDE.addPort("CE", 1, 1);
-				FDE.addPort("D", 1, 1);
-				FDE.addPort("Q", 1, 2);
-				
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		} else if (FDE_1.getInterface().getPortList().isEmpty()) {
-			try {
-				FDE_1.addPort("C", 1, 1);
-				FDE_1.addPort("CE", 1, 1);
-				FDE_1.addPort("D", 1, 1);
-				FDE_1.addPort("Q", 1, 2);
-				
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		}	
 		// Create FF instances
 		EdifCellInstance ffInstances[] = new EdifCellInstance[16];	
 		for (int i = 0; i < 16; i++) {
@@ -230,21 +170,6 @@ public class SRL_Replacement {
 		}
 		
 		/****** Step 3. Create the Mux instances ******/
-		// Add input and output ports to MUX's interface, but only once
-		if(MUXF5.getInterface().getPortList().isEmpty()) {
-			try	{
-				MUXF5.addPort("I0", 1, 1);
-				MUXF5.addPort("I1", 1, 1);
-				MUXF5.addPort("S", 1, 1);
-				MUXF5.addPort("O", 1, 2);
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		}
 		// Create MUXF5 instances
 		EdifCellInstance muxInstances[] = new EdifCellInstance[15];
 		for (int i = 0; i < 15; i++) {
@@ -290,20 +215,8 @@ public class SRL_Replacement {
 		}
 		
 		/****** Step 6. Wire up clocks ******/
-		EdifCellInterface ffInterface = new EdifCellInterface(ff_type);
-		EdifPort clkPort = null;
-		try {
-			clkPort = new EdifPort(ffInterface, "C", 1, 1);
-			try {
-				ffInterface.addPort("C", 1, 1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifCellInterface ffInterface = ff_type.getInterface();
+		EdifPort clkPort = ffInterface.getPort("C");
 		if (clkPort == null) {
 			System.err.println("Can't find C port on cell " + ff_type);
 			System.exit(1);
@@ -383,20 +296,6 @@ public class SRL_Replacement {
 		// If the SRL is a "C" type, add to the q15 output
 		if (srlType == SRLType.SRLC16 || srlType == SRLType.SRLC16_1 || 
 				srlType == SRLType.SRLC16E || srlType == SRLType.SRLC16E_1) {
-			// Add input and output ports to BUF interface, but only once
-			if(BUF.getInterface().getPortList().isEmpty())
-			{
-				try{
-					BUF.addPort("I", 1, 1);
-					BUF.addPort("O", 1, 2);
-				} catch(InvalidEdifNameException e) {
-					System.out.println("InvalidEdifNameException caught");
-					System.exit(1);
-				} catch (EdifNameConflictException e) {
-					System.out.println("EdifNameConflictException caught");
-					System.exit(1);
-				}
-			}
 			// Create a "buf" EdifCellInstance
 			String bufName = namePrefix + "_BUF";
 			EdifNameable bufNameable = NamedObject.createValidEdifNameable(bufName);
@@ -409,14 +308,8 @@ public class SRL_Replacement {
 			}
 			
 			// connect ffOutputNets[15] (i.e. output of FF[15] to the "I" input of the buf
-			EdifCellInterface bufInterface = new EdifCellInterface(BUF);
-			EdifPort iPort = null;
-			try {
-				iPort = new EdifPort(bufInterface, "I", 1, 1);
-			} catch (InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			}
+			EdifCellInterface bufInterface = BUF.getInterface();
+			EdifPort iPort = bufInterface.getPort("I");
 			if (iPort == null) {
 				System.err.println("Can't find I port on cell " + BUF);
 				System.exit(1);
@@ -426,13 +319,7 @@ public class SRL_Replacement {
 			ffOutputNets[15].addPortConnection(iEPR);
 			
 			// connect the q15 net (passed in above) to the "O" output of the buf
-			EdifPort oPort = null;
-			try {
-				oPort = new EdifPort(bufInterface, "O", 1, 2);
-			} catch (InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			}
+			EdifPort oPort = bufInterface.getPort("O");
 			if (oPort == null) {
 				System.err.println("Can't find O port on cell " + BUF);
 				System.exit(1);
@@ -444,51 +331,27 @@ public class SRL_Replacement {
 		
 		/****** Step 10. Hook up the muxes ******/
 		// Get port information
-		EdifCellInterface muxInterface = new EdifCellInterface(MUXF5);
+		EdifCellInterface muxInterface = MUXF5.getInterface();
 		// I0
-		EdifPort i0Port = null;
-		try {
-			i0Port = new EdifPort(muxInterface, "I0", 1, 1);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort i0Port = muxInterface.getPort("I0");
 		if (i0Port == null) {
 			System.err.println("Can't find I0 port on cell " + MUXF5);
 			System.exit(1);
 		}
 		// I1
-		EdifPort i1Port = null;
-		try {
-			i1Port = new EdifPort(muxInterface, "I1", 1, 1);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort i1Port = muxInterface.getPort("I1");
 		if (i1Port == null) {
 			System.err.println("Can't find I1 port on cell " + MUXF5);
 			System.exit(1);
 		}
 		// S
-		EdifPort sPort = null;
-		try {
-			sPort = new EdifPort(muxInterface, "S", 1, 1);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort sPort = muxInterface.getPort("S");
 		if (sPort == null) {
 			System.err.println("Can't find S port on cell " + MUXF5);
 			System.exit(1);
 		}
 		// O
-		EdifPort oPort = null;
-		try {
-			oPort = new EdifPort(muxInterface, "O", 1, 2);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort oPort = muxInterface.getPort("O");
 		if (oPort == null) {
 			System.err.println("Can't find O port on cell " + MUXF5);
 			System.exit(1);

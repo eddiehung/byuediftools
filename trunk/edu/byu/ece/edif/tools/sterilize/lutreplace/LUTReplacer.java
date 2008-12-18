@@ -136,16 +136,16 @@ public class LUTReplacer{
 
 		// Iterate over all of the things that need replacement
 		for (ReplacementContext context : ecr.getReplacementContexts()) {
-			out.println("****************************************");
-			out.println("Need to replace instance " + 
+			System.out.println("****************************************");
+			System.out.println("Need to replace instance " + 
 					context.getOldInstanceToReplace().getParent().getName() + "." + 
 					context.getOldInstanceToReplace().getName() +" (" +
 					context.getOldCellToReplace().getName()+")");
-			out.println("****************************************");
+			System.out.println("****************************************");
 
 			// Get original cell that we're replacing to know which code to call
 			EdifCell oldCell = context.getOldCellToReplace();
-			out.println("Old Cell: " + oldCell.getName());
+			System.out.println("Old Cell: " + oldCell.getName());
 
 			// Get info needed to replace cell: parent cell , library manager,
 			// dangling nets that need to be wired up, and INIT value.
