@@ -170,51 +170,6 @@ public class EdifEnvironmentCopyReplace extends EdifEnvironmentCopy {
 		return context;
 	}
 	
-	public static void main(String[] args) {
-		/***********************************************************************
-		 * The value of the string printed out when there is a problem with the
-		 * argument string.
-		 **********************************************************************/
-		String usageString = "Usage: java EdifMergeParser <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>]";
-
-		if (args.length < 1) {
-			LogFile.out().println(usageString);
-			System.exit(1);
-		}
-
-		EdifEnvironment top = edu.byu.ece.edif.util.merge.EdifMergeParser.getMergedEdifEnvironment(args[0], args);
-
-		// Create list of instances to replace
-		ArrayList<EdifCell> cellsToReplace = new ArrayList<EdifCell>();
-        EdifLibrary primitiveLibrary = XilinxGenLib.library;
-        String[] cellNamesToReplace = {"RAM16X1D", "RAM16X1D_1", "RAM16X1S", "RAM16X1S_1", 
-        		"RAM16X2S", "RAM16X4S", "RAM16X8S", "RAM32X1D", "RAM32X1D_1",
-        		"RAM32X1S", "RAM32X1S_1", "RAM32X2S", "RAM32X4S", "RAM32X8S",
-        		"RAM64X1D", "RAM64X1D_1", "RAM64X1S", "RAM64X1S_1", "RAM64X2S",
-        		"RAM128X1S", "RAM128X1S_1", 
-        		"SRL16", "SRL16_1", "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1",
-        		"SRLC16E", "SRLC16E_1" };
-        for ( String s : cellNamesToReplace ) {
-            cellsToReplace.add(primitiveLibrary.getCell(s));        	
-        }
-        		
-		// Create copy replace object
-		try {
-			EdifEnvironmentCopyReplace ecr = new EdifEnvironmentCopyReplace(top, cellsToReplace);
-			for (ReplacementContext context : ecr.getReplacementContexts()) {
-				System.out.println("Need to replace instance " +
-						context.getOldInstanceToReplace().getName() +" (" +
-						context.getOldCellToReplace().getName()+")");
-			}
-		} catch (EdifNameConflictException e) {
-			System.err.println(e);
-			System.exit(1);
-		}
-		
-		
-		System.out.println("done");
-		
-	}
 	
 	// The following two lists are "caches" of cells to replace and not to replace.
 	// These are for speed so we dont' have to match every cell every time (match once only)
