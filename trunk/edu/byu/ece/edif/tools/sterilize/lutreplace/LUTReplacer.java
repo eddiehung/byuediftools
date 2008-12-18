@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
+import edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement;
 import edu.byu.ece.edif.arch.xilinx.XilinxGenLib;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
@@ -40,7 +42,14 @@ import edu.byu.ece.edif.core.EdifPrintWriter;
 import java.io.*;
 
 /**
- * Removes SRLs from an EDIF file.
+ * Removes SRLs and RAMs from an EDIF file. This is used to replace cells in 
+ * a netlist that are known to have problems when scrubbing is employed.
+ * This class will perform all LUT replacement to generate a safe design.
+ * <p>
+ * This class relies heavily on 
+ * edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement
+ * and
+ * edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement
  * <p>
  * This class provides a command-line executable interface (it has a main
  * method). The user specifies the EDIF file, following the conventions of the
@@ -51,27 +60,63 @@ import java.io.*;
  * For a precise list of the cells replaced by this class, please see the source
  * code. Examples include RAM16X1D, RAM16X1D_1, SRLC16, SRLC16E_1.
  * <p>
- * TODO: Rename this class? Shouldn't it be SRLRemover, not LUTReplacer?
- * 		 Yubo Li: This class also contains a method to replace all the RAMs
- * 				  with flip-flops, so it is not just a SRL remover.
  * @author yuboli
  */
 public class LUTReplacer{
 
 	/**
-	 * @param env EdifEnvironment containing shift registers (SRLs) 
+	 * This static method used to perform LUT replacement. It returns a new EdifEnvironment
+	 * that is a copy of the old with LUTs replaced.
+	 * 
+	 * @param env EdifEnvironment containing SRLs or RAMs 
 	 * @param out output PrintStream object 
 	 * @return EdifEnvironment in which all SRLs have been replaced with LUTs
 	 */
 	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream out) {
-		//System.out.println("Replacing LUTs . . .");
-		// Create list of instances to replace
 		ArrayList<EdifCell> cellsToReplace = new ArrayList<EdifCell>();
 		EdifLibrary primitiveLibrary = XilinxGenLib.library;
-		String[] cellNamesToReplace = {"RAM16X1D", "RAM16X1D_1", "RAM16X1S", "RAM16X1S_1", "RAM16X2S", "RAM16X4S", "RAM16X8S", 
+
+		// List of cells that need to be replaced.
+		String[] cellNamesToReplace = {
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X1D_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X1D_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X1S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X1S_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X2S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X4S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM16X8S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X1D_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X1D_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X1S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X1S_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X2S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X4S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM32X8S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM64X1D_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM64X1D_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM64X1S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM64X1S_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM64X2S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM128X1S_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.RAM.RAM_Replacement.RAM128X1S_1_STRING,
+
+				/*
+				"RAM16X1D", "RAM16X1D_1", "RAM16X1S", "RAM16X1S_1", "RAM16X2S", "RAM16X4S", "RAM16X8S", 
 				"RAM32X1D", "RAM32X1D_1", "RAM32X1S", "RAM32X1S_1", "RAM32X2S", "RAM32X4S", "RAM32X8S",	"RAM64X1D", "RAM64X1D_1", 
-				"RAM64X1S", "RAM64X1S_1", "RAM64X2S", "RAM128X1S", "RAM128X1S_1", 
-				"SRL16", "SRL16_1", "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1",	"SRLC16E", "SRLC16E_1" };
+				"RAM64X1S", "RAM64X1S_1", "RAM64X2S", "RAM128X1S", "RAM128X1S_1",
+				*/ 
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRL16_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRL16_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRL16E_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRL16E_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRLC16_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRLC16_1_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRLC16E_STRING,
+				edu.byu.ece.edif.tools.sterilize.lutreplace.SRL.SRL_Replacement.SRLC16E_1_STRING,
+				//"SRL16", "SRL16_1", "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1",	"SRLC16E", "SRLC16E_1" 
+				};
+
+		// Create an array of the cells to replace.
 		for ( String s : cellNamesToReplace ) {
 			cellsToReplace.add(primitiveLibrary.getCell(s));        	
 		}
@@ -89,6 +134,7 @@ public class LUTReplacer{
 		EdifEnvironment newEnv = ecr.getNewEnvironment();
 		EdifLibraryManager newLibManager = newEnv.getLibraryManager();
 
+		// Iterate over all of the things that need replacement
 		for (ReplacementContext context : ecr.getReplacementContexts()) {
 			out.println("****************************************");
 			out.println("Need to replace instance " + 
@@ -105,6 +151,12 @@ public class LUTReplacer{
 			// dangling nets that need to be wired up, and INIT value.
 			EdifCell newParent = context.getNewParentCell();
 			EdifCellInstance oldInstance = context.getOldInstanceToReplace();
+			
+			// 1. This next section of code handles the INIT values. The first step is to parse
+			// the init strings and store them as long variables.
+			
+			
+			// This is the LONG representation of the init string
 			long INIT = 0;
 			long INIT_00 = 0;
 			long INIT_01 = 0;
@@ -117,7 +169,10 @@ public class LUTReplacer{
 			long INIT_HIGH = 0;
 			long INIT_LOW = 0;
 			if(oldInstance.getProperty("INIT")!=null){
+				// Handle the INIT value two ways. The first way is for 128 bits and the second is for 
+				// 64 bits or less
 				if(oldCell.getName().equals("RAM128X1S") || oldCell.getName().equals("RAM128X1S_1")){
+					// Break into two parts
 					// long type has only 64 bits, so for RAM128X1S and RAM128X1S_1, the INIT value needs to be divided into two parts
 					INIT_HIGH = Long.parseLong(oldInstance.getProperty("INIT").getValue().toString().substring(1, 16), 16);
 					INIT_LOW = Long.parseLong(oldInstance.getProperty("INIT").getValue().toString().substring(17, 32), 16);
@@ -141,6 +196,12 @@ public class LUTReplacer{
 				INIT_06 = Long.parseLong(oldInstance.getProperty("INIT_06").getValue().toString(), 16);
 			if(oldInstance.getProperty("INIT_07")!=null)
 				INIT_07 = Long.parseLong(oldInstance.getProperty("INIT_07").getValue().toString(), 16);
+			
+			
+			// 2. This next section will get all of the nets needed to hook up the primitive.
+			//    We try to get all of the nets even though we konw that only a subset of these nets 
+			//    will actually be used. These nets represent the superset of all nets that could be
+			//    used in all of the primitives that we are replacing.
 			EdifNet D = context.getNewNetToConnect("D");
 			EdifNet CE = context.getNewNetToConnect("CE");
 			EdifNet CLK = context.getNewNetToConnect("CLK");
@@ -213,7 +274,7 @@ public class LUTReplacer{
 			EdifNet O2 = context.getNewNetToConnect("O2");
 			EdifNet O3 = context.getNewNetToConnect("O3");
 
-			// Call code to create replacement cell internals
+			// 3. Call code to create replacement cell internals
 			if(oldCell.getName().equals("SRL16") || oldCell.getName().equals("SRL16_1") || 
 					oldCell.getName().equals("SRL16E") || oldCell.getName().equals("SRL16E_1") || 
 					oldCell.getName().equals("SRLC16") || oldCell.getName().equals("SRLC16_1") || 
@@ -234,6 +295,9 @@ public class LUTReplacer{
 		return newEnv;
 	}
 
+	/** A simple main class that can be used to perform this LUT replacement.
+	 *
+	 */
 	public static void main(String[] args) {
 		/***********************************************************************
 		 * The String printed when there is a problem with the argument string.
