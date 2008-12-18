@@ -39,9 +39,28 @@ import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.PropertyList;
 import edu.byu.ece.edif.core.StringTypedValue;
 
+/**
+ * Replaces SRL elements in a Xilinx design with "safe" primitives. The following
+ * primitives are replaced:<br>
+ * <ul>
+ *   <li> SRL16
+ *   <li> SRL16_1
+ *   <li> SRL16E
+ *   <li> SRL16E_1
+ *   <li> SRLC16
+ *   <li> SRLC16_1
+ *   <li> SRLC16E
+ *   <li> SRLC16E_1
+ * </ul>
+ * 
+ * @author Yubo Li
+ */
 public class SRL_Replacement {
 
-	/** Enumerate all of the SRL types */	
+	/** Enumerations of all primitives. These strings are used for matching
+	 * the strings in the original EDIF.
+	 * @see StringToSRLType 
+	 **/	
 	public static final String SRL16_STRING 	= 	"SRL16";
 	public static final String SRL16_1_STRING 	= 	"SRL16_1";
 	public static final String SRL16E_STRING 	= 	"SRL16E";
@@ -50,9 +69,18 @@ public class SRL_Replacement {
 	public static final String SRLC16_1_STRING 	= 	"SRLC16_1";
 	public static final String SRLC16E_STRING 	= 	"SRLC16E";
 	public static final String SRLC16E_1_STRING = 	"SRLC16E_1";
-	
+
+	/**
+	 * An enumerated type that represent each individual primitive. 
+	 */
 	public enum SRLType {SRL16, SRL16_1, SRL16E, SRL16E_1, SRLC16, SRLC16_1, SRLC16E, SRLC16E_1};
 
+	/**
+	 * Compares a string against all the primitive strings while ignoring
+	 * case.
+	 * @return A SRLType object representing the primitive that was matched. Returns
+	 * a null if no match occurs.
+	 */
 	public static SRLType StringToSRLType(String str) {
 		if (str.equalsIgnoreCase(SRL16_STRING)) 	return SRLType.SRL16;
 		if (str.equalsIgnoreCase(SRL16_1_STRING)) 	return SRLType.SRL16_1;
@@ -75,6 +103,32 @@ public class SRL_Replacement {
 		Replace(libManager, type, parent, namePrefix, INIT, d, ce, clk, a0, a1, a2, a3, q, q15);
 	}
 	
+	/**
+	 * Performs the SRL replacement algorithm. This method only operates on a single
+	 * EdifCell object. This method assumes that a new EdifCell has been created and
+	 * there is a "hole" where a previously used SRL primitive was used. All the
+	 * surrounding logic and nets are created and passed to this method so the
+	 * new replacement can be hooked up. 
+	 * 
+	 * It is called by the 
+	 * the edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer class.
+	 * 
+	 * @param libManager The library manager of this new environment
+	 * @param srlType The SRL type to replace.
+	 * @param parent The parent EdifCell that contains the replaced cell
+	 * @param namePrefix This is the String prefix used to create a new name for all of
+	 *                   the replacement cells.
+	 * @param INIT Init value used when determining which cells to create for initialization.
+	 * @param d   
+	 * @param ce
+	 * @param clk
+	 * @param a0
+	 * @param a1
+	 * @param a2
+	 * @param a3
+	 * @param q
+	 * @param q15
+	 */
 	public static void Replace(EdifLibraryManager libManager, SRLType srlType, 
 			EdifCell parent, String namePrefix, long INIT,
 			EdifNet d, EdifNet ce, EdifNet clk, EdifNet a0, EdifNet a1, EdifNet a2, EdifNet a3, EdifNet q, 
@@ -102,6 +156,10 @@ public class SRL_Replacement {
 		   case SRLC16E_1: 	ff_type = FDE_1;
 		}
 		// Add input and output ports to FF's interface, but only once
+
+		// TODO: We shouldn't need to do this. Lets figure out why these
+		// primitives do not have the ports that are needed.
+		
 		if(FD.getInterface().getPortList().isEmpty()) {
 			try {
 				FD.addPort("C", 1, 1);
