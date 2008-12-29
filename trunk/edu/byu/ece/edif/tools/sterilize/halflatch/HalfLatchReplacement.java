@@ -23,6 +23,16 @@ import edu.byu.ece.edif.core.StringTypedValue;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopyReplace;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.ReplacementContext;
 
+/**
+ * Incomplete method to remove all the half latches in a design
+ * without flattening it.
+ * Called by HalfLatchReplacer.java.
+ * 
+ * 
+ * @author Yubo Li
+ *
+ */
+
 public class HalfLatchReplacement {
 	
 	/** Enumerate all of the FF types */	
@@ -61,41 +71,25 @@ public class HalfLatchReplacement {
 		return null;
 	}
 	
-	public static void Replace(EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, String ffType, EdifCell parent,
-			String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, EdifNet clr, int ffCount) {
+	public static void Replace(EdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
+			String ffType, EdifCell parent, String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, 
+			EdifNet clr) {
 		FFType type = StringToFFType(ffType);
 		if(type == null)
 			return;
-		Replace(libManager, topCell, env, type, parent, namePrefix, INIT, c, d, q, pre, ce, clr, ffCount);
+		Replace(ecr, libManager, topCell, env, type, parent, namePrefix, INIT, c, d, q, pre, ce, clr);
 	}
 	
-	
-	public static void Replace(EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, FFType ffType, EdifCell parent,
-			String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, EdifNet clr, int ffCount) {
+	public static void Replace(EdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
+			FFType ffType, EdifCell parent, String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, 
+			EdifNet clr) {
 		
 		/***** Step 1. Create/find Xilinx primitive cell needed for the replacement *****/
 		EdifCell FDCPE = XilinxLibrary.findOrAddXilinxPrimitive(libManager, "FDCPE");
 		
 		/***** Step 2. Create FDCPE instance *****/
-		// Add ports to the newly created FDCPE cell, but only once
-		if(ffCount == 0) {
-			try {
-				FDCPE.addPort("Q", 1, 2);
-				FDCPE.addPort("C", 1, 1);
-				FDCPE.addPort("CE", 1, 1);
-				FDCPE.addPort("CLR", 1, 1);
-				FDCPE.addPort("D", 1, 1);
-				FDCPE.addPort("PRE", 1, 1);
-			} catch(InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			} catch (EdifNameConflictException e) {
-				System.out.println("EdifNameConflictException caught");
-				System.exit(1);
-			}
-		}
 		// Create an FDCPE instance
-		String fdcpeInstanceName = namePrefix + "_FDCPE_" + Integer.toString(ffCount);
+		String fdcpeInstanceName = namePrefix + "_FDCPE";
 		EdifNameable fdcpeInstanceNameable = NamedObject.createValidEdifNameable(fdcpeInstanceName);
 		fdcpeInstanceNameable = parent.getUniqueInstanceNameable(fdcpeInstanceNameable);
 		EdifCellInstance fdcpeInstance = new EdifCellInstance(fdcpeInstanceNameable, parent, FDCPE);
@@ -108,69 +102,69 @@ public class HalfLatchReplacement {
 		/***** Step 3. Add extra ports and nets for the constants *****/
 		switch(ffType) {
 		case FD: {
-			CreatePresetPort(parent, topCell, env);
-			CreateClrPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateClrPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FD_1: {
-			CreatePresetPort(parent, topCell, env);
-			CreateClrPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateClrPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDC: {
-			CreatePresetPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDC_1: {
-			CreatePresetPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDCE: {
-			CreatePresetPort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDCE_1: {
-			CreatePresetPort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDCP: {
-			CreateCePort(parent, topCell, env);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDCP_1: {
-			CreateCePort(parent, topCell, env);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDE: {
-			CreatePresetPort(parent, topCell, env);
-			CreateClrPort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateClrPort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDE_1: {
-			CreatePresetPort(parent, topCell, env);
-			CreateClrPort(parent, topCell, env);
+			CreatePresetPort(parent, topCell, env, ecr);
+			CreateClrPort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDP: {
-			CreateClrPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreateClrPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDP_1: {
-			CreateClrPort(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			CreateClrPort(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDPE: {
-			CreateClrPort(parent, topCell, env);
+			CreateClrPort(parent, topCell, env, ecr);
 			break;
 		}
 		case FDPE_1: {
-			CreateClrPort(parent, topCell, env);
+			CreateClrPort(parent, topCell, env, ecr);
 			break;
 		}
 		}
@@ -182,34 +176,14 @@ public class HalfLatchReplacement {
 		System.out.println("****************************************");
 		
 		/***** Step 4. Hook up corresponding nets and ports *****/
-		EdifCellInterface fdcpeInterface = new EdifCellInterface(FDCPE);
+		EdifCellInterface fdcpeInterface = FDCPE.getInterface();
 		// Add ports to FDCPE interface
-		EdifPort qPort = null;
-		EdifPort cPort = null;
-		EdifPort cePort = null;
-		EdifPort clrPort = null;
-		EdifPort dPort = null;
-		EdifPort prePort = null;
-		try {
-			qPort = new EdifPort(fdcpeInterface, "Q", 1, 2);
-			cPort = new EdifPort(fdcpeInterface, "C", 1, 1);
-			cePort = new EdifPort(fdcpeInterface, "CE", 1, 1);
-			clrPort = new EdifPort(fdcpeInterface, "CLR", 1, 1);
-			dPort = new EdifPort(fdcpeInterface, "D", 1, 1);
-			prePort = new EdifPort(fdcpeInterface, "PRE", 1, 1);
-			fdcpeInterface.addPort("Q", 1, 1);
-			fdcpeInterface.addPort("C", 1, 1);
-			fdcpeInterface.addPort("CE", 1, 1);
-			fdcpeInterface.addPort("CLR", 1, 1);
-			fdcpeInterface.addPort("D", 1, 1);
-			fdcpeInterface.addPort("PRE", 1, 1);
-		} catch (EdifNameConflictException e) {
-			System.out.println("EdifNameConflictException caught");
-			System.exit(1);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort qPort = fdcpeInterface.getPort("Q");
+		EdifPort cPort = fdcpeInterface.getPort("C");
+		EdifPort cePort = fdcpeInterface.getPort("CE");
+		EdifPort clrPort = fdcpeInterface.getPort("CLR");
+		EdifPort dPort = fdcpeInterface.getPort("D");
+		EdifPort prePort = fdcpeInterface.getPort("PRE");
 		if (qPort == null) {
 			System.err.println("Can't find Q port on cell " + FDCPE);
 			System.exit(1);
@@ -282,7 +256,7 @@ public class HalfLatchReplacement {
 		
 	}
 	
-	public static void CreatePresetPort(EdifCell parent, EdifCell topCell, EdifEnvironment env) {
+	public static void CreatePresetPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for PRESET signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String preConstantPortName = parent.getName() + "_PRE_CONSTANT_PORT";
@@ -312,13 +286,13 @@ public class HalfLatchReplacement {
 		System.out.println("topCell: "+topCell.toString());
 		// Add extra ports to all the higher-level cells
 		while(!parent.toString().equals(topCell.toString())) {
-			parent = GetParentCell(parent, topCell, env);
-			CreatePresetPort(parent, topCell, env);
+			parent = GetParentCell(parent, topCell, env, ecr);
+			CreatePresetPort(parent, topCell, env, ecr);
 		}
 		System.out.println("======================");
 	}
 	
-	public static void CreateClrPort(EdifCell parent, EdifCell topCell, EdifEnvironment env) {
+	public static void CreateClrPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for CLR signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String clrConstantPortName = parent.getName() + "_CLR_CONSTANT_PORT";
@@ -346,13 +320,13 @@ public class HalfLatchReplacement {
 		System.out.println("topCell: "+topCell.toString());
 		// Add extra ports to all the higher-level cells
 		while(!parent.toString().equals(topCell.toString())) {
-			parent = GetParentCell(parent, topCell, env);
-			CreateClrPort(parent, topCell, env);
+			parent = GetParentCell(parent, topCell, env, ecr);
+			CreateClrPort(parent, topCell, env, ecr);
 		}
 		System.out.println("======================");
 	}
 	
-	public static void CreateCePort(EdifCell parent, EdifCell topCell, EdifEnvironment env) {
+	public static void CreateCePort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for CE signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String ceConstantPortName = parent.getName() + "_CE_CONSTANT_PORT";
@@ -380,13 +354,13 @@ public class HalfLatchReplacement {
 		System.out.println("topCell: "+topCell.toString());
 		// Add extra ports to all the higher-level cells
 		while(!parent.toString().equals(topCell.toString())) {
-			parent = GetParentCell(parent, topCell, env);
-			CreateCePort(parent, topCell, env);
+			parent = GetParentCell(parent, topCell, env, ecr);
+			CreateCePort(parent, topCell, env, ecr);
 		}
 		System.out.println("======================");
 	}
 	
-	public static EdifCell GetParentCell(EdifCell currentCell, EdifCell topCell, EdifEnvironment env) {
+	public static EdifCell GetParentCell(EdifCell currentCell, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
 		System.out.println("parent cell is not top level cell, finding parent's parents...");
 //		ArrayList <EdifCell> currentCellArray = new ArrayList<EdifCell>();
 //		currentCellArray.add(currentCell);
@@ -407,8 +381,16 @@ public class HalfLatchReplacement {
 		
 		for(EdifCellInstance subCellInstance: topCell.getSubCellList()) {
 			if(subCellInstance.getCellType().toString().equals(currentCell.toString())) {	// Found a match
-				System.out.println("parent found: " + subCellInstance.getParent());
-				return subCellInstance.getParent();
+//				for(ReplacementContext tempContext : ecr.getReplacementContexts()) {
+//					System.out.println("1: "+tempContext.getNewParentCell().toString());
+//					System.out.println("2: "+subCellInstance.getCellType().toString());
+//					if(tempContext.getNewParentCell().toString().equals(subCellInstance.getCellType().toString())) {
+//						System.out.println("parent found: " + subCellInstance.getParent());
+//						return subCellInstance.getParent();
+//					}
+//				}
+				System.out.println("parent found: " + topCell);
+				return topCell;
 			}
 		}
 		
@@ -416,7 +398,7 @@ public class HalfLatchReplacement {
 		for(EdifCellInstance subCellInstance: topCell.getSubCellList()) {
 			if(!subCellInstance.getCellType().getSubCellList().isEmpty()) {
 				System.out.println("not empty");
-				EdifCell parent  = GetParentCell(currentCell, subCellInstance.getCellType(), env);
+				EdifCell parent  = GetParentCell(currentCell, subCellInstance.getCellType(), env, ecr);
 				return parent;
 			}
 		}
