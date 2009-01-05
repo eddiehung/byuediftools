@@ -111,7 +111,7 @@ public class SRL_Replacement {
 	 * new replacement can be hooked up. 
 	 * 
 	 * It is called by the 
-	 * the edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer class.
+	 * edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer class.
 	 * 
 	 * @param libManager The library manager of this new environment
 	 * @param srlType The SRL type to replace.

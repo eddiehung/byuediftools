@@ -9,7 +9,6 @@ import java.io.PrintStream;
 import edu.byu.ece.edif.arch.xilinx.XilinxGenLib;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
-import edu.byu.ece.edif.core.EdifCellInterface;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibrary;
@@ -20,10 +19,41 @@ import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopyReplace;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.ReplacementContext;
 import edu.byu.ece.edif.core.EdifPrintWriter;
-import java.io.*;
 import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchRemove;
 
+/**
+ * Removes half latches from an EDIF file. Replaces all types of FFs with FDCPEs 
+ * and connect the unused ports (PRE, CLR, CE) to constant values (0 or 1). The
+ * constant values are provided in two ways, depending on the user's choice:
+ * 1) A LUT is added into the EDIF file and provides the constant values;
+ * 2) New input ports are added on the top-level cell's interface, and the constant
+ * 	  values are provided by external inputs.
+ * 
+ * This class provides a command-line executable interface (it has a main
+ * method). The user specifies the EDIF file, following the conventions of the
+ * JEdif tools. An argument [-c <constant value mode>] is used to specify the 
+ * constant value mode. There are two optional modes: "lut" and "nolut". "lut" 
+ * is set as default. The resulting EDIF file carries the same filename as the
+ * original, with "_noHalfLatch" appended. The resulting top-level EdifCell has the
+ * same name as the original EdifCell.
+ * 
+ * For a precise list of the cells replaced by this class, please see the source
+ * code.
+ * 
+ * The half latch removal is assumed to be performed on a flattened cell.
+ * 
+ * @author Yubo Li
+ */
 public class HalfLatchRemoval {
+	
+	/**
+	 * This static method removes half latches. It returns a new EdifEnvironment
+	 * that is a copy of the old with half latches removed.
+	 * 
+	 * @param env EdifEnvironment containing half latches.
+	 * @param lut a flag indicating which mode is chosen.
+	 * @return EdifEnvironment in which all half latches have been removed.
+	 */
 	public static EdifEnvironment removeHalfLatches(EdifEnvironment env, boolean lut) {
 		System.out.println("Removing half latches . . .");
 		
@@ -97,8 +127,13 @@ public class HalfLatchRemoval {
 		return newEnv;
 	}
 	
+	/** A simple main class that can be used to perform this half latch removal.
+	 *
+	 */
 	public static void main(String[] args) {
-		// The String printed when there is a problem with the argument string.
+		/***********************************************************************
+		 * The String printed when there is a problem with the argument string.
+		 **********************************************************************/
 		String usageString = "Usage: java HalfLatchReplacer <top file> [-L <search directory>]* [-f <filename>]* [-o <outputfilename>] [-c <constant value mode>]";
 		String lutOption = "Constant value mode options: lut, nolut";
 		if (args.length < 1) {
