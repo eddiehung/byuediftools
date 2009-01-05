@@ -4,7 +4,6 @@ import edu.byu.ece.edif.arch.xilinx.XilinxLibrary;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifCellInterface;
-import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifNameable;
@@ -18,13 +17,35 @@ import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.PropertyList;
 import edu.byu.ece.edif.core.StringTypedValue;
-import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchReplacement.FFType;
-import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopyReplace;
-import edu.byu.ece.edif.tools.sterilize.lutreplace.ReplacementContext;
 
+/**
+ * Removes half latches in a Xilinx design. The following primitives 
+ * are replaced:<br>
+ * <ul>
+ *   <li> FD
+ *   <li> FD_1
+ *   <li> FDC
+ *   <li> FDC_1
+ *   <li> FDCE
+ *   <li> FDCE_1
+ *   <li> FDCP
+ *   <li> FDCP_1
+ *   <li> FDE
+ *   <li> FDE_1
+ *   <li> FDP
+ *   <li> FDP_1
+ *   <li> FDPE
+ *   <li> FDPE_1
+ * </ul>
+ * 
+ * @author Yubo Li
+ */
 public class HalfLatchRemove {
 	
-	/** Enumerate all of the FF types */	
+	/** Enumerations of all primitives. These strings are used for matching
+	 * the strings in the original EDIF.
+	 * @see StringToSRLType 
+	 **/
 	public static final String FD_STRING 	 = 	"FD";
 	public static final String FD_1_STRING 	 = 	"FD_1";
 	public static final String FDC_STRING 	 = 	"FDC";
@@ -40,8 +61,17 @@ public class HalfLatchRemove {
 	public static final String FDPE_STRING   = 	"FDPE";
 	public static final String FDPE_1_STRING = 	"FDPE_1";
 	
+	/**
+	 * An enumerated type that represent each individual primitive. 
+	 */
 	public enum FFType {FD, FD_1, FDC, FDC_1, FDCE, FDCE_1, FDCP, FDCP_1, FDE, FDE_1, FDP, FDP_1, FDPE, FDPE_1};
 
+	/**
+	 * Compares a string against all the primitive strings while ignoring
+	 * case.
+	 * @return An FFType object representing the primitive that was matched. Returns
+	 * a null if no match occurs.
+	 */
 	public static FFType StringToFFType(String str) {
 		if (str.equalsIgnoreCase(FD_STRING)) 	 return FFType.FD;
 		if (str.equalsIgnoreCase(FD_1_STRING)) 	 return FFType.FD_1;
@@ -68,6 +98,32 @@ public class HalfLatchRemove {
 		Remove(libManager, type, parent, lut, namePrefix, INIT, c, d, q, pre, ce, clr);
 	}
 	
+	/**
+	 * Performs the half latch removal algorithm. This method only operates on a single
+	 * EdifCell object. This method assumes that a new EdifCell has been created and
+	 * there is a "hole" where a previously used FF primitive was used. It is also assumed
+	 * that the design is already flattened before half latch removal begins. All the
+	 * surrounding logic and nets are created and passed to this method so the
+	 * new FDCPE instance can be hooked up. 
+	 * 
+	 * It is called by the
+	 * edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchRemoval class.
+	 * 
+	 * @param libManager The library manager of this new environment
+	 * @param ffType The FF type to replace.
+	 * @param parent The parent EdifCell that contains the replaced cell
+	 * @param lut A flag to indicate which constant value mode is chosen. Set to be true
+	 *                   by default.
+	 * @param namePrefix This is the String prefix used to create a new name for all of
+	 *                   the replacement cells.
+	 * @param INIT Init value used when determining which cells to create for initialization.
+	 * @param c
+	 * @param d
+	 * @param q
+	 * @param pre
+	 * @param ce
+	 * @param clr
+	 */
 	public static void Remove(EdifLibraryManager libManager, FFType ffType, EdifCell parent, 
 			boolean lut, String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, EdifNet clr) {
 		
