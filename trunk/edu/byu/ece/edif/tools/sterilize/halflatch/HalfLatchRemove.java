@@ -422,11 +422,14 @@ public class HalfLatchRemove {
 			// dangling net. If it is newly created, then connect it to
 			// the corresponding constant value (0 or 1).
 			if(!lut_flag) {	// LUT is newly created
-				constantZeroNet.addPortConnection(lutOEPR);
+				if(constantZeroNet != null)
+					constantZeroNet.addPortConnection(lutOEPR);
 			}
 			if(!inv_flag) {	// INV is newly created
-				constantZeroNet.addPortConnection(invIEPR);
-				constantOneNet.addPortConnection(invOEPR);
+				if(constantZeroNet != null)
+					constantZeroNet.addPortConnection(invIEPR);
+				if(constantOneNet != null)
+					constantOneNet.addPortConnection(invOEPR);
 			}
 			q.addPortConnection(qEPR);
 			c.addPortConnection(cEPR);
