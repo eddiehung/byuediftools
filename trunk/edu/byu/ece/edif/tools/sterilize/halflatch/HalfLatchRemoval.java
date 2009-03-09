@@ -109,7 +109,11 @@ public class HalfLatchRemoval {
 			EdifCell oldCell = context.getOldCellToReplace();
 			EdifCell newParent = context.getNewParentCell();
 			EdifCellInstance oldInstance = context.getOldInstanceToReplace();
-			String INIT = oldInstance.getProperty("INIT").getValue().toString();
+			String INIT;
+			if(oldInstance.getProperty("INIT")!=null)	// get INIT value if it exists
+				INIT = oldInstance.getProperty("INIT").getValue().toString();
+			else
+				INIT = "0";								// set INIT to be 0 as default
 			EdifNet C = context.getNewNetToConnect("C");
 			EdifNet D = context.getNewNetToConnect("D");
 			EdifNet Q = context.getNewNetToConnect("Q");
