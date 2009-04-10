@@ -8,9 +8,8 @@
 # Please copy or merge this file with your subversion user config file.
 # 
 # Linux:   ~/.subversion/config
-# Windows: "%USERPROFILE%\Application Data\Subversion\config", where
-# $USERPROFILE% is usually something like i
-# "C:\Documents and Settings\John Doe\"
+# Windows: "%USERPROFILE%\Application Data\Subversion\config", where a
+# typical $USERPROFILE% is "C:\Documents and Settings\John Doe\"
 #
 ######################################################################
 
