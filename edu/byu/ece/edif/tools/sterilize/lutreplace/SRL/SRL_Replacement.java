@@ -230,13 +230,7 @@ public class SRL_Replacement {
 		/****** Step 7. Wire up enable signals, if the cell is an "E" type cell******/
 		if (srlType == SRLType.SRL16E || srlType == SRLType.SRL16E_1 || 
 				srlType == SRLType.SRLC16E || srlType ==SRLType.SRLC16E_1) {
-			EdifPort cePort = null;
-			try {
-				cePort = new EdifPort(ffInterface, "CE", 1, 1);
-			} catch (InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			}
+			EdifPort cePort = ff_type.getPort("CE");
 			if (cePort == null) {
 				System.err.println("Can't find CE port on cell " + ff_type);
 				System.exit(1);
@@ -250,13 +244,7 @@ public class SRL_Replacement {
 
 		/****** Step 8. Wire up nets between flip-flops ******/
 		// Hook up the FF net to the Q port
-		EdifPort qPort = null;
-		try {
-			qPort = new EdifPort(ffInterface, "Q", 1, 2);
-		} catch (InvalidEdifNameException e) {
-			System.out.println("InvalidEdifNameException caught");
-			System.exit(1);
-		}
+		EdifPort qPort = ff_type.getPort("Q");
 		if (qPort == null) {
 			System.err.println("Can't find Q port on cell " + ff_type);
 			System.exit(1);
@@ -267,14 +255,8 @@ public class SRL_Replacement {
 			ffOutputNets[i].addPortConnection(qEPR);
 
 			// Hook up the inputs to the FF
-			EdifPort dPort = null;
+			EdifPort dPort = ff_type.getPort("D");
 			EdifNet inputNet = null;
-			try {
-				dPort = new EdifPort(ffInterface, "D", 1, 1);
-			} catch (InvalidEdifNameException e) {
-				System.out.println("InvalidEdifNameException caught");
-				System.exit(1);
-			}
 			if (dPort == null) {
 				System.err.println("Can't find D port on cell " + ff_type);
 				System.exit(1);
