@@ -22,18 +22,17 @@
  */
 package edu.byu.ece.edif.tools.sterilize.lutreplace;
 
+import java.util.Collection;
+
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 
 public interface ReplacementContext {
-    /**
-     * @return the EdifCell object that matches with the old EdifCell object.
-     * This is the object that the replacer provided for a match.
-     */
-    public EdifCell getMatchingTemplateCell();
 
+    public void addOldSBPortNewNetAssociation(EdifSingleBitPort oldSBPort, EdifNet newNet);
+    
     /**
      * @return the new EdifCell where the replacement logic should be added.
      * This EdifCell is needed so that new logic can be added.
@@ -74,4 +73,6 @@ public interface ReplacementContext {
 	 **/
 	public EdifNet getNewNetToConnect(String portName);
     
+	public Collection<EdifSingleBitPort> getOldSBPorts();	
+	
 }

@@ -22,6 +22,7 @@
  */
 package edu.byu.ece.edif.util.graph;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -40,7 +41,7 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
  * TODO: Let's make an interface for this called EdifCellInstanceGroupings and a
  * simple class that implements the interface.
  */
-public class EdifCellInstanceGroupings {
+public class EdifCellInstanceGroupings implements Serializable {
 
     public EdifCellInstanceGroupings(EdifCell cell) {
         _cell = cell;

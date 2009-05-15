@@ -49,7 +49,10 @@ public class EdifCellInstanceNameReference extends EdifGenericNameReference impl
         super(shouldResolve);
     	_instanceName = instance.getName();
         EdifCell parent = instance.getParent();
-        _cellReference = EdifCellNameReference.getReference(parent, false);
+        if (parent != null)
+        	_cellReference = EdifCellNameReference.getReference(parent, false);
+        else // in this case, we assume that the instance is the top instance of the design
+        	_cellReference = null;
         if (cacheReference)
             _referenceCache.cacheReference(instance, this);
     }
@@ -68,13 +71,18 @@ public class EdifCellInstanceNameReference extends EdifGenericNameReference impl
     }
     
     public EdifCellInstance getReferencedInstance(EdifEnvironment referenceEnvironment) throws EdifDeserializationException {
-        EdifCell parent = _cellReference.getReferencedCell(referenceEnvironment);
-        if (parent == null)
-            throw new EdifDeserializationException("Reference environment does not contain referenced instance's parent cell");
-        EdifCellInstance instance = parent.getCellInstance(_instanceName);
-        if (instance == null)
-            throw new EdifDeserializationException("Reference environment does not contain referenced instance");
-        return instance;
+    	if (_cellReference != null) {
+    		EdifCell parent = _cellReference.getReferencedCell(referenceEnvironment);
+    		if (parent == null)
+    			throw new EdifDeserializationException("Reference environment does not contain referenced instance's parent cell");
+    		EdifCellInstance instance = parent.getCellInstance(_instanceName);
+    		if (instance == null)
+    			throw new EdifDeserializationException("Reference environment does not contain referenced instance");
+    		return instance;
+    	}
+    	else { // this must be the design's top instance
+    		return referenceEnvironment.getTopCellInstance();
+    	}
     }
     
     protected String _instanceName;

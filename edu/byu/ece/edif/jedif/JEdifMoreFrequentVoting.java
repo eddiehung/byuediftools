@@ -26,34 +26,37 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
+import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
-import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.tools.replicate.PartialReplicationDescription;
-import edu.byu.ece.edif.tools.replicate.PartialReplicationStringDescription;
-import edu.byu.ece.edif.tools.replicate.ReplicationException;
+import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
+import edu.byu.ece.edif.tools.replicate.nmr.EdifReplicationPropertyReader;
 import edu.byu.ece.edif.tools.replicate.nmr.MoreFrequentVoting;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
+import edu.byu.ece.edif.tools.replicate.nmr.OrganSpecification;
+import edu.byu.ece.edif.tools.replicate.nmr.ReplicationDescription;
+import edu.byu.ece.edif.tools.replicate.nmr.RestoringOrganSpecification;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
-import edu.byu.ece.edif.util.jsap.ConfigFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
-import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
-import edu.byu.ece.edif.util.jsap.MoreFrequentVotingCommandGroup;
-import edu.byu.ece.edif.util.jsap.OutputFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.PTMRFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.TechnologyCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.ConfigFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.InputFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.JEdifParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.MoreFrequentVotingCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationDescriptionCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 import edu.byu.ece.graph.Edge;
 
 public class JEdifMoreFrequentVoting extends EDIFMain {
@@ -75,14 +78,11 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         // Parse command line options
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new InputFileCommandGroup());
-        OutputFileCommandGroup of = new OutputFileCommandGroup();
-        of.setDefaultFilename("<inputfile>.ptmr");
-        parser.addCommands(of);
         parser.addCommands(new ConfigFileCommandGroup(EXECUTABLE_NAME));
         parser.addCommands(new TechnologyCommandGroup());
-        parser.addCommands(new PTMRFileCommandGroup());
+        parser.addCommands(new ReplicationDescriptionCommandGroup());
         parser.addCommands(new MoreFrequentVotingCommandGroup());
-        LogFileCommandGroup loggerCG = new LogFileCommandGroup();
+        LogFileCommandGroup loggerCG = new LogFileCommandGroup("more_frequent.log");
         parser.addCommands(loggerCG);
 
         JSAPResult result = parser.parse(args, err);
@@ -115,13 +115,18 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         }
 
         // Get Strings from command line for user-specified voter locations
-        Collection<String> voterLocations = new ArrayList<String>();
-        String[] voterLocationArray = MoreFrequentVotingCommandGroup.getVoterLocations(result, out);
-        if (voterLocationArray != null)
-            voterLocations.addAll(Arrays.asList(MoreFrequentVotingCommandGroup.getVoterLocations(result, out)));
-
-        // Create EdifEnvironment data structure
-        EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out);
+        Collection<String> voterInstanceLocations = new ArrayList<String>();
+        Collection<String> voterNetLocations = new ArrayList<String>();
+        String[] voterLocationInstanceArray = MoreFrequentVotingCommandGroup.getVoterInstanceLocations(result);
+        if (voterLocationInstanceArray != null)
+            voterInstanceLocations.addAll(Arrays.asList(voterLocationInstanceArray));
+        String[] voterLocationNetArray = MoreFrequentVotingCommandGroup.getVoterNetLocations(result);
+        if (voterLocationNetArray != null)
+        	voterNetLocations.addAll(Arrays.asList(voterLocationNetArray));
+        
+        // Create EdifEnvironment data structure and get hierarchy (if present in .jedif)
+        ArrayList<PreservedHierarchyByNames> hierarchyReturn = new ArrayList<PreservedHierarchyByNames>(1);
+        EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out, hierarchyReturn);
         if (top == null) {
             // Report error and exit
             err.println("ERROR: Could not read JEdif file.");
@@ -129,36 +134,26 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         }
         TechnologyCommandGroup.getPartFromEDIF(result, top);
 
-        EdifCell cell = top.getTopCell();
-        if (!(cell instanceof FlattenedEdifCell)) {
-            // Report error and exit
-            err.println("ERROR: JEdif file does not contain a Flattened EdifCell as the top cell.");
+        if (hierarchyReturn.size() < 1) {
+         // Report error and exit
+            err.println("ERROR: The design in the .jedif file has not been flattened.");
             System.exit(1);
         }
-        FlattenedEdifCell flatCell = (FlattenedEdifCell) cell;
-
+        PreservedHierarchyByNames hierarchy = hierarchyReturn.iterator().next();
+        EdifCell topCell = top.getTopCell();
+        
         // Create graph
-        EdifCellInstanceGraph graph = new EdifCellInstanceGraph(flatCell);
+        EdifCellInstanceGraph graph = new EdifCellInstanceGraph(topCell);
 
-        // Parse PartialTMRDescription
-        PartialReplicationStringDescription sdesc = PTMRFileCommandGroup.getPartialReplicationDescription(result, out);
-        PartialReplicationDescription desc = null;
-        try {
-            desc = sdesc.getDescription(top);
-        } catch (ReplicationException e) {
-            e.toRuntime();
-        }
-        if (desc == null) {
-            // Report error and exit
-            LogFile.err().println("ERROR: Could not read PTMRDescription file.");
-            System.exit(1);
-        }
+        // Read ReplicationDescription
+        ReplicationDescription rDesc = ReplicationDescriptionCommandGroup.getReplicationDescription(result, top, out);
 
-        // Create TMR architecture
+        // Create NMR architecture
         NMRArchitecture nmrArch = TechnologyCommandGroup.getArch(result);
 
         // Get the voter EPRs from the user-specified voter location instances
-        Collection<EdifPortRef> userCutset = getVoterEPRsFromInstanceNames(voterLocations, flatCell, graph);
+        Collection<EdifPortRef> userCutset = getVoterEPRsFromInstanceNames(voterInstanceLocations, topCell, graph, hierarchy);
+        userCutset.addAll(getVoterEPRsFromNetNames(voterNetLocations, topCell, hierarchy));
 
 		//////////////
 		//// BHP: HACK to remove edges from the graph that throw off my partitioning code
@@ -189,24 +184,12 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
 		//}
 		//graph.removeEdges(edgesToRemove);
 		///////////////
+        
+        // Get the cutset for More Frequent Voting and add it to the ReplicationDescription
+        addMoreFrequentVoting(nmrArch, voter_threshold, num_partitions, userCutset, graph, rDesc);
 
-        // Get the cutset for More Frequent Voting and add it to the PartialTMRDescription
-        addMoreFrequentVoting(nmrArch, voter_threshold, num_partitions, userCutset, graph, desc);
-
-        // Write out PTMR Description
-        try {
-            sdesc = new PartialReplicationStringDescription(desc);
-        } catch (ReplicationException e) {
-            e.toRuntime();
-        }
-
-        if (!result.userSpecified(OutputFileCommandGroup.OUTPUT_OPTION)) {
-            String name = MergeParserCommandGroup.getInputFileName(result);
-            name = name.substring(0, name.lastIndexOf('.'));
-            OutputFileCommandGroup.serializeObject(out, name + ".ptmr", sdesc);
-        } else {
-            OutputFileCommandGroup.serializeObject(out, result, sdesc);
-        }
+        // Rewrite the ReplicationDescription instead
+        ReplicationDescriptionCommandGroup.writeReplicationDescription(result, top, rDesc, out);
 
         LogFile.out().println("Done");
     }
@@ -214,19 +197,19 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
     /**
      * @param logger
      * @param voterLocations
-     * @param flatCell
+     * @param topCell
      * @param graph
      * @return
      */
     protected static Collection<EdifPortRef> getVoterEPRsFromInstanceNames(Collection<String> voterLocations,
-            FlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
+            EdifCell topCell, EdifCellInstanceGraph graph, PreservedHierarchyByNames hierarchy) {
         // Find voter locations from instance names
-        Collection<FlattenedEdifCellInstance> voterInstances = new ArrayList<FlattenedEdifCellInstance>();
+        Collection<EdifCellInstance> voterInstances = new ArrayList<EdifCellInstance>();
         // a. Get EdifCellInstances that correspond to these Strings
         for (String instanceName : voterLocations) {
             LogFile.out().println("Adding voter at the output(s) of instance " + instanceName);
             // Get the  corresponding instance
-            FlattenedEdifCellInstance instance = ((FlattenedEdifCell) flatCell).getFlatInstance(instanceName);
+            EdifCellInstance instance = hierarchy.getFlatInstance(instanceName, topCell);
             // Give user warning if no match was found
             if (instance == null)
                 LogFile.err().println("\tWARNING: No match for instance " + instanceName);
@@ -235,7 +218,7 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         }
         // b. Get output PortRefs
         Collection<EdifPortRef> userCutset = new ArrayList<EdifPortRef>();
-        for (FlattenedEdifCellInstance instance : voterInstances) {
+        for (EdifCellInstance instance : voterInstances) {
             Collection<EdifPortRefEdge> outputEdges = graph.getOutputEdges(instance);
             for (EdifPortRefEdge outputEdge : outputEdges) {
                 userCutset.add(outputEdge.getSourceEPR());
@@ -243,6 +226,23 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
             }
         }
         return userCutset;
+    }
+    
+    protected static Collection<EdifPortRef> getVoterEPRsFromNetNames(Collection<String> netLocations, EdifCell topCell, PreservedHierarchyByNames hierarchy) {
+    	Collection<EdifPortRef> cuts = new ArrayList<EdifPortRef>();
+    	for (String netName : netLocations) {
+    		LogFile.out().println("Adding voter at net: " + netName);
+    		EdifNet net = hierarchy.getFlatNet(netName, topCell);
+    		if (net == null) {
+    			LogFile.err().println("\tWARNING: No match for net: " + netName);
+    		}
+    		else {
+    			Collection<EdifPortRef> sourcePortRefs = net.getSourcePortRefs(true, true);
+    			LogFile.debug().println("Adding voter at portRefs: " + sourcePortRefs);
+    			cuts.addAll(sourcePortRefs);  			
+    		}
+    	}
+    	return cuts;
     }
 
     /**
@@ -254,14 +254,26 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
      * @param desc
      */
     public static void addMoreFrequentVoting(NMRArchitecture nmrArch, int voter_threshold, int num_partitions,
-            Collection<EdifPortRef> voter_locations, EdifCellInstanceGraph graph, PartialReplicationDescription desc) {
-        // Get cutset (possibly populated by feedback cutset determination
-        Collection<EdifPortRef> EPRCutSet = desc.portRefsToCut;
+            Collection<EdifPortRef> voter_locations, EdifCellInstanceGraph graph, ReplicationDescription rDesc) {
+        
+    	// Get pre-existing cuts (possibly populated by feedback cutset determination -- also includes reduction voters and any other voters)
+        Collection<EdifPortRef> EPRCutSet = new LinkedHashSet<EdifPortRef>();
+        Map<EdifNet, Set<OrganSpecification>> specMap = rDesc.getOrganSpecifications();
+        for (EdifNet net : specMap.keySet()) {
+        	Set<OrganSpecification> specs = specMap.get(net);
+        	Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
+        	for (OrganSpecification spec : specs) {
+        		if (spec instanceof RestoringOrganSpecification) {
+        			EPRCutSet.addAll(drivers);
+        		}
+        	}
+        }
 
+        int origSize = EPRCutSet.size();
+        
         // Add user-specified voter locations
         EPRCutSet.addAll(voter_locations);
 
-        int origSize = EPRCutSet.size();
         // Get Edge cutset from EPRs
         Collection<Edge> cutSet = MoreFrequentVoting.getEdifEdgesFromPortRefs(graph, EPRCutSet);
 
@@ -278,8 +290,31 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
 
         // Get PortRefs to cut from edges, replace old cutset
         Collection<EdifPortRef> newEPRCutSet = NMRUtilities.getPortRefsToCutFromEdges(newCutSet, graph, nmrArch);
-        //desc.portRefsToCut.addAll(newEPRCutSet);
+        //add to rDesc instead using OrganSpecifications as in JEdifVoterSelection
+        
+        boolean skipClockNets = true;
+        for (EdifPortRef cut : newEPRCutSet) {
+			EdifNet net = cut.getNet();
+			if (EdifReplicationPropertyReader.isDoNotRestoreLocation(net) || (nmrArch.isClockNet(net) && skipClockNets))
+			    continue;
+			
+			// check to see if there is already a voter to be inserted on this net -- use it if there is
+			Set<OrganSpecification> prevSpecs = rDesc.getOrganSpecifications(net);
+						
+			List<EdifPortRef> forceRefs = new ArrayList<EdifPortRef>(1);
+			forceRefs.add(cut);
+			
+			// this is confusing so I'll explain it -- when prevSpecs is not null and contains an OrganSpecification
+			// that can be reused, its organ count will be promoted if necessary, and its list of forceRestoreRefs will
+			// have forceRefs appended to it. ReplicationType.forceRestore() will return null, so nothing new will be added
+			// to the ReplicationDescription -- only the existing OrganSpecification will be modified as necessary. The
+			// effect is to create a new OrganSpecification only when necessary.
+			rDesc.addOrganSpecifications(net, rDesc.getReplicationType(cut).forceRestore(net, forceRefs, prevSpecs, rDesc));
+
+		}
+        
         EPRCutSet.addAll(newEPRCutSet);
+        
         // Done
         LogFile.out().println("Done");
 

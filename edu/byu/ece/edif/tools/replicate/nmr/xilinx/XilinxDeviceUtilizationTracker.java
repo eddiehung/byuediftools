@@ -22,6 +22,9 @@
  */
 package edu.byu.ece.edif.tools.replicate.nmr.xilinx;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.tools.replicate.nmr.AbstractDeviceUtilizationTracker;
@@ -45,6 +48,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         _mergeFactor = mergeFactor;
         _optimizationFactor = optimizationFactor;
         _desiredUtilizationFactor = desiredUtilizationFactor;
+        _resourceMapper = XilinxResourceMapper.getInstance();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -53,33 +57,13 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     /**
      * Decrements the utilization of the cell-type of the parameter eci.
      */
-    public void decrementResourceCount(EdifCellInstance eci) throws UnsupportedResourceTypeException {
-        String eciResourceType = getResourceType(eci);
-        if (eciResourceType == null) {
-            System.out
-                    .println("WARNING: Instance "
-                            + eci
-                            + " does not map to a Xilinx primitive.  If it is a black box, it's internal utilization will not be tracked.");
-            return;
-        }
-        decrementResourceCount(eciResourceType);
-    }
-
-    /**
-     * Decrements the utilization of the cell-type of the parameter eci.
-     */
     public void decrementResourceCount(String resourceType) throws UnsupportedResourceTypeException {
-
-        //TODO: What should happen if the resource type "" is returned??
-        //      Previously this was just ignored
-        if (resourceType.compareToIgnoreCase("") == 0)
-            return;
-
+    	if (resourceType.equals(""))
+    		return;
         Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
         Integer maxUtilizationI = _maxUtilizationMap.get(resourceType);
         if (currentUtilizationD == null || maxUtilizationI == null)
-            throw new UnsupportedResourceTypeException("Resource type " + resourceType
-                    + " which is not supported in the specified part.");
+            throw new UnsupportedResourceTypeException("Unsupported resource type: " + resourceType);
         double currentUtilization = currentUtilizationD.doubleValue();
         int maxUtilization = maxUtilizationI.intValue();
 
@@ -89,14 +73,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         else
             _currentUtilizationMap.put(resourceType, new Double(currentUtilization - 1.0));
     }
-
-    public void decrementVoterCount() throws UnsupportedResourceTypeException {
-        _numVoters--;
-        if (_numVoters < 0)
-            _numVoters = 0;
-        decrementResourceCount(XilinxResourceMapper.LUT);
-    }
-
+    
     public double getDesiredUtilizationFactor() {
         return _desiredUtilizationFactor;
     }
@@ -159,27 +136,19 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         return _optimizationFactor;
     }
 
-    public String getResourceType(EdifCellInstance eci) {
-        return XilinxResourceMapper.getResourceType(eci);
-    }
-
-    public int getVoterCount() {
-        return _numVoters;
-    }
-
     /**
      * Causes this DeviceUtilizationTracker to ignore the soft logic utilization
      * limit
      */
     public void ignoreSoftLogicUtilizationLimit() {
-        _ignoreSoftLogicUtilizationLimit = true;
+        _ignoreEstimatedStops = true;
     }
 
     /**
      * Causes this DeviceUtilizationTracker to ignore all hard resource limits
      */
     public void ignoreHardResourceUtilizationLimits() {
-        _ignoreHardResourceUtilizationLimits = true;
+        _ignoreHardStops = true;
     }
 
     /**
@@ -187,36 +156,33 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
      */
     public void incrementResourceCount(String resourceType) throws OverutilizationEstimatedStopException,
             OverutilizationHardStopException, UnsupportedResourceTypeException {
-
-        //TODO: What should happen if the resource type "" is returned??
-        //      Previously this was just ignored
-        if (resourceType == null || resourceType.compareToIgnoreCase("") == 0) {
-            return;
-        }
-        if (!_ignoreSoftLogicUtilizationLimit && (_currentNMRInstances.size() / total_instances > coverage_factor))
-            throw new OverutilizationEstimatedStopException("Reached desired Triplication coverage");
-
+    	if (resourceType.equals(""))
+    		return;
         Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
         Integer maxUtilizationI = _maxUtilizationMap.get(resourceType);
         if (currentUtilizationD == null || maxUtilizationI == null)
-            throw new UnsupportedResourceTypeException("Resource type " + resourceType
-                    + " is not supported in the specified part.");
+            throw new UnsupportedResourceTypeException("Unsupported resource type: " + resourceType);
+        
+        if (!_ignoreEstimatedStops && (_origNumInstances > 0) && (_numInstances / _origNumInstances > coverage_factor))
+            throw new OverutilizationEstimatedStopException("Reached desired coverage");
+        
         double currentUtilization = currentUtilizationD.doubleValue();
         int maxUtilization = maxUtilizationI.intValue();
 
         // Check for hard resource exception, otherwise increment utilization
-        if (!_ignoreHardResourceUtilizationLimits && (currentUtilization + 1.0 > maxUtilization))
+        if (!_ignoreHardStops && (currentUtilization + 1.0 > maxUtilization))
             throw new OverutilizationHardStopException("Adding instance of resource type" + resourceType + " exceeds "
                     + maxUtilization + ", the maximum number of available resources for type " + resourceType + ".");
-        else
-            _currentUtilizationMap.put(resourceType, new Double(currentUtilization + 1.0));
-
-        // Check to see if the current utilization exceeds the calculated limit.
-        // If the limit is exceeded, throw an estimated overutilization exception
+        
+        Double cachedUtilizationValue = _currentUtilizationMap.get(resourceType);
+        _currentUtilizationMap.put(resourceType, new Double(currentUtilization + 1.0));
+        // Now check to see if the current utilization exceeds the calculated limit.
+        // If the limit is exceeded, revert the change and throw an estimated overutilization exception.
         int estimatedLogicBlockUtilization = (int) getEstimatedLogicBlockUtilization();
         double maxLogicBlocks = getMaxLogicBlocks();
         double maxDesiredLogicBlocks = _desiredUtilizationFactor * maxLogicBlocks;
-        if (!_ignoreSoftLogicUtilizationLimit && (estimatedLogicBlockUtilization > maxDesiredLogicBlocks)) {
+        if (!_ignoreEstimatedStops && (estimatedLogicBlockUtilization > maxDesiredLogicBlocks)) {
+            _currentUtilizationMap.put(resourceType, cachedUtilizationValue);
             double currentLUTUtilization = _currentUtilizationMap.get(XilinxResourceMapper.LUT).doubleValue();
             double currentFFUtilization = _currentUtilizationMap.get(XilinxResourceMapper.FF).doubleValue();
             throw new OverutilizationEstimatedStopException("The current device has " + maxLogicBlocks
@@ -227,35 +193,31 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         }
     }
 
-    /**
-     * Increments the utilization of the cell-type of the parameter eci.
-     */
-    public void incrementResourceCount(EdifCellInstance eci) throws OverutilizationEstimatedStopException,
-            OverutilizationHardStopException, UnsupportedResourceTypeException {
-        String eciResourceType = getResourceType(eci);
+//    /**
+//     * Increments the utilization of the cell-type of the parameter eci.
+//     */
+//    protected void incrementResourceCount(EdifCellInstance eci) throws OverutilizationEstimatedStopException,
+//            OverutilizationHardStopException, UnsupportedResourceTypeException {
+//        String eciResourceType = _resourceMapper.getResourceType(eci);
+//
+//        if (eciResourceType == null) {
+//            if (eci.getCellType().getBlackBoxResources() == null) {
+//                System.out.println("WARNING: Instance " + eci
+//                        + " does not map to a Xilinx primitve.  If it is a black box,"
+//                        + " it's internal utilization will not be tracked.");
+//            } else { // this should instead be done at the AbstractDeviceUtilizationTracker level
+//                for (String type : eci.getCellType().getBlackBoxResources())
+//                    incrementResourceCount(type);
+//                System.out.println("WARNING:\n\t Instance " + eci
+//                        + " does not map to a Xilinx primitve, and is assumed to be a black box "
+//                        + "There is utilization information about this blackbox, and that will be "
+//                        + "used to estimate the total utilization. \n");
+//            }
+//        } else
+//            incrementResourceCount(eciResourceType);
+//        return;
+//    }
 
-        if (eciResourceType == null) {
-            if (eci.getCellType().getBlackBoxResources() == null) {
-                System.out.println("WARNING: Instance " + eci
-                        + " does not map to a Xilinx primitve.  If it is a black box,"
-                        + " it's internal utilization will not be tracked.");
-            } else {
-                for (String type : eci.getCellType().getBlackBoxResources())
-                    incrementResourceCount(type);
-                System.out.println("WARNING:\n\t Instance " + eci
-                        + " does not map to a Xilinx primitve, and is assumed to be a black box "
-                        + "There is utilization information about this blackbox, and that will be "
-                        + "used to estimate the total utilization. \n");
-            }
-        } else
-            incrementResourceCount(eciResourceType);
-        return;
-    }
-
-    public void incrementVoterCount() throws OverutilizationHardStopException, OverutilizationEstimatedStopException {
-        _numVoters++;
-        incrementResourceCount(XilinxResourceMapper.LUT);
-    }
 
     @Override
     public String toString() {
@@ -263,7 +225,7 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
         sb.append(super.toString());
         sb.append("Logic Blocks (estimated): " + (int) getEstimatedLogicBlockUtilization() + " out of "
                 + getMaxLogicBlocks() + " (" + (int) (100.0 * getEstimatedLogicBlockUtilizationRatio()) + "%).\n");
-        if (_ignoreSoftLogicUtilizationLimit) {
+        if (_ignoreEstimatedStops) {
             sb.append("Estimated Logic Utilization limit ignored.");
         } else {
             sb.append("Specified Merge Factor: " + _mergeFactor + "\n");
@@ -421,17 +383,10 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables               ////
 
-    /**
-     * Causes this DeviceUtilizationTracker to ignore all hard resource limits
-     */
-    protected boolean _ignoreHardResourceUtilizationLimits = false;
-
-    /**
-     * Causes this DeviceUtilizationTracker to ignore the soft logic utilization
-     * limit
-     */
-    protected boolean _ignoreSoftLogicUtilizationLimit = false;
-
+    protected boolean _ignoreEstimatedStops = false;
+    
+    protected boolean _ignoreHardStops = false;
+    
     ///////////////////////////////////////////////////////////////////
     ////                         constant variables                ////
 
@@ -449,4 +404,5 @@ public abstract class XilinxDeviceUtilizationTracker extends AbstractDeviceUtili
      * The default desired utilization factor
      */
     public static final double DEFAULT_DESIRED_UTILIZATION_FACTOR = 1.0;
+   
 }

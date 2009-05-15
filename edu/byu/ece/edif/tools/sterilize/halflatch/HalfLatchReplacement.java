@@ -20,7 +20,7 @@ import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.PropertyList;
 import edu.byu.ece.edif.core.StringTypedValue;
-import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopyReplace;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.AbstractEdifEnvironmentCopyReplace;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.ReplacementContext;
 
 /**
@@ -71,7 +71,7 @@ public class HalfLatchReplacement {
 		return null;
 	}
 	
-	public static void Replace(EdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
+	public static void Replace(AbstractEdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
 			String ffType, EdifCell parent, String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, 
 			EdifNet clr) {
 		FFType type = StringToFFType(ffType);
@@ -80,7 +80,7 @@ public class HalfLatchReplacement {
 		Replace(ecr, libManager, topCell, env, type, parent, namePrefix, INIT, c, d, q, pre, ce, clr);
 	}
 	
-	public static void Replace(EdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
+	public static void Replace(AbstractEdifEnvironmentCopyReplace ecr, EdifLibraryManager libManager, EdifCell topCell, EdifEnvironment env, 
 			FFType ffType, EdifCell parent, String namePrefix, String INIT, EdifNet c, EdifNet d, EdifNet q, EdifNet pre, EdifNet ce, 
 			EdifNet clr) {
 		
@@ -256,7 +256,7 @@ public class HalfLatchReplacement {
 		
 	}
 	
-	public static void CreatePresetPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
+	public static void CreatePresetPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, AbstractEdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for PRESET signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String preConstantPortName = parent.getName() + "_PRE_CONSTANT_PORT";
@@ -292,7 +292,7 @@ public class HalfLatchReplacement {
 		System.out.println("======================");
 	}
 	
-	public static void CreateClrPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
+	public static void CreateClrPort(EdifCell parent, EdifCell topCell, EdifEnvironment env, AbstractEdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for CLR signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String clrConstantPortName = parent.getName() + "_CLR_CONSTANT_PORT";
@@ -326,7 +326,7 @@ public class HalfLatchReplacement {
 		System.out.println("======================");
 	}
 	
-	public static void CreateCePort(EdifCell parent, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
+	public static void CreateCePort(EdifCell parent, EdifCell topCell, EdifEnvironment env, AbstractEdifEnvironmentCopyReplace ecr) {
 		// Create a new port on parent's interface for CE signal
 		EdifCellInterface parentInterface = parent.getInterface();
 		String ceConstantPortName = parent.getName() + "_CE_CONSTANT_PORT";
@@ -360,7 +360,7 @@ public class HalfLatchReplacement {
 		System.out.println("======================");
 	}
 	
-	public static EdifCell GetParentCell(EdifCell currentCell, EdifCell topCell, EdifEnvironment env, EdifEnvironmentCopyReplace ecr) {
+	public static EdifCell GetParentCell(EdifCell currentCell, EdifCell topCell, EdifEnvironment env, AbstractEdifEnvironmentCopyReplace ecr) {
 		System.out.println("parent cell is not top level cell, finding parent's parents...");
 //		ArrayList <EdifCell> currentCellArray = new ArrayList<EdifCell>();
 //		currentCellArray.add(currentCell);

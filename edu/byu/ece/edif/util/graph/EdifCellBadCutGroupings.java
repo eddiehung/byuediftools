@@ -34,8 +34,9 @@ import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.tools.replicate.nmr.EdifReplicationPropertyReader;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.graph.Edge;
 
 /**
@@ -56,7 +57,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
      */
     public EdifCellBadCutGroupings(EdifCell cell, NMRArchitecture arch, EdifCellInstanceGraph ecic) {
         super(cell);
-        _TMRarch = arch;
+        _arch = arch;
         _connectivity = ecic;
         groupCellByBadCuts();
     }
@@ -118,7 +119,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
             //System.out.println("### Bad Cut found:"+nextECI);
             Iterator ecis = null;
             // Grab any predecessors of this ECI which cause bad cuts
-            Collection badCutInputs = getBadCutSourceECIs(nextECI, _connectivity, _TMRarch);
+            Collection badCutInputs = getBadCutSourceECIs(nextECI, _connectivity, _arch);
             ecis = badCutInputs.iterator();
             while (ecis.hasNext()) {
                 // Push "bad cut" predecessors onto Stack and add to ECIset to return
@@ -129,7 +130,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
                 ECIset.add(eci);
             }
             // Grab any successors of this ECI which cause bad cuts
-            Collection badCutOutputs = getBadCutSinkECIs(nextECI, _connectivity, _TMRarch);
+            Collection badCutOutputs = getBadCutSinkECIs(nextECI, _connectivity, _arch);
             ecis = badCutOutputs.iterator();
             while (ecis.hasNext()) {
                 // Push "bad cut" successors onto Stack and add to ECIset to return
@@ -152,7 +153,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
      * The architecture which defines what are bad cuts to make in the specified
      * cell _cell *
      */
-    NMRArchitecture _TMRarch;
+    NMRArchitecture _arch;
 
     /** Defines the connectivity of all instances within the parent cell _cell * */
     EdifCellInstanceGraph _connectivity;
@@ -240,7 +241,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
      */
     public static boolean isBadCutEdge(EdifCellInstanceEdge edge, NMRArchitecture nmrArch) {
         //if (tmrArch.isBadCut(edge.getSourceEPR()) || tmrArch.isBadCut(edge.getSinkEPR()))
-        if (nmrArch.isBadCutConnection(edge.getSourceEPR(), edge.getSinkEPR()))
+        if (nmrArch.isBadCutConnection(edge.getSourceEPR(), edge.getSinkEPR()) || EdifReplicationPropertyReader.isDoNotRestoreOrDoNotDetectLocation(edge.getNet()))
             return true;
         else
             return false;
@@ -286,7 +287,7 @@ public class EdifCellBadCutGroupings extends EdifCellInstanceGroupings {
             e.toRuntime();
         }
         EdifCellInstanceGraph connectivity = new EdifCellInstanceGraph(flat_top_cell);
-        NMRArchitecture arch = new XilinxTMRArchitecture();
+        NMRArchitecture arch = new XilinxNMRArchitecture();
         System.out.println("Begin bad cut grouping...");
         long begin_time = System.currentTimeMillis();
         EdifCellInstanceGroupings badCutGroups = new EdifCellBadCutGroupings(flat_top_cell, arch, connectivity);

@@ -22,6 +22,7 @@
  */
 package edu.byu.ece.edif.util.iob;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -36,7 +37,7 @@ import edu.byu.ece.edif.core.StringTypedValue;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
-public abstract class AbstractIOBAnalyzer {
+public abstract class AbstractIOBAnalyzer implements IOBAnalyzer {
 
     /**
      * Checks for the IOB property being FALSE or not
@@ -172,6 +173,18 @@ public abstract class AbstractIOBAnalyzer {
         //else
         return null;
     }
+    
+    public AbstractIOB getIOB(EdifSingleBitPort esbp) {
+    	return _iobMap.get(esbp);
+    }
+    
+    public boolean packInputRegs() {
+    	return _packInputRegs;
+    }
+    
+    public boolean packOutputRegs() {
+    	return _packOutputRegs;
+    }
 
     public AbstractIOBAnalyzer() {
 
@@ -181,7 +194,7 @@ public abstract class AbstractIOBAnalyzer {
 
     protected EdifCellInstanceGraph _graph;
 
-    protected Map<EdifSingleBitPort, XilinxVirtexIOB> _iobMap;
+    protected Map<EdifSingleBitPort, AbstractIOB> _iobMap;
 
     protected ArrayList<EdifCellInstanceEdge> _iobFeedbackEdges;
 

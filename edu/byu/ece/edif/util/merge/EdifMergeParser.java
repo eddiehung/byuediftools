@@ -1300,9 +1300,18 @@ public class EdifMergeParser {
     }
 
     private static boolean filename_exists(String dName, String file) {
+        if (file.startsWith("./"))
+            file = file.substring(2);
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File d, String name) {
-                return name.toLowerCase().endsWith(".edf");
+            	boolean result = false;
+            	for (String extension : EDIF_EXTENSIONS) {
+            		if (name.toLowerCase().endsWith(extension)) {
+            			result = true;
+            			break;
+            		}
+            	}
+                return result;
             }
         };
         File dir = new File(dName);

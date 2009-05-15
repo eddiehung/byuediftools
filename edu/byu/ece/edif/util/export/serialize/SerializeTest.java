@@ -43,7 +43,7 @@ import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.jedif.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
-import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 
 /**
  * This class can be used to test the functionality of the custom serialization

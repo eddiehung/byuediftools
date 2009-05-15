@@ -84,7 +84,7 @@ public abstract class NMRUtilities {
                 for (Object obj : neighbors) {
                     if (obj instanceof EdifCellInstance) {
                         EdifCellInstance eci = (EdifCellInstance) obj;
-                        String cellType = XilinxResourceMapper.getResourceType(eci);
+                        String cellType = XilinxResourceMapper.getInstance().getResourceType(eci);
                         if (cellType != null && cellType.equals(XilinxResourceMapper.IO)) {
                             if (debug)
                                 System.out.println("Adding IO instance: " + eci);

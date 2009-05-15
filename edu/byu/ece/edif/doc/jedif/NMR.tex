@@ -1,0 +1,53 @@
+\section{JEdifNMR}
+JEdifNMR performs the replication selected by previously run
+tools. Information about what to replicate and where to insert
+voters/detectors is obtained from the replication description file
+(.rdesc) created by the previous steps.
+
+\begin{verbatim}
+> java edu.byu.ece.edif.jedif.JEdifNMR
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  <input_file>
+  (-r|--rep_desc) <rep_desc>
+  [(-o|--output) <output_file>]
+  [--edif]
+
+  [(-p|--part) <part>]
+  
+  [--write_config <config_file>]
+  [--use_config <config_file>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be
+replicated.
+
+\subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
+Filename and path to the replication description (.rdesc) file containing the
+replication information.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the output file. If the given filename ends in .edf or if
+the \texttt{--edif} option is specified, an EDIF file will be generated.
+Otherwise, the replicated circuit will be output in .jedif format.
+
+\subsubsection{\texttt{--edif}}
+Specifies that an EDIF (.edf) file should be generated instead of a .jedif file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+
+
+\input{option_Technology}
+\input{option_ConfigFile}
+\input{option_Logfile}

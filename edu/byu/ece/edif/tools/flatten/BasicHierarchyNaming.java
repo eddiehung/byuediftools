@@ -55,12 +55,11 @@ public class BasicHierarchyNaming implements HierarchyNaming {
         Iterator<String> it = hierarchyNames.iterator();
         if (!it.hasNext())
             return null;
-
         HierarchicalInstance currentNode = head;
         // check to see that the top instance matches, if required
         if (_includeRootName) {
             String currentName = it.next();
-            if (!currentName.equals(currentNode.getInstance().getOldName()))
+            if (!currentName.equals(currentNode.getInstanceName()))
                 return null;
             if (!it.hasNext())
                 return currentNode;
@@ -70,7 +69,7 @@ public class BasicHierarchyNaming implements HierarchyNaming {
             String currentName = it.next();
             HierarchicalInstance nextNode = null;
             for (HierarchicalInstance child : currentNode.getChildren()) {
-                if (currentName.equals(child.getInstance().getOldName())) {
+                if (currentName.equals(child.getInstanceName())) {
                     nextNode = child;
                     break;
                 }
@@ -89,7 +88,7 @@ public class BasicHierarchyNaming implements HierarchyNaming {
         while (node != null) {
             HierarchicalInstance nextHigherNode = node.getParent();
             if (!(!_includeRootName && nextHigherNode == null))
-                instanceNames.add(node.getInstance().getOldName());
+                instanceNames.add(node.getInstanceName());
             node = nextHigherNode;
         }
 
@@ -121,7 +120,7 @@ public class BasicHierarchyNaming implements HierarchyNaming {
             return null;
         HierarchicalNet matchingNet = null;
         for (HierarchicalNet hierarchicalNet : parentNode.getHierarchicalNets()) {
-            if (netName.equals(hierarchicalNet.getOriginalNet().getOldName())) {
+            if (netName.equals(hierarchicalNet.getOriginalNetName())) {
                 matchingNet = hierarchicalNet;
                 break;
             }
@@ -135,7 +134,7 @@ public class BasicHierarchyNaming implements HierarchyNaming {
         sb.append(getHierarchicalInstanceName(hierarchicalNet.getParent()));
         if (sb.length() != 0)
             sb.append(_separator);
-        sb.append(hierarchicalNet.getOriginalNet().getOldName());
+        sb.append(hierarchicalNet.getOriginalNetName());
         return sb.toString();
     }
 

@@ -1,16 +1,25 @@
 
  Release Notes for BYU EDIF Tools
 
+Proton Release - Version 0.5.0 (15 May 2009)
+
+This release has involved a large amount of refactoring and a restructuring
+of the replication toolflow. The replication process in now much more modular,
+allowing for quick creation of new research tools. Several bugs have been fixed
+and new features have been added. Most notably, mixed replication types, TMR
+voters, and pre-mitigated components are all new to this release.
+
+
 Electron Release - Version 0.4.1 (1 Dec 2008)
 
-This is a maintaince release of "electron". There have been a few minor bug
+This is a maintenance release of "electron". There have been a few minor bug
 fixes and new features, most notably including a new LUT RAM/SRL replacer, and 
 better handling of DCMs.
 
 
 Electron Release - Version 0.4.0 (30 May 2008)
 
-This is the official "electon" release. This release is a slightly more
+This is the official "electron" release. This release is a slightly more
 polished version than the electron pre-release in April. The API is slightly
 different than the pre-release due to some source re-organization. The 
 functionality is mostly identical.

@@ -39,6 +39,7 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.tools.EdifTools;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
+import edu.byu.ece.edif.util.jsap.commandgroups.JEdifQueryCommandGroup;
 
 /**
  * TODO: provide a large set of options for querying and describing information

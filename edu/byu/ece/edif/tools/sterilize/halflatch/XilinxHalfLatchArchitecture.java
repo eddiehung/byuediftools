@@ -42,19 +42,19 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.core.StringTypedValue;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
-import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
+import edu.byu.ece.edif.util.iob.IOBAnalyzer;
 
 /**
  * @since Created on Oct 29, 2005
  */
 public class XilinxHalfLatchArchitecture implements HalfLatchArchitecture, Serializable {
 
-    public XilinxHalfLatchArchitecture(EdifCell cell) {
-        this(cell, null);
+    public XilinxHalfLatchArchitecture() {
+        this(null);
     }
 
-    public XilinxHalfLatchArchitecture(EdifCell cell, AbstractIOBAnalyzer iobAnalyzer) {
-        _problemPrimitiveMap = new XilinxProblemPrimitiveMap(cell);
+    public XilinxHalfLatchArchitecture(IOBAnalyzer iobAnalyzer) {
+        _problemPrimitiveMap = new XilinxProblemPrimitiveMap();
         if (iobAnalyzer != null)
             ((XilinxProblemPrimitiveMap) _problemPrimitiveMap).addIOBRegisters(iobAnalyzer.getAllIOBRegisters());
         initializeBadCutPins();
@@ -95,8 +95,7 @@ public class XilinxHalfLatchArchitecture implements HalfLatchArchitecture, Seria
             throw new EdifRuntimeException(("Cell " + cell + " does not belong to a library."));
         EdifLibraryManager elm = el.getLibraryManager();
         if (elm == null)
-            throw new EdifRuntimeException(
-                    ("Library " + el + " for cell " + cell + " does not belong to a library manager."));
+            throw new EdifRuntimeException(("Library " + el + " for cell " + cell + " does not belong to a library manager."));
 
         // Create a new constant cell
         EdifCell rom16x1 = XilinxLibrary.findOrAddXilinxPrimitive(elm, "ROM16X1");

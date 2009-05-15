@@ -1,20 +1,21 @@
 \section{JEdifNetlist}
-JEdifNetlist takes a jedif file and creates a standard edf file.
-\begin{verbatim}
+JEdifNetlist converts a design in .jedif format to EDIF (.edf) format for use
+with other standard EDIF tools.
 
+\begin{verbatim}
 >java edu.byu.ece.edif.jedif.JEdifNetlist
 Options:
   [-h|--help]
-        Print this help message to stdout and exit.
-
   [-v|--version]
-        Print version and copyright information to stdout and exit.
 
   <input_file>
-        Input Filename. Required.
-
   [(-o|--output) <output_file>]
-        Filename and path to the triplicated EDIF output file created by the
-        BL-TMR tool. (default: <input_file>.edf)
-
 \end{verbatim}
+
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+The filename and path to a design in .jedif format.
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+The filename and path to the EDIF (.edf) file to write.

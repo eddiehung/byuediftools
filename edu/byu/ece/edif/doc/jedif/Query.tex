@@ -2,56 +2,62 @@
 JEdifQuery is used to query the contents of a .jedif file and to
 provide summary information about the EDIF design contained within.
 \begin{verbatim}
+>java edu.byu.ece.edif.jedif.JEdifQuery
+Options:
+  [-h|--help]
+  [-v|--version]
 
->java edu.byu.ece.edif.jedif.JEdifQuery <input_file>
+  <input_file>
 
-[--libraries] 
-[--ports cell1,cell2,...,cellN ] 
-[--instance_list cell_type1,cell_type2,...,cell_typeN ]
-[--cells_in_library library1,library2,...,libraryN ]
-[--subcells cell1,cell2,...,cellN ] 
-[--cell_nets cell1,cell2,...,cellN ]
-[--primitive_list cell1,cell2,...,cellN ]
-[--dangling_nets]
-
-[-h|--help] 
-[-v|--version]
-
+  [--libraries]
+  [--ports cell1,cell2,...,cellN ]
+  [--instance_list cell_type1,cell_type2,...,cell_typeN ]
+  [--cells_in_library library1,library2,...,libraryN ]
+  [--subcells cell1,cell2,...,cellN ]
+  [--cell_nets cell1,cell2,...,cellN ]
+  [--primitive_list cell1,cell2,...,cellN ]
+  [--dangling_nets]
+  [--count_persistent_FFs]
 \end{verbatim}
 
 \subsection{File Options:}
 \subsubsection{\texttt{<input\_file>}}
-Filename and path to the .jedif source file containing the EDIF environment to be queried. This is the only required parameter.
+Filename and path to the .jedif source file containing the EDIF environment to
+be queried. This is the only required parameter.
 
 \subsection{Querying Options}
-  By default (if only an input filename is provided), JEdifQuery will
-  display the name of the top-level cell of the design, the number of
-  nets and instances contained in the design, and the top-level ports
-  of the design. Further information can be obtained by providing one
-  or more of the following command-line options:
+By default (if only an input filename is provided), JEdifQuery will
+display the name of the top-level cell of the design, the number of
+nets and instances contained in the design, and the top-level ports
+of the design. Further information can be obtained by providing one
+or more of the following command-line options:
 
-  \subsubsection{--libraries}
-     Displays a list of all libraries contained in the design.
+\subsubsection{\texttt{--libraries}}
+Displays a list of all libraries contained in the design.
 
-  \subsubsection{--ports cell1,cell2,/ldots,cellN }
-        All ports of specified cells contained in the design will be displayed.
+\subsubsection{\texttt{--ports cell1,cell2,/ldots,cellN}}
+All ports of specified cells contained in the design will be displayed.
 
-  \subsubsection{--instance\_list cell\_type1,cell\_type2,\ldots,cell\_typeN }
-        The names of all instances of specified cells contained in the design will be displayed.
+\subsubsection{\texttt{--instance\_list
+cell\_type1,cell\_type2,\ldots,cell\_typeN}}
+The names of all instances of specified cells contained in the design will be displayed.
 
-  \subsubsection{--cells\_in\_library library1,library2,\ldots,libraryN }
-        Names of all cells contained in the specified libraries will be displayed.
+\subsubsection{\texttt{--cells\_in\_library library1,library2,\ldots,libraryN}}
+Names of all cells contained in the specified libraries will be displayed.
 
-  \subsubsection{--subcells cell1,cell2,\ldots,cellN }
-        Names of all instances within the specified cells will be displayed.
+\subsubsection{\texttt{--subcells cell1,cell2,\ldots,cellN}}
+Names of all instances within the specified cells will be displayed.
 
-  \subsubsection{--cell\_nets cell1,cell2,\ldots,cellN }
-        Names of all nets within the specified cells will be displayed.
+\subsubsection{\texttt{--cell\_nets cell1,cell2,\ldots,cellN}}
+Names of all nets within the specified cells will be displayed.
 
-  \subsubsection{--primitive\_list cell1,cell2,\ldots,cellN }
-        Names of all primitives within the cell will be displayed. Note that this option only displays the names of primitives that are immediate subcells of the specified cells; the name of a primitive that is within a subcell of a specified subcell will not be displayed.
+\subsubsection{\texttt{--primitive\_list cell1,cell2,\ldots,cellN}}
+Names of all primitives within the cell will be displayed. Note that
+this option only displays the names of primitives that are immediate
+subcells of the specified cells; the name of a primitive that is within
+a subcell of a specified subcell will not be displayed.
 
-  \subsubsection{--dangling\_nets}
-        This option displays a list of all dangling nets contained in the design, along with the cell and library in which those nets are contained.
-
-
+\subsubsection{\texttt{--dangling\_nets}}
+This option displays a list of all dangling nets contained in the
+design, along with the cell and library in which those nets are
+contained.

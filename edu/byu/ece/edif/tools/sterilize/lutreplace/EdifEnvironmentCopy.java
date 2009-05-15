@@ -140,15 +140,7 @@ public class EdifEnvironmentCopy {
         EdifCell oldTopCell = oldTopInstance.getCellType();
         // Call to generate top-cell. This is the recursive call that will
         // add all Cells and sub-cells, etc.
-        EdifCell newTopCell = createTopCell(oldTopCell);
-        // At this point, all of the Cells and libraries have been created.
-        // Perform the clean up by tagging the top-level cell.
-        EdifCellInstance newTopInstance = new EdifCellInstance(newTopCell.getEdifNameable(), null, newTopCell);
-        EdifDesign newDesign = new EdifDesign(newTopCell.getEdifNameable());
-        newDesign.setTopCellInstance(newTopInstance);
-        // copy design properties
-        newDesign.copyProperties(oldDesign);
-        _newEnv.setTopDesign(newDesign);
+        createTopCell(oldTopCell);
     }
 
     /**
@@ -181,7 +173,21 @@ public class EdifEnvironmentCopy {
             throws EdifNameConflictException {
         EdifCell newCell = new EdifCell(destLibrary, name);
         _cellMap.put(origCell, newCell);
+        // copy properties
         newCell.copyProperties(origCell);
+        // copy primitive status
+        if (origCell.isPrimitive())
+            newCell.setPrimitive();
+        if (origCell == _origEnv.getTopCell()) {
+            EdifDesign oldDesign = _origEnv.getTopDesign();
+            EdifCellInstance newTopInstance = new EdifCellInstance(newCell.getEdifNameable(), null, newCell);
+            EdifDesign newDesign = new EdifDesign(newCell.getEdifNameable());
+            newDesign.setTopCellInstance(newTopInstance);
+            // copy design properties
+            newDesign.copyProperties(oldDesign);
+            _newEnv.setTopDesign(newDesign);
+        }
+                
         addEdifPorts(origCell, newCell);
         addChildEdifCellInstances(origCell, newCell);
         addNets(origCell, newCell);

@@ -72,7 +72,7 @@ public class LUTReplacer{
 	 * @param out output PrintStream object 
 	 * @return EdifEnvironment in which all SRLs have been replaced with LUTs
 	 */
-	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream out) {
+	public static EdifEnvironment replaceLUTs(EdifEnvironment env, PrintStream log, PrintStream out) {
 		ArrayList<EdifCell> cellsToReplace = new ArrayList<EdifCell>();
 		EdifLibrary primitiveLibrary = XilinxGenLib.library;
 
@@ -121,9 +121,9 @@ public class LUTReplacer{
 		}
 
 		// Create copy replace object
-		EdifEnvironmentCopyReplace ecr = null;
+		AbstractEdifEnvironmentCopyReplace ecr = null;
 		try {
-			ecr = new EdifEnvironmentCopyReplace(env, cellsToReplace);
+			ecr = new BasicEdifEnvironmentCopyReplace(env, cellsToReplace);
 		} catch (EdifNameConflictException e) {
 			System.err.println(e);
 			System.exit(1);
@@ -133,18 +133,19 @@ public class LUTReplacer{
 		EdifEnvironment newEnv = ecr.getNewEnvironment();
 		EdifLibraryManager newLibManager = newEnv.getLibraryManager();
 
+		int numReplaced = 0;
 		// Iterate over all of the things that need replacement
 		for (ReplacementContext context : ecr.getReplacementContexts()) {
-			System.out.println("****************************************");
-			System.out.println("Need to replace instance " + 
+		    log.println("****************************************");
+			log.println("Need to replace instance " + 
 					context.getOldInstanceToReplace().getParent().getName() + "." + 
 					context.getOldInstanceToReplace().getName() +" (" +
 					context.getOldCellToReplace().getName()+")");
-			System.out.println("****************************************");
+			log.println("****************************************");
 
 			// Get original cell that we're replacing to know which code to call
 			EdifCell oldCell = context.getOldCellToReplace();
-			System.out.println("Old Cell: " + oldCell.getName());
+			log.println("Old Cell: " + oldCell.getName());
 
 			// Get info needed to replace cell: parent cell , library manager,
 			// dangling nets that need to be wired up, and INIT value.
@@ -288,9 +289,9 @@ public class LUTReplacer{
 						SPO_6, SPO_7, DPO, DPO0, DPO1, DPO2, DPO3, DPO_0, DPO_1, DPO_2, DPO_3, DPO_4, DPO_5, DPO_6, DPO_7, 
 						O, O0, O1, O2, O3, O_0, O_1, O_2, O_3, O_4, O_5, O_6, O_7);
 			}
+			numReplaced++;
 		}
-
-		//System.out.println("Done");
+		out.println("Replaced " + numReplaced + " instances.");
 		return newEnv;
 	}
 
@@ -310,7 +311,7 @@ public class LUTReplacer{
 
 		EdifEnvironment top = edu.byu.ece.edif.util.merge.EdifMergeParser.getMergedEdifEnvironment(args[0], args);
 		PrintStream out = null;
-		EdifEnvironment newEnv = replaceLUTs(top, out);
+		EdifEnvironment newEnv = replaceLUTs(top, out, out);
 
 		// Write to EDIF File
 		String inputFileName = args[0];
@@ -334,4 +335,6 @@ public class LUTReplacer{
 
 		// DONE!
 	}
+	
+	protected int _numReplaced;
 }

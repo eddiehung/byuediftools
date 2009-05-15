@@ -176,7 +176,7 @@ public class XilinxTools {
         Collection<EdifPortRef> sourceEPRs = net.getSourcePortRefs(true, true);
         for (EdifPortRef epr : sourceEPRs) {
             EdifCell sourceCell = epr.getPort().getEdifCell();
-            if (XilinxResourceMapper.getResourceType(sourceCell).equals(XilinxResourceMapper.BUFG)) {
+            if (XilinxResourceMapper.getInstance().getResourceType(sourceCell).equals(XilinxResourceMapper.BUFG)) {
                 retval = true;
                 break;
             }

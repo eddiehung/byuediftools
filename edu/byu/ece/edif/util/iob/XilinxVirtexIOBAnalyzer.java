@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
+import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
@@ -37,28 +37,28 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
  */
 public class XilinxVirtexIOBAnalyzer extends XilinxIOBAnalyzer {
 
-    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell) {
-        this(flatCell, null);
+    public XilinxVirtexIOBAnalyzer(EdifCell topCell) {
+        this(topCell, null);
     }
 
     // Pack all registers by default
-    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell, EdifCellInstanceGraph graph) {
-        this(flatCell, graph, true, true);
+    public XilinxVirtexIOBAnalyzer(EdifCell topCell, EdifCellInstanceGraph graph) {
+        this(topCell, graph, true, true);
     }
 
     // TODO: Check for same clock on all FF Regs
-    public XilinxVirtexIOBAnalyzer(FlattenedEdifCell flatCell, EdifCellInstanceGraph graph,
+    public XilinxVirtexIOBAnalyzer(EdifCell topCell, EdifCellInstanceGraph graph,
             boolean packInputRegisters, boolean packOutputRegisters) {
-        _cell = flatCell;
+        _cell = topCell;
 
         // Create a Connectivity Graph if none exists
         if (graph == null)
-            _graph = new EdifCellInstanceGraph(flatCell, true, true);
+            _graph = new EdifCellInstanceGraph(topCell, true, true);
         else
             _graph = graph;
 
         // Initialize Collections
-        _iobMap = new LinkedHashMap<EdifSingleBitPort, XilinxVirtexIOB>();
+        _iobMap = new LinkedHashMap<EdifSingleBitPort, AbstractIOB>();
         _iobFeedbackEdges = new ArrayList<EdifCellInstanceEdge>();
         _feedbackIOBMap = new LinkedHashMap<EdifSingleBitPort, Collection<EdifCellInstanceEdge>>();
         _packInputRegs = packInputRegisters;

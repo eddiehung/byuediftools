@@ -40,28 +40,41 @@ import edu.byu.ece.edif.tools.replicate.nmr.ResourceMapper;
  */
 public class XilinxResourceMapper implements ResourceMapper {
 
+    protected static XilinxResourceMapper _instance = null;
+    
+    public static XilinxResourceMapper getInstance() {
+        if (_instance == null)
+            _instance = new XilinxResourceMapper();
+        return _instance;
+    }
+    
+    // keep other classes from constructing objects (there only needs to be one instance of this)
+    protected XilinxResourceMapper() {
+        
+    }
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
 
-    public static double getApproxLutUsage(EdifCell cell) {
+    public double getApproxLutUsage(EdifCell cell) {
         if (cell == null)
             return 0;
         return (cellToLUTEquivalentMap.get(cell.getName().toUpperCase())).doubleValue();
     }
 
-    public static double getApproxLUTUsage(EdifCellInstance eci) {
+    public double getApproxLUTUsage(EdifCellInstance eci) {
         if (eci == null)
             return 0;
         return getApproxLutUsage(eci.getCellType());
     }
 
-    public static String getResourceType(EdifCell cell) {
+    public String getResourceType(EdifCell cell) {
         if (cell == null)
             return "";
         return cellToResourceMap.get(cell.getName().toUpperCase());
     }
 
-    public static String getResourceType(EdifCellInstance eci) {
+    public String getResourceType(EdifCellInstance eci) {
         if (eci == null)
             return "";
         return getResourceType(eci.getCellType());
@@ -160,7 +173,13 @@ public class XilinxResourceMapper implements ResourceMapper {
      * Ethernet MACs
      */
     public static final String ETHERNET = "ETHERNET";
+    
+    /**
+     * IBUFGs
+     */
+    public static final String IBUFG = "IBUFG";
 
+    
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables               ////
 
@@ -203,20 +222,20 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("BUFCF", "");
         cellToResourceMap.put("BUFE", "");
         cellToResourceMap.put("BUFFOE", "");
-        cellToResourceMap.put("BUFG", "BUFG");
-        cellToResourceMap.put("BUFGCE", "BUFG");
-        cellToResourceMap.put("BUFGCE_1", "BUFG");
-        cellToResourceMap.put("BUFGDLL", "BUFG");
-        cellToResourceMap.put("BUFGMUX", "BUFG");
-        cellToResourceMap.put("BUFGMUX_1", "BUFG");
+        cellToResourceMap.put("BUFG", BUFG);
+        cellToResourceMap.put("BUFGCE", BUFG);
+        cellToResourceMap.put("BUFGCE_1", BUFG);
+        cellToResourceMap.put("BUFGDLL", BUFG);
+        cellToResourceMap.put("BUFGMUX", BUFG);
+        cellToResourceMap.put("BUFGMUX_1", BUFG);
         /*
          * Note: "In Spartan-II, Spartan-IIE, Spartan-3, Virtex, Virtex-E,
          * Virtex-II, Virtex-II Pro, and Virtex-II Pro X, BUFGP is equivalent to
          * an IBUFG driving a BUFG." (Xilinx Library Guide, ISE 8.1i)
          */
         cellToResourceMap.put("BUFGP", IO);
-        cellToResourceMap.put("BUFGSR", "BUFG");
-        cellToResourceMap.put("BUFGTS", "BUFG");
+        cellToResourceMap.put("BUFGSR", BUFG);
+        cellToResourceMap.put("BUFGTS", BUFG);
         cellToResourceMap.put("BUFT", "");
         cellToResourceMap.put("CAPTURE_FPGACORE", "");
         cellToResourceMap.put("CAPTURE_SPARTAN2", "");
@@ -336,7 +355,7 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("IBUFDS_LVPECL_25", IO);
         cellToResourceMap.put("IBUFDS_LVPECL_33", IO);
         cellToResourceMap.put("IBUFDS_ULVDS_25", IO);
-        cellToResourceMap.put("IBUFG", IO);
+        cellToResourceMap.put("IBUFG", IBUFG);
         cellToResourceMap.put("IBUFG_AGP", IO);
         cellToResourceMap.put("IBUFG_CTT", IO);
         cellToResourceMap.put("IBUFG_GTL", IO);

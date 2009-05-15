@@ -86,8 +86,9 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
      * Add a node object.
      */
     public void addNode(Object node) {
-        if (_nodes.contains(node))
-            throw new RuntimeException("Node " + node + " already member of graph");
+        if (_nodes.contains(node)) {
+        	throw new RuntimeException("Node " + node + " already member of graph");
+        }
         _nodes.add(node);
     }
 

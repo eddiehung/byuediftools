@@ -22,6 +22,7 @@
  */
 package edu.byu.ece.edif.util.graph;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -100,6 +101,12 @@ public class MultipleInstanceCollection extends LinkedHashSet<EdifCellInstance> 
         }
         sb.append("\n");
         return sb.toString();
+    }
+    
+    private void readObject(java.io.ObjectInputStream in)
+    throws IOException, ClassNotFoundException {
+    	in.defaultReadObject();
+    	_id = _instantiationCount++;
     }
 
     private int _id;

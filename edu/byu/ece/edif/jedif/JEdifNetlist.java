@@ -31,8 +31,9 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
-import edu.byu.ece.edif.util.jsap.InputFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.OutputFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.InputFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.JEdifParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.OutputFileCommandGroup;
 
 /**
  * Create an EDIF file from the JEdif representation of the netlist.

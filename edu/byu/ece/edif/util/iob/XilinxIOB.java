@@ -48,49 +48,50 @@ public abstract class XilinxIOB extends AbstractIOB {
     }
 
     public void setResistor(EdifCellInstance resistor) {
-        if (resistor != null && !XilinxResourceMapper.getResourceType(resistor).equals(XilinxResourceMapper.RES))
+        if (resistor != null && !XilinxResourceMapper.getInstance().getResourceType(resistor).equals(XilinxResourceMapper.RES))
             throw new EdifRuntimeException("Attempting to add non-resistor/keeper element as an IOB resistor/keeper");
 
         _resistor = resistor;
     }
 
     public void setIBUF(EdifCellInstance ibuf) {
-        if (ibuf != null && !XilinxResourceMapper.getResourceType(ibuf).equals(XilinxResourceMapper.IO))
+    	String resourceType = XilinxResourceMapper.getInstance().getResourceType(ibuf);
+        if (ibuf != null && !(resourceType.equals(XilinxResourceMapper.IO) || resourceType.equals(XilinxResourceMapper.IBUFG)))
             throw new EdifRuntimeException("Attempting to add non-I/O Buffer as an input buffer");
 
         _ibuf = ibuf;
     }
 
     public void setOBUF(EdifCellInstance obuf) {
-        if (obuf != null && !XilinxResourceMapper.getResourceType(obuf).equals(XilinxResourceMapper.IO))
+        if (obuf != null && !XilinxResourceMapper.getInstance().getResourceType(obuf).equals(XilinxResourceMapper.IO))
             throw new EdifRuntimeException("Attempting to add non-I/O Buffer as an output buffer");
 
         _obuf = obuf;
     }
 
     public void setIOBUF(EdifCellInstance iobuf) {
-        if (iobuf != null && !XilinxResourceMapper.getResourceType(iobuf).equals(XilinxResourceMapper.IO))
+        if (iobuf != null && !XilinxResourceMapper.getInstance().getResourceType(iobuf).equals(XilinxResourceMapper.IO))
             throw new EdifRuntimeException("Attempting to add non-I/O Buffer as an input/output buffer");
 
         _iobuf = iobuf;
     }
 
     public void setInputReg(EdifCellInstance inputReg) {
-        if (inputReg != null && !XilinxResourceMapper.getResourceType(inputReg).equals(XilinxResourceMapper.FF))
+        if (inputReg != null && !XilinxResourceMapper.getInstance().getResourceType(inputReg).equals(XilinxResourceMapper.FF))
             throw new EdifRuntimeException("Attempting to add non-flip-flop element as an IOB input register");
 
         _inReg = inputReg;
     }
 
     public void setOutputReg(EdifCellInstance outputReg) {
-        if (outputReg != null && !XilinxResourceMapper.getResourceType(outputReg).equals(XilinxResourceMapper.FF))
+        if (outputReg != null && !XilinxResourceMapper.getInstance().getResourceType(outputReg).equals(XilinxResourceMapper.FF))
             throw new EdifRuntimeException("Attempting to add non-flip-flop element as an IOB output register");
 
         _outReg = outputReg;
     }
 
     public void setTristateReg(EdifCellInstance tristateReg) {
-        if (tristateReg != null && !XilinxResourceMapper.getResourceType(tristateReg).equals(XilinxResourceMapper.FF))
+        if (tristateReg != null && !XilinxResourceMapper.getInstance().getResourceType(tristateReg).equals(XilinxResourceMapper.FF))
             throw new EdifRuntimeException("Attempting to add non-flip-flop element as an IOB tristate register");
 
         _triReg = tristateReg;

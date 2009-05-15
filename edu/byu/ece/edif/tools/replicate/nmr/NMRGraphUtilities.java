@@ -33,17 +33,19 @@ import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.FlattenTMR;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.nmr.tmr.TMRReplicationType;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;
 import edu.byu.ece.edif.util.graph.AbstractEdifGraph;
 import edu.byu.ece.edif.util.graph.EdifCellBadCutGroupings;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceCollection;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceCollectionGraph;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGroupings;
 import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
@@ -66,7 +68,6 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  * 
  * @author Michael Wirthlin, Brian Pratt, Keith Morgan
  * @see SCCDepthFirstSearch
- * @see FlattenTMR
  */
 public class NMRGraphUtilities {
 
@@ -98,7 +99,7 @@ public class NMRGraphUtilities {
         // 4. Create architecture specific data structures
         final String part = "XCV1000FG680";
 
-        NMRArchitecture tmrArch = new XilinxTMRArchitecture();
+        NMRArchitecture nmrArch = new XilinxNMRArchitecture();
         System.out.println("Calculating normal resource utilization of cell " + flat_cell);
         DeviceUtilizationTracker du_tracker = null;
         try {
@@ -108,6 +109,8 @@ public class NMRGraphUtilities {
                     + part);
 
         }
+        ReplicationUtilizationTracker rTracker = new ReplicationUtilizationTracker(du_tracker);
+        
         System.out.println("Normal utilization for cell " + flat_cell);
         System.out.println(du_tracker);
 
@@ -115,7 +118,7 @@ public class NMRGraphUtilities {
          * Create BadCutGroupConnectivity to be used with NMRGraphUtilities
          */
         // Create BadCutGroupings
-        EdifCellInstanceGroupings groupings = new EdifCellBadCutGroupings(flat_cell, tmrArch, graph);
+        EdifCellInstanceGroupings groupings = new EdifCellBadCutGroupings(flat_cell, nmrArch, graph);
         // Create Group Connectivity (include top level ports)
         EdifCellInstanceCollectionGraph badCutGroupConn = new EdifCellInstanceCollectionGraph(graph, groupings, true);
 
@@ -132,9 +135,12 @@ public class NMRGraphUtilities {
         //String data = new AbstractGraphToDotty().createColoredDottyBody(graph, sccs);
         AbstractGraphToDotty.printFile("sccGraph.dot", data);
 
-        // 7. Perform feedback analysis and determine cut set
-        List cutSet = new ArrayList();
-        tmrSCCsUsingSCCDecomposition(sccDFS, tmrArch, du_tracker, true, cutSet);
+        // 7. Perform feedback analysis
+       
+        ReplicationType replicationType = TMRReplicationType.getInstance(nmrArch);
+        boolean override = false;
+        nmrSCCsUsingSCCDecomposition(sccDFS, nmrArch, rTracker, true, DEFAULT_SCC_SORT_TYPE, replicationType, override);
+        //nmrSCCsUsingSCCDecomposition(sccDFS, tmrArch, du_tracker, true, cutSet);
 
         System.out.println("Post TMR estimate:\n" + du_tracker);
     }
@@ -347,7 +353,7 @@ public class NMRGraphUtilities {
                 Object node = i.next();
                 Collection nodeSuccessors = sccSubGraph.getSuccessors(node);
                 int numSuccessors = nodeSuccessors.size();
-                // check to see if succesors may be greater
+                // check to see if successors may be greater
                 if (numSuccessors > highFanoutCount) {
 
                     // Get out edges
@@ -562,7 +568,8 @@ public class NMRGraphUtilities {
         Collection<EdifPortRefEdge> badEdges = new ArrayList<EdifPortRefEdge>();
         for (Iterator j = edges.iterator(); j.hasNext();) {
             EdifPortRefEdge edge = (EdifPortRefEdge) j.next();
-            if (arch.isBadCutConnection(edge.getSourceEPR(), edge.getSinkEPR())) {
+            EdifNet net = edge.getNet();
+            if (arch.isBadCutConnection(edge.getSourceEPR(), edge.getSinkEPR()) || EdifReplicationPropertyReader.isDoNotRestoreOrDoNotDetectLocation(net)) {
                 //if (DEBUG) System.out.println("Bad Edge Found:"+edge);
                 badEdges.add(edge);
             }
@@ -707,7 +714,11 @@ public class NMRGraphUtilities {
     public static Collection<Edge> findBadEdges(Collection<Edge> edges, NMRArchitecture arch) {
         Collection<Edge> badCutEdges = new ArrayList<Edge>();
         for (Edge edge : edges) {
-            if (EdifCellBadCutGroupings.isBadCutEdge(edge, arch))
+            EdifNet net = null;
+            if (edge instanceof EdifCellInstanceEdge) {
+                net = ((EdifCellInstanceEdge) edge).getNet();
+            }
+            if (EdifCellBadCutGroupings.isBadCutEdge(edge, arch) || (net != null && EdifReplicationPropertyReader.isDoNotRestoreOrDoNotDetectLocation(net)))
                 badCutEdges.add(edge);
         }
         return badCutEdges;
@@ -830,26 +841,26 @@ public class NMRGraphUtilities {
         return new ArrayList(1);
     }
 
-    /**
-     * Determines how many SCCs can be triplicated using the given capacity
-     * object. This method will explore SCC decomposition to include as many
-     * SCCs as possible.
-     * 
-     * @param sccDFS The SCCDepthFirstSearch structure of the edif circuit
-     * @param arch The NMRArchitecture
-     * @param capacity The capacity object to use for testing SCC inclusion.
-     * @param allowSCCDecomposition This flag indicates that SCCs will be
-     * decomposed if they don't fit. If false, any SCCs that don't fit are
-     * skipped.
-     * @param sortType The method of SCC sorting used (3 = topological sorting)
-     * @param edgeCutSet An empty List for returning Edge objects that must be
-     * cut.
-     * @return true if ALL instances were triplicated, false otherwise
-     */
-    public static boolean tmrSCCsUsingSCCDecomposition(SCCDepthFirstSearch sccDFS, NMRArchitecture arch,
-            DeviceUtilizationTracker capacity, boolean allowSCCDecomposition, int sortType, Collection<Edge> edgeCutSet) {
-        return nmrSCCsUsingSCCDecomposition(sccDFS, arch, capacity, allowSCCDecomposition, sortType, edgeCutSet, 3);
-    }
+//    /**
+//     * Determines how many SCCs can be triplicated using the given capacity
+//     * object. This method will explore SCC decomposition to include as many
+//     * SCCs as possible.
+//     * 
+//     * @param sccDFS The SCCDepthFirstSearch structure of the edif circuit
+//     * @param arch The NMRArchitecture
+//     * @param capacity The capacity object to use for testing SCC inclusion.
+//     * @param allowSCCDecomposition This flag indicates that SCCs will be
+//     * decomposed if they don't fit. If false, any SCCs that don't fit are
+//     * skipped.
+//     * @param sortType The method of SCC sorting used (3 = topological sorting)
+//     * @param edgeCutSet An empty List for returning Edge objects that must be
+//     * cut.
+//     * @return true if ALL instances were triplicated, false otherwise
+//     */
+//    public static boolean tmrSCCsUsingSCCDecomposition(SCCDepthFirstSearch sccDFS, NMRArchitecture arch,
+//            ReplicationUtilizationTracker capacity, boolean allowSCCDecomposition, int sortType) {
+//        return nmrSCCsUsingSCCDecomposition(sccDFS, arch, capacity, allowSCCDecomposition, sortType, 3);
+//    }
 
     /**
      * Determines how many SCCs can be triplicated using the given capacity
@@ -870,8 +881,8 @@ public class NMRGraphUtilities {
      * @return true if ALL instances were triplicated, false otherwise
      */
     public static boolean nmrSCCsUsingSCCDecomposition(SCCDepthFirstSearch sccDFS, NMRArchitecture arch,
-            DeviceUtilizationTracker capacity, boolean allowSCCDecomposition, int sortType,
-            Collection<Edge> edgeCutSet, int replicationFactor) {
+            ReplicationUtilizationTracker capacity, boolean allowSCCDecomposition, int sortType,
+            ReplicationType replicationType, boolean override) {
 
         AbstractEdifGraph graph = (AbstractEdifGraph) sccDFS.getGraph();
         boolean allSCCInstancesTriplicated = true;
@@ -944,19 +955,20 @@ public class NMRGraphUtilities {
 
             // Try to add the SCC.
             try {
-                capacity.nmrInstancesAtomic(sccInstances, replicationFactor);
+            	capacity.addToTrackerAtomic(sccInstances, replicationType, override);
+                //capacity.nmrInstancesAtomic(sccInstances, replicationFactor);
                 if (DEBUG) {
                     System.out.println(" SCC fits");
                     System.out.println(capacity.toString());
                 }
 
                 // SCC fits - determine the location of the voter cuts
-                Collection<Edge> cuts = createDecomposeValidCutSet(graph, scc, arch);
+                /*Collection<Edge> cuts = createDecomposeValidCutSet(graph, scc, arch);
                 edgeCutSet.addAll(cuts);
                 for (Edge cut : cuts) {
                     // Each cut EdifNet will insert a voter
                     capacity.incrementVoterCount();
-                }
+                }*/
             }
             // Request for same instance twice. This shouldn't happen.
             catch (DuplicateNMRRequestException e1) {
@@ -1002,15 +1014,16 @@ public class NMRGraphUtilities {
                 //System.out.println(e3);
                 try {
                     // Skip Hard Stops
-                    capacity.nmrInstancesAsManyAsPossible(sccInstances, replicationFactor);
+                	capacity.addToTrackerAsManyAsPossible(sccInstances, replicationType, override);
+                    //capacity.nmrInstancesAsManyAsPossible(sccInstances, replicationFactor);
                     // SCC fits - determine the location of the voter cuts    			
 
-                    Collection<Edge> cuts = createDecomposeValidCutSet(graph, scc, arch);
-                    edgeCutSet.addAll(cuts);
-                    for (Edge cut : cuts) {
-                        // Each cut EdifNet will insert a voter
-                        capacity.incrementVoterCount();
-                    }
+//                    Collection<Edge> cuts = createDecomposeValidCutSet(graph, scc, arch);
+//                    edgeCutSet.addAll(cuts);
+//                    for (Edge cut : cuts) {
+//                        // Each cut EdifNet will insert a voter
+//                        capacity.incrementVoterCount();
+//                    }
                 } catch (DuplicateNMRRequestException e4) {
                     continue;
                 } catch (OverutilizationEstimatedStopException e5) {
@@ -1045,7 +1058,8 @@ public class NMRGraphUtilities {
             try {
                 if (DEBUG)
                     System.out.println("Adding instance: " + instance);
-                capacity.nmrInstance(instance, replicationFactor);
+                capacity.addToTracker(instance, replicationType, override);
+                //capacity.nmrInstance(instance, replicationFactor);
             } catch (DuplicateNMRRequestException e4) {
                 // Skip
                 continue;
@@ -1071,27 +1085,27 @@ public class NMRGraphUtilities {
         return allSCCInstancesTriplicated;
     }
 
-    /**
-     * Determines how many SCCs can be triplicated using the given capacity
-     * object. This method will explore SCC decomposition to include as many
-     * SCCs as possible. Uses the
-     * {@linkplain #DEFAULT_SCC_SORT_TYPE default SCC sort type}, 3.
-     * 
-     * @param sccDFS The SCCDepthFirstSearch structure of the edif circuit
-     * @param arch The NMRArchitecture
-     * @param capacity The capacity object to use for testing SCC inclusion.
-     * @param allowSCCDecomposition This flag indicates that SCCs will be
-     * decomposed if they don't fit. If false, any SCCs that don't fit are
-     * skipped.
-     * @param edgeCutSet An empty List for returning Edge objects that must be
-     * cut.
-     * @return A List of Edge objects that must be cut.
-     */
-    public static boolean tmrSCCsUsingSCCDecomposition(SCCDepthFirstSearch sccDFS, NMRArchitecture arch,
-            DeviceUtilizationTracker capacity, boolean allowSCCDecomposition, List<Edge> edgeCutSet) {
-        return tmrSCCsUsingSCCDecomposition(sccDFS, arch, capacity, allowSCCDecomposition, DEFAULT_SCC_SORT_TYPE,
-                edgeCutSet);
-    }
+//    /**
+//     * Determines how many SCCs can be triplicated using the given capacity
+//     * object. This method will explore SCC decomposition to include as many
+//     * SCCs as possible. Uses the
+//     * {@linkplain #DEFAULT_SCC_SORT_TYPE default SCC sort type}, 3.
+//     * 
+//     * @param sccDFS The SCCDepthFirstSearch structure of the edif circuit
+//     * @param arch The NMRArchitecture
+//     * @param capacity The capacity object to use for testing SCC inclusion.
+//     * @param allowSCCDecomposition This flag indicates that SCCs will be
+//     * decomposed if they don't fit. If false, any SCCs that don't fit are
+//     * skipped.
+//     * @param edgeCutSet An empty List for returning Edge objects that must be
+//     * cut.
+//     * @return A List of Edge objects that must be cut.
+//     */
+//    public static boolean tmrSCCsUsingSCCDecomposition(SCCDepthFirstSearch sccDFS, NMRArchitecture arch,
+//            ReplicationUtilizationTracker capacity, boolean allowSCCDecomposition) {
+//        return tmrSCCsUsingSCCDecomposition(sccDFS, arch, capacity, allowSCCDecomposition, DEFAULT_SCC_SORT_TYPE,
+//                edgeCutSet);
+//    }
 
     /**
      * Identify a valid set of edges that completely removes feedback in the

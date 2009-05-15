@@ -1,9 +1,34 @@
 \section{JEdifBuild Options}
+JEdifBuild creates merged netlists in a .jedif file format from
+multiple .edf files. By default, JEdifBuild also flattens the design
+and optionally performs FMAP removal, RLOC removal, SRL replacement,
+and half-latch removal (functions performed by JEdifSterilize in
+previous versions of the toolflow). The .jedif file format is an
+intermediate file format used by the remainder of the replication
+tools.
+
+Although flattening occurs by default, it can be disabled with the
+\texttt{--no\_flatten} option. It is also possible to specify that specific
+cell types should not be flattened. This can be accomplished by adding a
+\texttt{`do\_not\_flatten'} property to the cell in the .edf file as follows:\\
+\texttt{(property do\_not\_flatten (boolean (true)))}
+
+If this property is used on a cell that is a black box in the main design file
+and is merged in from a separate .edf or .edn file, the property should be
+specified in the black box \emph{definition} file, not in the main design .edf
+file.
+
+It should be noted that designs that are not flattened will not be replicated
+properly. Any unflattened cells will be replicated as an atomic unit,
+preventing proper voter insertion. Use the \texttt{`do\_not\_flatten'} property
+only when this is the desired behavior.
+
+Cell types that are selected as pre-mitigated cells using \texttt{`port\_group'}
+properties (see Section~\ref{sec:pre-mitigation}) are also left unflattened.
+Flattening for pre-mitigated cells is not necessary since they will not be replicated.
+
 Options can be specified on the command line or in a configuration file in any 
-order. This section describes each of these options in detail, which are 
-summarized below:\footnote{This list is obtainable with the \texttt{--help} 
-option. Here, newlines have been inserted to separate the options into 
-categories.}
+order. This section describes each of these options in detail.
 
 \begin{verbatim}
 > java edu.byu.ece.edif.jedif.JEdifBuild --help
@@ -13,24 +38,33 @@ Options:
 
   <input_file>
   [(-o|--output) <output_file>]
-
+  
   [(-d|--dir) dir1,dir2,...,dirN ]
-  [(-f|--include_file) include_file1,include_file2,...,include_fileN ]
+  [(-f|--file) file1,file2,...,fileN ]
 
   [--no_flatten]
   [--no_open_pins]
   [--blackboxes]
   [--no_delete_cells]
-  [--replace_srls]
+  [--pack_registers <{i|o|b|n}>]
+
+  [--replace_luts]
+  [--remove_fmaps]
   [--remove_rlocs]
+  [--remove_hl]
+  [--hl_constant <{0|1}>]
+  [--hl_use_port <hl_port_name>]
+  [--hl_no_tag_constant]
 
   [(-p|--part) <part>]
+
+  [--write_config <config_file>]
+  [--use_config <config_file>]
 
   [--log <logfile>]
   [--debug[:<debug_log>]]
   [(-V|--verbose) <{1|2|3|4|5}>]
   [--append_log]
-
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -69,7 +103,7 @@ This entity, named myblackbox uses 1 BRAM, 400 Flipflops and 100 LUTS
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
 Filename and path to the jedif output file.
 
-Default: \texttt{BL-TMR.edf} in the current working directory.
+Default: \texttt{<input file>.jedif} in the current working directory.
 
 \subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
 Comma-separated list of directories containing external EDIF files referenced 
@@ -86,39 +120,80 @@ file. There can be multiple \texttt{-f} options.
 
 Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
 
-\subsection{Maintenance Commands}
+\subsection{Maintenance Options}
 The following options allow some control over that happens during the 
 conversion process
   
 \subsubsection{\texttt{--no\_flatten}}
 By default JEdifBuild will flatten the EDIF files. Flattening is required by the 
-TMR tools, but other applications my wish to have retail the hierarchical
+TMR tools, but other applications my wish to keep the hierarchical
 design. 
 
 \subsubsection{\texttt{--no\_open\_pins}}
-Do not allow parser to infer open pins.
+Do not allow the parser to infer open pins on black box definitions.
 
 \subsubsection{\texttt{--blackboxes}}
-Allow parser to continue if blackbox definitions are not found
+Allow parser to continue if blackbox definitions are not found.
 
 \subsubsection{\texttt{--no\_delete\_cells}}
 By default JEdifBuild will remove unused cells, to reduce the size of the final
 .jedif file. However, the user can request that these cells be retained for 
 future use.
 
-\subsubsection{\texttt{--replace\_srls}}
+\subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
+ports (those that will be the inputs and outputs of the FPGA). The half-latch 
+tool must therefore treat any FFs that will be packed into the IOBs differently
+than other FFs (at least with Virtex devices). This option allows the user to
+specify which IOBs the registers should be packed into: inputs (\emph{i}),
+outputs (\emph{o}), both (\emph{b}), or none (\emph{n}). The default is to pack
+both input and output registers.
+
+\subsection{Sterilize Options}
+
+\subsubsection{\texttt{--replace\_luts}}
 By default JEdifBuild will not remove LUT RAMs acting as SRLs in the design.  These
 LUT RAMs can cause problems as they are not scrubbable.  This option tells the 
 tool to replace these LUT RAMs with actual SRLs.
 
-\subsubsection{\texttt{--remove\_rlocs}}
-Setting this option will tell JEdifBuild to remove ALL RLOCS in the design.  Some
-RLOCS can be problems for different versions of the hardware.
+\subsubsection{\texttt{--remove\_fmaps}}
+Remove FMAPS from the input design.
 
-\subsubsection{\texttt{(-p|--part) <part>}}
-Target architecture for the triplicated design. Valid parts include all
-parts from the Virtex, Virtex2, and Virtex4 product lines. Not
-case-sensitive.
+\subsubsection{\texttt{--remove\_rlocs}}
+Setting this option will tell JEdifBuild to remove ALL RLOCs in the design.
+The replication tools will not work correctly if a design contains RLOCs.
+
+\subsubsection{\texttt{--remove\_hl}}
+Remove half-latches in the input design before performing TMR.
+
+Note: Not \emph{all} half-latches can be removed at the EDIF 
+level for all architectures. Some post-processing may be necessary.
+
+\subsubsection{\texttt{--hl\_const} $\{0,1\}$}
+Sets the polarity of the half-latch constant to be used, whether an 
+internally-generated constant or a top-level port. 
+
+Valid options are \texttt{0} and \texttt{1}. Default: \texttt{0}.
+
+\subsubsection{\texttt{--hl\_use\_port <hl\_port\_name>}}
+Specify a top-level port to use in place of half-latches when 
+using half-latch removal. The top-level port will have the name specified with 
+this option and the polarity (1 or 0) specified with the \texttt{--hlConst} 
+option.
+
+\subsubsection{\texttt{--hl\_no\_tag\_constant}}
+When half-latch removal is used, a constant comes from either a constant
+generator cell (ROM$16$X$1$) or a port specified by the user. In either case,
+the input buffer for the port or the generator cell should be triplicated (or
+duplicated) to ensure reliability. By default, such instances are tagged with
+an EDIF property called 'half\_latch\_constant' so that they can be
+automatically selected for replication by JEdifNMRSelection later in case
+partial replication is used. This option disables the default behavior of
+tagging safe constant instances.
+
+\input{option_Technology}
+\input{option_ConfigFile}
+\input{option_Logfile}
 
 %
 % Words to be ignored by the spell-checker:

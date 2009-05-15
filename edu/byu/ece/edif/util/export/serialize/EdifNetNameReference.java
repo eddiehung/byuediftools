@@ -55,7 +55,7 @@ public class EdifNetNameReference extends EdifGenericNameReference implements Se
     }
     
     public static EdifNetNameReference getReference(EdifNet net) {
-    	return getReference(net);
+    	return getReference(net, true);
     }
     
     public static EdifNetNameReference getReference(EdifNet net, boolean shouldResolve) {

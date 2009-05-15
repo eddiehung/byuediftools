@@ -68,7 +68,7 @@ public class NameReferenceObjectOutputStream extends ObjectOutputStream {
     }
     
     /**
-     * Replace supported EDIF objects as the go into the stream with appropriate
+     * Replace supported EDIF objects as they go into the stream with appropriate
      * reference objects.
      */
     @Override
@@ -88,15 +88,25 @@ public class NameReferenceObjectOutputStream extends ObjectOutputStream {
         else if (obj instanceof EdifCellInstance) {
             EdifCellInstance instance = (EdifCellInstance) obj;
             EdifCell cell = instance.getParent();
-            EdifLibrary lib = cell.getLibrary();
+            EdifLibrary lib = null;
+            if (cell != null)
+            	lib = cell.getLibrary();
             try {
-                EdifLibrary rLib = _referenceEnvironment.getLibrary(lib.getName());
-                EdifCell rCell = rLib.getCell(cell.getName());
-                EdifCellInstance rInstance = rCell.getCellInstance(instance.getName());
-                if (instance == rInstance) {
-                    return EdifCellInstanceNameReference.getReference(instance);
-                }
-                else throw new NullPointerException();
+            	if (lib != null) {
+            		EdifLibrary rLib = _referenceEnvironment.getLibrary(lib.getName());
+            		EdifCell rCell = rLib.getCell(cell.getName());
+            		EdifCellInstance rInstance = rCell.getCellInstance(instance.getName());
+            		if (instance == rInstance) {
+            			return EdifCellInstanceNameReference.getReference(instance);
+            		}
+            		else throw new NullPointerException();
+            	}
+            	else { // in this case, we assume the instance is the design's top instance so we check that instead
+            		if (instance == _referenceEnvironment.getTopCellInstance()) {
+            			return EdifCellInstanceNameReference.getReference(instance);
+            		}
+            		else throw new EdifSerializationException("Error: EdifCellInstance has no parent cell but is not top instance of reference environment.");
+            	}
             }
             catch (NullPointerException e) {
                 throw new EdifSerializationException("Attempted serializaiton of cell instance not in reference environment");

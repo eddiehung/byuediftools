@@ -55,25 +55,6 @@ public class EdifSingleBitPort implements Serializable {
     }
 
     /**
-     * Two EdifSingleBitPort objects are considered edifEqual if:
-     * <ul>
-     * <li> They have the same bit position</li>
-     * </ul>
-     * 
-     * @param o Comparison EdifSingleBitPort object
-     * @return true of the two EdifSingleBitPort objects are edifEqual
-     */
-    public boolean edifEquals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof EdifSingleBitPort))
-            return false;
-        EdifSingleBitPort that = (EdifSingleBitPort) o;
-
-        return this.bitPosition() == that.bitPosition();
-    }
-
-    /**
      * @param esp
      * @return true if the Port names, parent EdifPorts, and InnerNets are all
      * the same object. Also checks the bitposition.

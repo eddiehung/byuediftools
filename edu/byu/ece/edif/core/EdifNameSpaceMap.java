@@ -25,6 +25,7 @@ package edu.byu.ece.edif.core;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 
 /////////////////////////////////////////////////////////////////////////
 //// EdifNameSpaceMap
@@ -70,13 +71,15 @@ public class EdifNameSpaceMap<E extends NamedPropertyObject> extends LinkedHashM
             put(en.getName().toLowerCase(), element);
             if (en instanceof RenamedObject)
                 _oldNameToElement.put(en.getOldName(), element);
+            _containsValues.add(element);
         } else
             throw new EdifNameConflictException(element);
     }
 
     // javadoc inherited from interface
     public boolean contains(E element) {
-        return containsValue(element);
+        return _containsValues.contains(element);
+//        return containsValue(element);
     }
 
     // javadoc inherited from interface
@@ -165,6 +168,7 @@ public class EdifNameSpaceMap<E extends NamedPropertyObject> extends LinkedHashM
                     if (_oldNameToElement.get(oldKey) == element)
                         oldKeyIt.remove();
                 }
+                _containsValues.remove(element);
                 return true;
             }
         }
@@ -185,4 +189,10 @@ public class EdifNameSpaceMap<E extends NamedPropertyObject> extends LinkedHashM
      * lookup.
      */
     private HashMap<String, E> _oldNameToElement = new LinkedHashMap<String, E>();
+    
+    /**
+     * Used to speedup "contains" queries (otherwise they would require using
+     * "containsValue" which iterates over every value in the map.
+     */
+    private LinkedHashSet<E> _containsValues = new LinkedHashSet<E>();
 }

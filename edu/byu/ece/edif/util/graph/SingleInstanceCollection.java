@@ -22,12 +22,13 @@
  */
 package edu.byu.ece.edif.util.graph;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
 import edu.byu.ece.edif.core.EdifCellInstance;
 
-public class SingleInstanceCollection implements EdifCellInstanceCollection {
+public class SingleInstanceCollection implements EdifCellInstanceCollection, Serializable {
 
     public SingleInstanceCollection(EdifCellInstance eci) {
         _instance = eci;

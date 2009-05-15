@@ -31,8 +31,10 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import edu.byu.ece.edif.core.EdifCellInstance;
+import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.util.graph.EdifCellBadCutGroupings;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.graph.Edge;
 
@@ -229,7 +231,10 @@ public class MoreFrequentVoting {
                      * TODO: Or should we enforce that the incoming graph be a
                      * badCutGrouping Graph?
                      */
-                    if (EdifCellBadCutGroupings.isBadCutEdge(adjacentEdge, nmrArch)) {
+                    EdifNet net = null;
+                    if (adjacentEdge instanceof EdifCellInstanceEdge)
+                        net = ((EdifCellInstanceEdge) adjacentEdge).getNet();
+                    if (EdifCellBadCutGroupings.isBadCutEdge(adjacentEdge, nmrArch) || (net != null && EdifReplicationPropertyReader.isDoNotRestoreOrDoNotDetectLocation(net))) {
                         logicLevelStack.push(1); // Vote on next available edge
                     } else {
                         // Tag voter edges and start the count over.
@@ -268,6 +273,7 @@ public class MoreFrequentVoting {
 
         return cutEdges;
     }
+    
 
     /**
      * Determines locations to insert voters in order to partition the graph
@@ -282,7 +288,11 @@ public class MoreFrequentVoting {
      */
     public static Collection<Edge> partitionGraphWithVoters(EdifCellInstanceGraph connectivityGraph,
             NMRArchitecture nmrArch, Collection<Edge> previouslyCutEdges, int numberOfPartitions) {
-        int insertionThreshold = 0;
+        
+    	if (numberOfPartitions <= 1)
+    		return new ArrayList<Edge>();
+    	int insertionThreshold = 0;
+        
         Collection<Edge> startEdges = new ArrayList<Edge>();
 
         // Create graph with no top-level ports
@@ -364,7 +374,7 @@ public class MoreFrequentVoting {
         if (numberOfPartitions > 1)
             insertionThreshold = max_depth / numberOfPartitions;
         else
-            insertionThreshold = max_depth + 1; // One partition only
+        	insertionThreshold = max_depth + 1; // One partition only
 
         //System.out.print("(insertionThreshold="+insertionThreshold+")");
         return insertVotersByLogicLevels(connectivityGraph, nmrArch, startEdges, previouslyCutEdges,

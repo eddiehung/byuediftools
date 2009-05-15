@@ -47,14 +47,15 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
-import edu.byu.ece.edif.util.iob.AbstractIOBAnalyzer;
+import edu.byu.ece.edif.util.iob.IOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
+import edu.byu.ece.edif.util.jsap.commandgroups.JEdifClockDomainCommandGroup;
 import edu.byu.ece.graph.AbstractGraphToDotty;
 import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
@@ -361,7 +362,7 @@ public class JEdifClockDomain extends EDIFMain {
             if (isSequential(eci.getCellType())) {
                 for (EdifPortRef epr : _ecic.getEPRsWhichReferenceInputPortsOfECI(eci)) {
                     if (XilinxTools.isClockPort(epr.getSingleBitPort())) {
-                        if (XilinxResourceMapper.getResourceType(eci).equals("BRAM")) {
+                        if (XilinxResourceMapper.getInstance().getResourceType(eci).equals("BRAM")) {
                             if (epr.getPort().getName().toLowerCase().contains("clka"))
                                 clockA = epr.getNet();
                             else if (epr.getPort().getName().toLowerCase().contains("clkb"))
@@ -387,7 +388,7 @@ public class JEdifClockDomain extends EDIFMain {
                                 + eci.getCellType() + ") [" + portName + "] Net:" + epr.getNet().getName() + " Driver:"
                                 + driverSet;
                         String key = "";
-                        if (XilinxResourceMapper.getResourceType(eci).equals("BRAM")) {
+                        if (XilinxResourceMapper.getInstance().getResourceType(eci).equals("BRAM")) {
                             EdifNet clk = null;
                             if (portName.endsWith("a"))
                                 clk = clockA;
@@ -491,7 +492,7 @@ public class JEdifClockDomain extends EDIFMain {
         SCCDepthFirstSearch scc = new SCCDepthFirstSearch(_ecic);
 
         if (noIOBFB) {
-            AbstractIOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(),
+            IOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer((FlattenedEdifCell) _top.getTopCell(),
                     _ecic);
             Collection<EdifCellInstanceEdge> possibleIOBFeedbackEdges = iobAnalyzer.getIOBFeedbackEdges();
 

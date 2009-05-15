@@ -503,7 +503,7 @@ public abstract class EdifHalfLatchRemover {
         EdifEnvironment environment = top_cell.getLibrary().getLibraryManager().getEdifEnvironment();
 
         // Create HalfLatchArchitecture
-        hlArchitecture = new XilinxHalfLatchArchitecture(top_cell);
+        hlArchitecture = new XilinxHalfLatchArchitecture();
 
         // Now do the actual half latch removal
         System.out.println("Removing half-latches...");

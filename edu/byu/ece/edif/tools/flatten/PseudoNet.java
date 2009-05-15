@@ -65,6 +65,7 @@ public class PseudoNet extends NamedPropertyObject {
         _connections = new LinkedHashSet<Connection>();
         _originalNets = new LinkedHashSet<EdifNet>();
         _originalNets.add(originalNet);
+        _hierarchicalNets = new LinkedHashSet<HierarchicalNet>();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -91,6 +92,14 @@ public class PseudoNet extends NamedPropertyObject {
         _originalNets.add(originalNet);
     }
 
+    public void addHierarchicalNet(HierarchicalNet hierarchicalNet) {
+    	_hierarchicalNets.add(hierarchicalNet);
+    }
+    
+    public Set<HierarchicalNet> getHierarchicalNets() {
+    	return _hierarchicalNets;
+    }
+    
     /**
      * Add a top level connection to the PseudoNet. This refers to a top level
      * port of the top level cell in the design.
@@ -165,6 +174,8 @@ public class PseudoNet extends NamedPropertyObject {
      * Represents the net's very top level connections
      */
     private Set<EdifSingleBitPort> _topLevelConnections;
+    
+    private Set<HierarchicalNet> _hierarchicalNets;
 
     ///////////////////////////////////////////////////////////////////
     ////                         private classes                   ////

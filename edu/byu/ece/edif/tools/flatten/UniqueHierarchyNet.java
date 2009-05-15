@@ -40,7 +40,7 @@ public class UniqueHierarchyNet implements HierarchicalNet {
      */
     public UniqueHierarchyNet(HierarchicalInstance parent, EdifNet originalNet) {
         _parent = parent;
-        _originalNet = originalNet;
+        _originalNetName = originalNet.getName();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -55,14 +55,14 @@ public class UniqueHierarchyNet implements HierarchicalNet {
         if (!(o instanceof UniqueHierarchyNet))
             return false;
         UniqueHierarchyNet hierarchyNet = (UniqueHierarchyNet) o;
-        return (_parent == hierarchyNet._parent && _originalNet == hierarchyNet._originalNet);
+        return (_parent == hierarchyNet._parent && _originalNetName.equals(hierarchyNet._originalNetName));
     }
 
     /**
      * @return a reference to the original EdifNet
      */
-    public EdifNet getOriginalNet() {
-        return _originalNet;
+    public String getOriginalNetName() {
+        return _originalNetName;
     }
 
     /**
@@ -78,7 +78,7 @@ public class UniqueHierarchyNet implements HierarchicalNet {
     /**
      * A reference to the original EdifNet
      */
-    private EdifNet _originalNet;
+    private String _originalNetName;
 
     /**
      * A reference to the parent HierarchicalInstance

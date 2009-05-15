@@ -24,8 +24,6 @@ package edu.byu.ece.edif.tools.flatten;
 
 import java.io.Serializable;
 
-import edu.byu.ece.edif.core.EdifNet;
-
 //////////////////////////////////////////////////////////////////////////
 //// HierarchicalNet
 /**
@@ -40,7 +38,7 @@ public interface HierarchicalNet extends Serializable {
     /**
      * @return a reference to the original EdifNet
      */
-    public EdifNet getOriginalNet();
+    public String getOriginalNetName();
 
     /**
      * @return a reference to the parent HierarchicalInstance node

@@ -23,16 +23,15 @@
 package edu.byu.ece.edif.test.regression;
 
 import java.io.PrintStream;
-import java.util.List;
 
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.jedif.EDIFMain;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
-import edu.byu.ece.edif.util.jsap.JEdifOutputCommandGroup;
-import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
-import edu.byu.ece.edif.util.jsap.TechnologyCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.JEdifOutputCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 
 /**
  * This class is meant as a playground to try out different regression testing
@@ -49,8 +48,10 @@ public class BetaRegression extends EDIFMain {
      * @param args
      */
     public static void main(String[] args) {
+
      
     }
+
 
     private static EdifEnvironment getTop(String args[]) {
         // Define the print streams for this program

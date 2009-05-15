@@ -98,10 +98,10 @@ public class FlattenedEdifCellInstance extends EdifCellInstance {
      */
     public String getHierarchicalEdifName() {
         HierarchicalInstance hi = _hierarchicalInstance;
-        String retVal = hi.getInstance().getName();
+        String retVal = hi.getInstanceName();
         hi = hi.getParent();
         while (hi.getParent() != null) {
-            retVal = hi.getInstance().getName() + "/" + retVal;
+            retVal = hi.getInstanceName() + "/" + retVal;
             hi = hi.getParent();
         }
         return retVal;

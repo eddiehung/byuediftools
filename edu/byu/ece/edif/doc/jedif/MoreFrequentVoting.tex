@@ -1,16 +1,38 @@
 \section{JEdifMoreFrequentVoting}
+JEdifMoreFrequentVoting inserts extra voters for more frequent voting within
+a design based on a logic levels threshold or a total number of desired
+partitions.
+
+At times, the user may wish to disable voter insertion on certain nets. This
+can be accomplished by inserting a \texttt{`do\_not\_restore'} property on
+selected nets in the .edf file as follows:\\
+\texttt{(property do\_not\_restore (boolean (true)))}\\
+
+Nets with this property will not have voters placed on them.
+
 \begin{verbatim}
 >java edu.byu.ece.edif.jedif.JEdifMoreFrequentVoting
-[-h|--help] 
-[-v|--version] 
+Options:
+  [-h|--help]
+  [-v|--version]
 
-<inputfile>
-[(-o|--output) <output_file>] 
-[--ptmr <ptmr_file>] 
+  <input_file>
+  (-r|--rep_desc) <rep_desc>
 
-[(-p|--part) <part>] 
+  [--voter_threshold <voter_threshold>]
+  [--num_partitions <num_partitions>]
+  [--voter_location_i voter_location_i1,voter_location_i2,...,voter_location_iN ]
+  [--voter_location_n voter_location_n1,voter_location_n2,...,voter_location_nN ]
 
-<{--voter_threshold <voter_threshold> | --num_partitions <num_partitions>}>
+  [(-p|--part) <part>]
+
+  [--write_config <config_file>]
+  [--use_config <config_file>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
 
 \end{verbatim}
 
@@ -20,15 +42,8 @@
 \subsubsection{\texttt{<input\_file>}}
 Filename and path to the jedif source file.
 
-\subsubsection{\texttt{--ptmr <ptmr\_input\_file>}}
-Filename and path to the tmr data file created by TMRAnalysis
-
-Default: \texttt{<inputfile>.ptmr} in the current working directory.
-
-\subsubsection{\texttt{(-o|--output) <output\_file>}}
-Filename and path to the tmr data file appended by this tool
-
-Default: \texttt{<inputfile>.ptmr} in the current working directory.
+\subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
+Filename and path to the replication description (.rdesc) file to be modified.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -43,7 +58,15 @@ created in equal sizes, if possible. This number is currently calculated from
 the maximum depth of the circuit. A more sophisticated algorithm may be
 provided in the future.
 
+\subsubsection{\texttt{--voter\_location\_i
+voter\_location\_i1,voter\_location\_i2,...,voter\_location\_iN}}
+Comma-separated list of instances to place voters after. Voters will be placed
+on all of the nets that are outputs of the instances in the list.
+
+\subsubsection{\texttt{--voter\_location\_n
+voter\_location\_n1,voter\_location\_n2,...,voter\_location\_nN}}
+Comma-separated list of nets on which to place voters.
 
 \input{option_Technology}
-
-
+\input{option_ConfigFile}
+\input{option_Logfile}

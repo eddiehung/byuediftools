@@ -49,7 +49,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
         //      Input Procedure:
         //      - Create new XilinxIOB object
         //      - Grab all successors of ESBP
-        //        - If there is a single successor and it is of type IO, add as inBUF
+        //        - If there is a single successor and it is of type IO or IBUFG, add as inBUF
         //        -  Else if there is a single successor and it is a FF, add as InputReg
         //        -  Else if there are multiple successors and only one FF, add it as InputReg
         //        -  Else do nothing
@@ -112,7 +112,8 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 // Exclude top-level ports
                 if (successor instanceof EdifCellInstance) {
                     EdifCellInstance eci = (EdifCellInstance) successor;
-                    if (XilinxResourceMapper.IO.equals(XilinxResourceMapper.getResourceType(eci))) {
+                    String resourceType = XilinxResourceMapper.getInstance().getResourceType(eci);
+                    if (resourceType.equals(XilinxResourceMapper.IO) || resourceType.equals(XilinxResourceMapper.IBUFG)) {
                         xiob.setIBUF(eci, graph);
                         if (_debug)
                             System.out.println("Found IBUF: " + eci);
@@ -143,7 +144,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 if (predecessor instanceof EdifCellInstance) {
                     EdifCellInstance eci = (EdifCellInstance) predecessor;
                     // Check for an I/O typed object
-                    if (XilinxResourceMapper.IO.equals(XilinxResourceMapper.getResourceType(eci)))
+                    if (XilinxResourceMapper.IO.equals(XilinxResourceMapper.getInstance().getResourceType(eci)))
                         xiob.setOBUF(eci);
                 }
             }
@@ -194,7 +195,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
             if (predecessor instanceof EdifCellInstance) {
                 EdifCellInstance eci = (EdifCellInstance) predecessor;
                 // Check for a "Resistor" typed object
-                if (XilinxResourceMapper.RES.equals(XilinxResourceMapper.getResourceType(eci))) {
+                if (XilinxResourceMapper.RES.equals(XilinxResourceMapper.getInstance().getResourceType(eci))) {
                     if (_debug)
                         System.out.println("Found Resistor element: " + eci);
                     xiob.setResistor(eci);
@@ -235,7 +236,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 continue;
             // See if this neighbor is a register
             EdifCellInstance eci = (EdifCellInstance) successor;
-            if (XilinxResourceMapper.FF.equals(XilinxResourceMapper.getResourceType(eci))) {
+            if (XilinxResourceMapper.FF.equals(XilinxResourceMapper.getInstance().getResourceType(eci))) {
                 // If any registers have already been found, there is not a valid
                 //   IOB register (there can only be one)
                 if (iobReg != null)
@@ -248,7 +249,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                             + iobReg);
             }
         }
-
+        
         if (_debug && iobReg != null)
             System.out.println("Input IOB register: " + iobReg);
         return iobReg;
@@ -295,7 +296,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 continue;
             // See if this neighbor is a register
             EdifCellInstance eci = (EdifCellInstance) predecessor;
-            if (XilinxResourceMapper.FF.equals(XilinxResourceMapper.getResourceType(eci))) {
+            if (XilinxResourceMapper.FF.equals(XilinxResourceMapper.getInstance().getResourceType(eci))) {
                 // This sink is driven by a register
                 // Make sure this register doesn't drive anything else (otherwise
                 //   it cannot be placed in an IOB)
