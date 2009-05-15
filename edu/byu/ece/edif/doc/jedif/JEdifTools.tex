@@ -131,11 +131,11 @@ JEdifNMRSelection determines which parts of a design will be
 replicated. This executable can be run in multiple passes to select
 different parts of a design for different kinds of replication. Each
 run of JEdifNMRSelection can select portions of a design for a single
-replication type (i.e. duplication, replication). Design portions can
+replication type (i.e. duplication, triplication). Design portions can
 be selected for replication based on available space or specific cell
 types, instances, ports, and clock domains specified by the user. The
 results of JEdifNMRSelection are saved in a replication description
-file (.rdesc). This file can be modified by subsequent runs of this
+(.rdesc) file. This file can be modified by subsequent runs of this
 and other executables in the toolflow.
 
 \subsection{JEdifVoterSelection}
@@ -143,15 +143,15 @@ JEdifVoterSelection determines the locations where voters will be
 inserted into a triplicated design (or triplicated portions of a
 design). Voter locations are determined using a feedback cutset
 algorithm and rules for voting where downscaling is necessary. The
-results are added into the replication description file (.rdesc).
+results are added into the replication description (.rdesc) file.
 
 \subsection{JEdifMoreFrequentVoting}
-\emph{Optional:} Inserts extra voters for more frequent voting within
-the design.
+\emph{Optional:} JEdifMoreFrequentVoting inserts extra voters for more frequent voting within a design based on a logic levels threshold or a total number of desired
+partitions.
 
 \subsection{JEdifDetectionSelection}
 \emph{Optional:}
-JEdifDetection determines detector locations for both triplicated and
+JEdifDetectionSelection determines detector locations for both triplicated and
 duplicated design portions using user-specified options. Like
 JEdifNMRSelection, this tool is designed to be run in multiple passes
 (only one replication type can be processed per pass). Results are
@@ -161,20 +161,19 @@ saved in the replication description file (.rdesc).
 \emph{Optional:} JEdifPersistenceDetection determines additional
 detector locations necessary for classifying persistent/non-persistent
 errors detected in a design. It is designed to be run in multiple
-passes. Results are saved in the replication description file
-(.rdesc).
+passes. Results are saved in the replication description (.rdesc) file.
 
 \subsection{JEdifNMR}
 JEdifNMR performs the replication selected by previously run
 tools. Information about what to replicate and where to insert
-voters/detectors is obtained from the replication description file
-(.rdesc) created by the previous steps.
+voters/detectors is obtained from the replication description (.rdesc)
+file created by the previous steps.
 
 \subsection{Other JEdif tools}
 
 \subsubsection{JEdifNetList}
-JEdifNetList converts a .jedif file into an .edf file for use with other
-standard edif tools.
+JEdifNetlist converts a netlist in .jedif format to EDIF (.edf) format for use
+with other standard EDIF tools.
 
 \subsubsection{JEdifQuery}
 JEdifQuery is a tool used to query the contents of a .jedif file and
@@ -184,15 +183,15 @@ to provide summary information about the EDIF design contained within.
 JEdifReplicationQuery is a tool used to query the contents of a
 replication description file (.rdesc) and provide summary information
 about the kind of replication that will be performed on a design. It
-reports information about replication types, organs inserted
-(i.e. voters, detectors), and detection domains.
+reports information about replication types, organs to be inserted
+(i.e. voters, detectors), and detection error outputs.
 
 \subsubsection{JEdifClockDomain} 
-The JEdifClockDomain tool is a .jedif based tool to parse FPGA
-designs to obtain information about the clock(s). The parser first identifies
-all clocks in a design. This information is then used to optionally display
-other information, such as classifying Xilinx primitives into one or more 
-domains, showing clock crossings, etc.
+The JEdifClockDomain tool is a .jedif based tool to analyze FPGA
+designs to obtain information about the clock(s). The tool first
+identifies all clocks in a design. This information is then used to
+optionally display other information, such as classifying Xilinx
+primitives into one or more domains, showing clock crossings, etc.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Toolflow Illustration}

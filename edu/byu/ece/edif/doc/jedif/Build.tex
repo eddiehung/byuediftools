@@ -78,18 +78,18 @@ converted. This is the only required parameter.
 
 Allowed filename extensions are:
 \begin{itemize}
-  \item Parsable Edif: edn,edf,ndf
-  \item Binary Edif (Blackboxes): ngc,ngo
+  \item Parsable EDIF: edn,edf,ndf
+  \item Binary netlist (Blackboxes): ngc,ngo
   \item Blackbox Utilization: bb
 \end{itemize}
 
 Parsable EDIF files will be parsed and included in the algorithms.
-Binary EDIF files are not parsable, but the program recognizes them as
-blackboxes, and will not complain about not finding the entity.
-Blackbox utilization files allow the user to specify the resource use
-of the blackboxes to help in the utilization estimate and partial tmr
-algorithms.  The file format is ``Resource:Number''.  Below is an
-example:
+Binary netlist files are not parsable by JEdifBuild, but the program
+recognizes them as blackboxes, and will not complain about not finding
+the entity.  Blackbox utilization files allow the user to specify the
+resource use of the blackboxes to help in the utilization estimate and
+partial tmr algorithms.  The file format is ``Resource:Number''.
+Below is an example:
 
 myblackbox.bb:\\
 \begin{verbatim}
@@ -98,7 +98,7 @@ myblackbox.bb:\\
   LUT:100
 \end{verbatim}
 
-This entity, named myblackbox uses 1 BRAM, 400 Flipflops and 100 LUTS
+This entity, named myblackbox, uses 1 BRAM, 400 Flipflops and 100 LUTS
 
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
 Filename and path to the jedif output file.
@@ -106,9 +106,10 @@ Filename and path to the jedif output file.
 Default: \texttt{<input file>.jedif} in the current working directory.
 
 \subsubsection{\texttt{(-d|--dir) dir1,dir2,\ldots,dir3}}
-Comma-separated list of directories containing external EDIF files referenced 
-by the top-level EDIF file. The current working directory is included by 
-default and need not be specified. There can be multiple \texttt{-d} options.
+Comma-separated list of directories containing external EDIF files
+referenced by the top-level EDIF file. The current working directory
+is included by default and need not be specified. Multiple \texttt{-d}
+options may be specified.
 
 Example: \texttt{-d aux\_files,/usr/share/edif/common -d
   moreEdifFiles/}
@@ -116,17 +117,17 @@ Example: \texttt{-d aux\_files,/usr/share/edif/common -d
 \subsubsection{\texttt{(-f|--file) file1,file2,\ldots,fileN}}
 Similar to the previous option, but rather than specifying directories to 
 search, each external EDIF file is named explicitly---including the path to the 
-file. There can be multiple \texttt{-f} options. 
+file. Multiple \texttt{-f} options may be specified.
 
 Example: \texttt{-f multBox.edn,src/adder.edf -f /usr/share/edif/blackBox.edf}.
 
 \subsection{Maintenance Options}
-The following options allow some control over that happens during the 
+The following options allow some control over what happens during the 
 conversion process
   
 \subsubsection{\texttt{--no\_flatten}}
-By default JEdifBuild will flatten the EDIF files. Flattening is required by the 
-TMR tools, but other applications my wish to keep the hierarchical
+By default, JEdifBuild will flatten the EDIF files. Flattening is required by the 
+TMR tools, but other applications may wish to keep the hierarchical
 design. 
 
 \subsubsection{\texttt{--no\_open\_pins}}
@@ -136,9 +137,9 @@ Do not allow the parser to infer open pins on black box definitions.
 Allow parser to continue if blackbox definitions are not found.
 
 \subsubsection{\texttt{--no\_delete\_cells}}
-By default JEdifBuild will remove unused cells, to reduce the size of the final
-.jedif file. However, the user can request that these cells be retained for 
-future use.
+By default JEdifBuild will remove unused cells to reduce the size of
+the final .jedif file. However, the user can request that these cells
+be retained for future use.
 
 \subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
 By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
@@ -152,19 +153,19 @@ both input and output registers.
 \subsection{Sterilize Options}
 
 \subsubsection{\texttt{--replace\_luts}}
-By default JEdifBuild will not remove LUT RAMs acting as SRLs in the design.  These
-LUT RAMs can cause problems as they are not scrubbable.  This option tells the 
-tool to replace these LUT RAMs with actual SRLs.
+When this option is specified, the tool replaces LUT RAMs and SRLs
+with flip-flop equivalents. This option is useful because bitstream
+scrubbing cannot be used with designs that contain LUT RAMs or SRLs.
 
 \subsubsection{\texttt{--remove\_fmaps}}
-Remove FMAPS from the input design.
+Remove FMAPs from the input design.
 
 \subsubsection{\texttt{--remove\_rlocs}}
-Setting this option will tell JEdifBuild to remove ALL RLOCs in the design.
-The replication tools will not work correctly if a design contains RLOCs.
+Remove ALL RLOCs in the design.  The replication tools will not work
+correctly if a design contains RLOCs.
 
 \subsubsection{\texttt{--remove\_hl}}
-Remove half-latches in the input design before performing TMR.
+Remove half-latches in the input design before performing replication.
 
 Note: Not \emph{all} half-latches can be removed at the EDIF 
 level for all architectures. Some post-processing may be necessary.
@@ -182,14 +183,15 @@ this option and the polarity (1 or 0) specified with the \texttt{--hlConst}
 option.
 
 \subsubsection{\texttt{--hl\_no\_tag\_constant}}
-When half-latch removal is used, a constant comes from either a constant
-generator cell (ROM$16$X$1$) or a port specified by the user. In either case,
-the input buffer for the port or the generator cell should be triplicated (or
-duplicated) to ensure reliability. By default, such instances are tagged with
-an EDIF property called 'half\_latch\_constant' so that they can be
-automatically selected for replication by JEdifNMRSelection later in case
-partial replication is used. This option disables the default behavior of
-tagging safe constant instances.
+When half-latch removal is used, a constant comes from either a
+constant generator cell (ROM$16$X$1$) or a port specified by the
+user. In either case, the input buffer for the port or the generator
+cell should be triplicated (or duplicated) to ensure reliability. By
+default, such instances are tagged with an EDIF property called
+`\texttt{half\_latch\_constant}' so that they can be automatically
+selected for replication by JEdifNMRSelection later in case partial
+replication is used. This option disables the default behavior of
+tagging safe constant instances with this property.
 
 \input{option_Technology}
 \input{option_ConfigFile}
