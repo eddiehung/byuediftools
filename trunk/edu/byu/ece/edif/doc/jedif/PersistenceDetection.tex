@@ -2,7 +2,7 @@
 JEdifPersistenceDetection determines additional detector locations necessary
 for classifying persistent/non-persistent errors detected in a design. It is
 designed to be run in multiple passes (i.e. one per replication type being
-used). Results are saved in the replication description file (.rdesc).
+used). Results are saved in the replication description (.rdesc) file.
 
 At times, the user may wish to disable detector insertion on certain nets. This
 can be accomplished by inserting a \texttt{`do\_not\_detect'} property on
@@ -45,8 +45,7 @@ Options:
 \subsection{File Options}
 
 \subsubsection{\texttt{<input\_file>}}
-Filename and path to the jedif source file to be
-used.
+Filename and path to the .jedif source file.
 
 \subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
 Filename and path to the replication description (.rdesc) file to be modified.
@@ -77,9 +76,9 @@ been detected.
 Name of the port that should receive the detection error signals. If a port
 with this name does not exist, it will be created. If the given port already
 exists, it must have the correct bit-width ($1$ for single-rail detection, $2$
-for dual-rail detection) or an error will occur. JEdifDetectionSelection may be
-run multiple times with different port names or with the same port name. The
-results of all runs with the same port name will be merged into the port.
+for dual-rail detection) or an error will occur. JEdifPersistenceDetection may
+be run multiple times with different port names or with the same port name.
+The results of all runs with the same port name will be merged into the port.
 
 \subsubsection{\texttt{--no\_obufs}}
 This option disables the defualt behavior of inserting output buffers on the
@@ -116,7 +115,7 @@ at reducing the number of detectors between flip-flops.
 \subsubsection{\texttt{--connectivity\_cutset}}
 This is the original algorithm that removes arbitray feedback edges until all
 feedback is cut. This option has been shown to produce inferior results in
-general to the other two but in some few cases it *may* give better timing
+general to the other two but in some few cases it \emph{may} give better timing
 results (not likely in real-world designs).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

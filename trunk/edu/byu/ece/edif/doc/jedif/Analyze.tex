@@ -2,7 +2,7 @@
 JEdifAnalyze performs some basic circuit analysis necessary for
 subsequent executables. In particular, it performs feedback and IOB
 analysis. The results of JEdifAnalyze are saved in a circuit
-description file (.cdesc) required by later executables.
+description (.cdesc) file required by later executables.
 
 The following options control the feedback and IOB analysis
 performed by this executable. The results of the analysis
@@ -39,7 +39,8 @@ Options:
 Filename and path to the jedif source file to be analyzed
 
 \subsubsection{\texttt{(-o|--output) <output\_file>}}
-Filename and path to the ciruit description file (.cdesc) that will be output.
+Filename and path to the ciruit description (.cdesc) file that will be
+output.
 
 \subsection{Analysis Options}
 \subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
@@ -57,9 +58,9 @@ Use bad cutgroup connectivity graph
 \subsubsection{\texttt{--no\_iob\_feedback}}
 Use this option to exclude IOBs from the feedback analysis. This is useful when
 a top-level inout port is involved in feedback but by design will never be 
-written to and read at the same time. Thus there is no \emph{real} feedback.
-Using this option may greatly reduce the amount of feedback found in the design
-and thus reduce the number of voters inserted.
+written to and read from at the same time. Thus there is no \emph{real}
+feedback. Using this option may greatly reduce the amount of feedback found in
+the design and thus reduce the number of voters inserted.
 
 \input{option_Technology}
 \input{option_ConfigFile}

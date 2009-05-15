@@ -56,7 +56,7 @@ design and wire up the second and third domains to the corresponding ports (i.e.
 \end{center}
 \end{figure}
 
-We can accomplish this by telling the tool about the port groupings (i.e.
+We can accomplish this by telling the tools about the port groupings (i.e.
 \texttt{din}, \texttt{din1}, and \texttt{din2} form a port group). Each port
 group has a replication type (one of \texttt{triplication} or
 \texttt{duplication}) and a name. The name of a port group doesn't matter as
@@ -109,7 +109,7 @@ signals. (We could still tell the BL-TMR tool to triplicate these ports, if
 desired, by using the \texttt{--tmr\_p <port\_name>}). When the port group attributes
 above are used in the VHDL code, the BL-TMR tool automatically wires the ports
 to the appropriate domains after triplicating the design internals. Port groups can
-also be used for pre-duplicated ports. A single design can mix
+also be used for pre-duplicated ports. A single design can use both
 \texttt{triplication} and \texttt{duplication} port groups if desired.
 
 \subsection{Pre-mitigated Components}
@@ -241,7 +241,7 @@ commandline options.
 
 When the BL-TMR tool is used to apply TMR to the design in
 Figure~\ref{fig:ramb4_s4_tmr_design} with the port group attributes shown above,
-the resulting design has all of the ports wired up to the appropriate domains
+the resulting design gets all of the ports wired up to the appropriate domains
 as shown in Figure~\ref{fig:ramb4_s4_tmr_result}.
 
 \begin{figure}[htb]

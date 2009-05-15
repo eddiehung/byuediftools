@@ -185,6 +185,9 @@ public class HalfLatchCopyReplace extends AbstractEdifEnvironmentCopyReplace {
             safeConstantNet.addPortConnection(epr);
         }
         
+        // copy instance properties (i.e. INIT)
+        newInstance.copyProperties(oldInstance);
+        
         // add instance to top cell
         newParent.addSubCellUniqueName(newInstance);        
     }

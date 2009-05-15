@@ -7,7 +7,7 @@ replication type (i.e. duplication, replication). Design partitions can
 be selected for replication based on available space or specific cell
 types, instances, ports, and clock domains specified by the user. The
 results of JEdifNMRSelection are saved in a replication description
-file (.rdesc). This file can be modified by subsequent runs of this
+(.rdesc) file. This file can be modified by subsequent runs of this
 and other executables in the toolflow.
 
 See Section~\ref{sec:nmr_selection_examples} for examples of JEdifNMRSelection
@@ -94,8 +94,8 @@ runs. If not selected, the replication description file (.rdesc) will be
 overwritten completely instead of just modified. Normally, when continuing NMR
 selection with this flag, only instances that have not yet been selected for a
 replication type will be considered. Overriding replication types for instances
-can be accomplished by using the \texttt{--override} flag in conjunction with
-this flag.
+and ports can be accomplished by using the \texttt{--override} flag in
+conjunction with this flag.
 
 \subsubsection{\texttt{--override}}
 This flag may be used in conjunction with the \texttt{--continue} flag in order
@@ -107,13 +107,11 @@ selected.
 
 \subsubsection{\texttt{--full\_nmr}}
 Fully replicate the design, skipping all partial replication analysis. This
-method is preferred only if the design is expected to fit in the target part with full 
-replication of every resource since some time-consuming algorithms are skipped.
+method is preferred when the design is expected to fit in the target part with
+full replication of every resource since some time-consuming algorithms are skipped.
 Resource utilization estimates will still function, stopping replication and 
 warning the user if the full replicated design is not expected to fit in the 
-target part. In this case, the partially-replicated design will still be 
-written out to file, but the user would most likely benefit from the partial 
-replication algorithms.
+target part.
 
 Note: \texttt{--full\_nmr} will replicate all logic within the design; however, 
 top-level ports are not replicated by default. To replicate top-level ports,
@@ -132,15 +130,15 @@ Comma-separated list of ports to be replicated.
 \subsubsection{\texttt{--nmr\_inports}}
 Replicate all top-level input ports. The resulting EDIF file will
 have replicated input ports for every input port in the original design, with
-names such as \texttt{inputPort\_TMR0}, \texttt{inputPort\_TMR1},
-and \texttt{inputPort\_TMR2}.
+names such as \texttt{inputPort\_TMR\_0}, \texttt{inputPort\_TMR\_1},
+and \texttt{inputPort\_TMR\_2}.
 
 \subsubsection{\texttt{--nmr\_outports}}
 Force replication of all top-level output ports. The resulting EDIF file will
 have replicated output ports for every output port in the original design, with
-names such as \texttt{outputPort\_TMR0}, 
-\texttt{outputPort\_TMR1}, and 
-\texttt{outputPort\_TMR2}.
+names such as \texttt{outputPort\_TMR\_0}, 
+\texttt{outputPort\_TMR\_1}, and 
+\texttt{outputPort\_TMR\_2}.
 
 \subsubsection{\texttt{--no\_nmr\_p port1,port2,\ldots,portN}}
 Prevent replication of specific top-level port(s), specified as a 
@@ -155,7 +153,7 @@ are the (case-sensitive) names of the clock and reset input ports, respectively:
 Force replication of specific cell type(s), specified as a comma-separated list. 
 All instances of the types specified will be replicated. \texttt{--nmr\_c}
 takes precedence over \texttt{--no\_nmr\_c}. Mulitple \texttt{--nmr\_c} lists
-can be specified.
+may be specified.
 
 Examples: 
 \begin{itemize}
@@ -169,27 +167,27 @@ Force replication of the specified clock domain(s), specified as a
 comma-separated list. Each clock domain should be specified with it's full
 path, not including the top level instance name, each level being separated by '/' Note:
 \texttt{--no\_nmr\_clk} takes precedence over \texttt{--nmr\_clk}. Multiple
-\texttt{--nmr\_clk} lists can be specified.
+\texttt{--nmr\_clk} lists may be specified.
 
 \subsubsection{\texttt{--nmr\_i cell\_instance1,cell\_instance2,
 \ldots,cell\_instanceN}}
 Force replication of specific cell instance(s), specified as a comma-separated
 list. 
 Note: \texttt{--no\_nmr\_i} takes precedence over \texttt{--nmr\_i}. Multiple
-\texttt{--nmr\_i} lists can be specified.
+\texttt{--nmr\_i} lists may be specified.
  
 Example: \texttt{--nmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
 
 \subsubsection{\texttt{--no\_nmr\_c cell\_type1,cell\_type2,\ldots,cell\_typeN}}
 Prevent replication of specific cell type(s), specified as a comma-separated 
-list. Multiple \texttt{--no\_nmr\_c} lists can be specified.
+list. Multiple \texttt{--no\_nmr\_c} lists may be specified.
 
 Example: \texttt{--no\_nmr\_c bufg,ibufg,fdc}
 
-\subsubsection{\texttt{--no\_nmr\_clkclock\_domain1,
+\subsubsection{\texttt{--no\_nmr\_clk clock\_domain1,
 clock\_domain2,\ldots,clock\_domainN}}
 Prevent replication of specified clock domain(s), specified as a comma-separated 
-list. Multiple \texttt{--no\_nmr\_c} lists can be specified.
+list. Multiple \texttt{--no\_nmr\_c} lists may be specified.
 
 Example: \texttt{--no\_nmr\_clk clk\_c}
 
@@ -197,7 +195,7 @@ Example: \texttt{--no\_nmr\_clk clk\_c}
 \subsubsection{\texttt{--no\_nmr\_i cell\_instance1,
 cell\_instance2,\ldots,cell\_instanceN}}
 Prevent replication of specific cell instance(s), specified as a 
-comma-separated list. Multiple \texttt{--no\_nmr\_i} lists can be
+comma-separated list. Multiple \texttt{--no\_nmr\_i} lists may be
 specified.
 
 Example: \texttt{--no\_nmr\_i clk\_bufg,multiplier16/adder16/fullAdder0}
@@ -277,14 +275,14 @@ Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3}
 (breadth-first search).
 
 \subsubsection{\texttt{--output\_addition\_type} $\{1,2,3\}$}
-Similar to \texttt{--inputAdditionType}, this option applies to the logic 
+Similar to \texttt{--input\_addition\_type}, this option applies to the logic 
 in the ``feedback output'' section, that is, logic that is driven by the
 feedback section.
 
 This option only affects the resulting circuit if only some of the feedback 
 output section is replicated. It has no effect if all or none of the feedback 
-output section is replicated. As with \texttt{--inputAdditionType}, it is yet
-not clear if one method is superior to the others in general.
+output section is replicated. As with \texttt{--input\_addition\_type}, it is
+yet not clear if one method is superior to the others in general.
 
 Valid options are \texttt{1}, \texttt{2}, and \texttt{3}. Default: \texttt{3} 
 (breadth-first search).
@@ -357,7 +355,7 @@ Not case sensitive.
 
 \subsubsection{\texttt{--factor\_value}}
 Specify a single Factor Value.  The number has the precision of a Java 
-\texttt{double} and is interpretted based on the Factor Type as explained above.
+\texttt{double} and is interpreted based on the Factor Type as explained above.
 
 For example, if a design occupies 30\% of the target part prior to replication,
 a DUF of 0.50 would use 50\% of the part. An UEF of 0.50 would increase the

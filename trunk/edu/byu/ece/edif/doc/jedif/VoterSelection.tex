@@ -9,11 +9,9 @@ At times, the user may wish to force voter insertion on certain nets and
 disable voter insertion on others. This can be accomplished by inserting
 \texttt{`force\_restore'} and \texttt{`do\_not\_restore'} properties on
 selected nets in the .edf file as follows:\\
-\texttt{(property force\_restore (boolean (true)))}
+\texttt{(property force\_restore (boolean (true)))}\\
 \texttt{(property do\_not\_restore (boolean (true)))}\\
-
 \begin{verbatim}
-
 >java edu.byu.ece.edif.jedif.JEdifVoterSelection
 Options:
   [-h|--help]
@@ -39,8 +37,7 @@ Options:
 \subsection{File Options}
 
 \subsubsection{\texttt{<input\_file>}}
-Filename and path to the jedif source file to be
-sterilized. This is the only required parameter.
+Filename and path to the .jedif source file.
 
 \subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
 Filename and path to the replication description (.rdesc) file to be modified.
@@ -68,7 +65,7 @@ at reducing the number of voters between flip-flops.
 \subsubsection{\texttt{--connectivity\_cutset}}
 This is the original algorithm that removes arbitray feedback edges until all
 feedback is cut. This option has been shown to produce inferior results in
-general to the other two but in some few cases it *may* give better timing
+general to the other two but in some few cases it \emph{may} give better timing
 results (not likely in real-world designs).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
