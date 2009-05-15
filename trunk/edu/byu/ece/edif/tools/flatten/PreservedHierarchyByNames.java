@@ -65,7 +65,12 @@ public class PreservedHierarchyByNames implements Serializable {
     }
     
     public EdifCellInstance getFlatInstance(HierarchicalInstance hInstance, EdifCell flatCell) {
-        return flatCell.getCellInstance(getFlatInstanceName(hInstance));
+    	EdifCellInstance result = null;
+    	String name = getFlatInstanceName(hInstance);
+    	if (name != null) {
+    		result = flatCell.getCellInstance(name);
+    	}
+    	return result;
     }
     
     public String getFlatInstanceName(String hierarchicalName) {
@@ -109,7 +114,10 @@ public class PreservedHierarchyByNames implements Serializable {
         bfsTraversalList.add(hInstance);
         while (!bfsTraversalList.isEmpty()) {
             HierarchicalInstance currentNode = bfsTraversalList.poll();
-            EdifCellInstance matchingInstance = flatCell.getCellInstance(_instanceNameMap.get(currentNode));
+            String flatName = _instanceNameMap.get(currentNode);
+            EdifCellInstance matchingInstance = null;
+            if (flatName != null)
+            	matchingInstance = flatCell.getCellInstance(flatName);
             if (matchingInstance != null)
                 result.add(matchingInstance);
             for (HierarchicalInstance childNode : currentNode.getChildren())
