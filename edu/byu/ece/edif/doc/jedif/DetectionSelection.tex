@@ -1,12 +1,12 @@
 \section{JEdifDetectionSelection}
-JEdifDetection determines detector locations for both triplicated and
+JEdifDetectionSelection determines detector locations for both triplicated and
 duplicated design portions using user-specified options. Like
 JEdifNMRSelection, this tool is designed to be run in multiple passes
 (only one replication type can be processed per pass). Results are
-saved in the replication description file (.rdesc).
+saved in the replication description (.rdesc) file.
 
-JEdifDetection is capable of inserting both single- and dual-rail detectors. By
-default, output registers and output buffers are placed at detection signal
+JEdifDetectionSelection is capable of inserting both single- and dual-rail
+detectors. By default, output registers and output buffers are placed at detection signal
 outputs, but this behavior can be disabled (i.e. if the design being replicated
 is not a top-level design).
 
@@ -14,7 +14,7 @@ At times, the user may wish to force detection on certain nets and prevent
 detector insertion on others. This can be accomplished by inserting
 \texttt{`force\_detect'} and \texttt{`do\_not\_detect'} properties on selected
 nets in the .edf file as follows:\\
-\texttt{(property force\_detect (boolean (true)))}
+\texttt{(property force\_detect (boolean (true)))}\\
 \texttt{(property do\_not\_detect (boolean (true)))}\\
 
 \begin{verbatim}
@@ -49,8 +49,7 @@ Options:
 \subsection{File Options}
 
 \subsubsection{\texttt{<input\_file>}}
-Filename and path to the jedif source file to be
-sterilized. This is the only required parameter.
+Filename and path to the .jedif source file.
 
 \subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
 Filename and path to the replication description (.rdesc) file to be modified.
@@ -85,7 +84,7 @@ run multiple times with different port names or with the same port name. The
 results of all runs with the same port name will be merged into the port.
 
 \subsubsection{\texttt{--no\_downscale\_detection}}
-This option disables the default behavior if inserting detectors at locations
+This option disables the default behavior of inserting detectors at locations
 where the replication factor downscales (i.e. data flows from a triplicated
 partition to a duplicated partition).
 
@@ -99,7 +98,7 @@ This option disables the default behavior of inserting detectors at circuit
 outputs.
 
 \subsubsection{\texttt{--no\_obufs}}
-This option disables the defualt behavior of inserting output buffers on the
+This option disables the default behavior of inserting output buffers on the
 detection error signal outputs. This could be useful if the tool is not
 operating on a top-level design.
 
@@ -111,7 +110,7 @@ detection error signal outputs.
 This option specifies a clock net to use for output registers. This option is
 required unless output register insertion is disabled with the
 \texttt{--no\_oregs} option. The name given should be the name of the clock net
-\emph{after} replication (if different).
+\emph{after} replication (if the clock is to be replicated).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

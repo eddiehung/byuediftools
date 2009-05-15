@@ -11,9 +11,8 @@ on a design. For larger designs, this may result in a TMR'd version of the
 design that does not fit in the desired chip. If this is the case, some form of 
 ``partial'' TMR should be used.
 
-In this example, the design to be triplicated is specified in the file 
-\texttt{myDesign.edf} and the triplicated design will be written to 
-\texttt{myDesign\_tmr.edf}. Both input ports and output ports are triplicated. 
+In this example, the design to be triplicated is
+\texttt{myDesign.edf}. Both input ports and output ports are triplicated. 
 The part used in this case is the Virtex II XC2V1000-FG456.
 
 \begin{verbatim}
@@ -23,8 +22,8 @@ The part used in this case is the Virtex II XC2V1000-FG456.
 \end{verbatim}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Full TMR---Clock not triplicated}
-Some systems do not support triplicated clock lines. This example shows how to 
-triplicate everything but the clock line.
+Some systems are not ideal for triplicated clock lines because of resource
+constraints. This example shows how to triplicate everything but the clock line.
 
 This example is almost identical to the example in section 
 \ref{subsec:fulltmr}. The \texttt{--no\_nmr\_p} option specifies that the 
@@ -107,7 +106,7 @@ logic onto the target chip than estimated by the utilization tracker. The
 Xilinx \texttt{map} program, for example, does not map unrelated logic into the 
 same slice until slice utilization reaches 99\%. This means that much more 
 logic can be added after this point, though the place and route step will 
-become increasingly more difficult for the tools to perform.
+become increasingly more difficult for the vendor tools to perform.
 
 With this in mind, to achieve the maximum capacity on the target chip, it may 
 be necessary to specify a desired utilization factor greater than 1.0 (more 
@@ -251,7 +250,7 @@ myConfig.conf, but changes the input and output files:
 
 \begin{verbatim}
 > java edu.byu.ece.edif.jedif.JEdifNMRSelection myOtherDesign.jedif \
-  -c myOtherDesign.cdesc -r myOtherDesign.rdesc --useConfig myConfig.conf
+  -c myOtherDesign.cdesc -r myOtherDesign.rdesc --useconfig myConfig.conf
 \end{verbatim}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
