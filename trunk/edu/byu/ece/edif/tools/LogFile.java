@@ -214,6 +214,7 @@ public class LogFile {
         return pass;
     }
 
+
     /**
      * Prints one thing to each stream, and tests to see if it arrived and
      * didn't arrive appropriately Has some messy code at the moment, but I will
@@ -355,6 +356,7 @@ public class LogFile {
         LogFile.warn().println("2!{log file} and stderr");
         LogFile.err().println("1!{log file} and stderr");
 
+
         InitializeLog(null, null, 4);
         LogFile.debug().println("5![debug file and stdout] (but not the log file)(level 4)");
         LogFile.log().println("4!{log file} and stdout (level 4)");
@@ -362,6 +364,50 @@ public class LogFile {
         LogFile.warn().println("2!{log file} and stderr");
         LogFile.err().println("1!{log file} and stderr");
 
+        InitializeLog(debug, log, 2);
+        LogFile.debug().println("debug file only");
+        LogFile.log().println("log file only");
+        LogFile.out().println("log file only (level 2)");
+        LogFile.warn().println("log file and stderr (warn level 2)");
+        LogFile.err().println("log file and stderr (err level 2)");
+
+        InitializeLog(debug, log, 1);
+        LogFile.debug().println("debug file only");
+        LogFile.log().println("log file only");
+        LogFile.out().println("log file only (out level 1)");
+        LogFile.warn().println("log file only (err level 1)");
+        LogFile.err().println("log file and stderr (err level 1)");
+
+        System.out.println("Right now system.out = _null, and this will not be seen");
+        restoreSystemStreams();
+        System.out.println("testing nulls");
+
+        InitializeLog(null, null, 5);
+        LogFile.debug().println("5![debug file and] stdout (but not the log file)(level 5)");
+        LogFile.log().println("4!{log file} and stdout (level 5)");
+        LogFile.out().println("3!{log file} and stdout");
+        LogFile.warn().println("2!{log file} and stderr");
+        LogFile.err().println("1!{log file} and stderr");
+
+        InitializeLog(null, null, 4);
+        LogFile.debug().println("5![debug file and stdout] (but not the log file)(level 4)");
+        LogFile.log().println("4!{log file} and stdout (level 4)");
+        LogFile.out().println("3!{log file} and stdout");
+        LogFile.warn().println("2!{log file} and stderr");
+        LogFile.err().println("1!{log file} and stderr");
+    /**
+     * Special Private class that inherit from PrintStream, and overwrites the
+     * print methods. The overridden print methods print to both the logfile,
+     * then checks to see if the "log_level" or "verbosity_level" is high enough
+     * to print to the usual output. <br>
+     * <br>
+     * For example: if the user wants to print debugging info to the screen,
+     * then it will print to both the file and the screen. <br>
+     * <br>
+     * If the user wants to run quiet, and only see warnings and errors, then
+     * everything will be printed to the file, but only warning and errors will
+     * print to the usual output, probably stderr.
+     */
     }
 
     //	public static enum logLevel {Debug,Log,Std,Warn,Err};
@@ -379,6 +425,8 @@ public class LogFile {
      * print to the usual output, probably stderr.
      */
     class outStream extends PrintStream {
+
+
 
         private PrintStream _file;
 
@@ -498,6 +546,5 @@ public class LogFile {
                 }
             }
         }
-
     }
 }

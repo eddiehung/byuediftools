@@ -22,16 +22,15 @@
  */
 package edu.byu.ece.edif.tools.replicate.nmr;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 
 /////////////////////////////////////////////////////////////////////////
 //// AbstractDeviceUtilizationTracker
@@ -45,44 +44,76 @@ import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
 public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizationTracker {
 
     public AbstractDeviceUtilizationTracker() {
-        _currentInstances = new LinkedHashSet<EdifCellInstance>();
         _maxUtilizationMap = new LinkedHashMap<String, Integer>();
         _currentUtilizationMap = new LinkedHashMap<String, Double>();
-
-        _currentNMRInstances = new LinkedHashSet<EdifCellInstance>();
-        _excludeFromNMRInstances = new LinkedHashSet<String>();
-        _excludeFromNMRCellTypes = new LinkedHashSet<String>();
+        _numInstances = 0;
+        _origNumInstances = 0;
     }
 
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
 
-    /**
-     * This function adds the instance eci to the normal cell instances list and
-     * adds the appropriate utilization to the device utilization count.
-     * 
-     * @param eci Instance to add to the instances list.
-     */
-
-    public void addSingleInstance(EdifCellInstance eci) throws OverutilizationEstimatedStopException,
-            OverutilizationHardStopException, UnsupportedResourceTypeException {
+    public void addSingleCell(EdifCell cell) throws OverutilizationEstimatedStopException, OverutilizationHardStopException, UnsupportedResourceTypeException {
         /*
          * We can go ahead and try to add the instance if it is a primitive
          * otherwise we need to call addInstances on the collection of sub-cell
          * instances within eci.
          */
 
-        //if (eci.getCellType().isPrimitive() == true) {
-        if (eci.getCellType().isLeafCell() == true) {
-            incrementResourceCount(eci);
+        if (cell.isLeafCell() == true) {
+            String resourceType = _resourceMapper.getResourceType(cell);
+            if (resourceType == null) {
+                Collection<String> bbResources = cell.getBlackBoxResources();
+                if (bbResources == null) {
+                    System.out.println("WARNING: Cell " + cell
+                            + " does not map to a Xilinx primitve. If it is a black box,"
+                            + " it's internal utilization will not be tracked.");
+                } else {
+                    System.out.println("WARNING:\n\t Cell " + cell
+                            + " does not map to a Xilinx primitve, and is assumed to be a black box "
+                            + "There is utilization information about this blackbox, and that will be "
+                            + "used to estimate the total utilization. \n");
+                    
+                    cacheCurrentUtilization();
+                    
+                    try {
+                        for (String type : bbResources) {
+                            incrementResourceCount(type);
+                        }
+                    } catch (OverutilizationEstimatedStopException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    } catch (OverutilizationHardStopException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    } catch (UnsupportedResourceTypeException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    }
+                }
+            }
+            else {
+                try {
+                incrementResourceCount(resourceType);
+                } catch (UnsupportedResourceTypeException e) {
+                    throw new UnsupportedResourceTypeException("Unsupported resource type for cell: " + cell);
+                }
+            }
+            _origNumInstances++;
         }
-        //      else if (eci.getCellType().isLeafCell() == true) {
-        //          System.out.println ("WARNING: In ResourceTracker->addInstance, non-primitive leaf cell being added.  No utilization information will be added for this cell instance.");
-        //      }
         else
-            addSingleInstances(eci.getCellType().getSubCellList());
-        // We get here if the instance fits in the device
-        _currentInstances.add(eci);
+            addSingleInstances(cell.getSubCellList());
+    }
+    
+    /**
+     * This function adds the instance eci to the normal cell instances list and
+     * adds the appropriate utilization to the device utilization count.
+     * 
+     * @param eci Instance to add to the instances list.
+     */
+    public void addSingleInstance(EdifCellInstance eci) throws OverutilizationEstimatedStopException,
+            OverutilizationHardStopException, UnsupportedResourceTypeException {
+        addSingleCell(eci.getCellType());
     }
 
     /**
@@ -97,160 +128,81 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     public void addSingleInstances(Collection<EdifCellInstance> ecis) throws OverutilizationEstimatedStopException,
             OverutilizationHardStopException, UnsupportedResourceTypeException {
         /*
-         * This will need to 'cache' _currentInstancesList. They will be
-         * committed only if all instances in ecis are added without an
-         * exception occurring.
+         * This will need to 'cache' _origNumInstances and the current utilization.
+         * The result operation will be backed out of in any exceptions occur.
          */
         if (ecis == null)
             return;
-        HashSet<EdifCellInstance> cachedCurrentInstances = (HashSet<EdifCellInstance>) _currentInstances.clone();
-        cacheCurrentUtilizationNumbers();
+        int cachedOrigNumInstances = _origNumInstances;
+        cacheCurrentUtilization();
         for (EdifCellInstance eci : ecis) {
             try {
                 addSingleInstance(eci);
-            } catch (OverutilizationEstimatedStopException m) {
-                _currentInstances = cachedCurrentInstances;
-                revertToCachedUtilizationNumbers();
-                throw m;
-            } catch (OverutilizationHardStopException m) {
-                _currentInstances = cachedCurrentInstances;
-                revertToCachedUtilizationNumbers();
-                throw m;
+            } catch (OverutilizationEstimatedStopException e) {
+                _origNumInstances = cachedOrigNumInstances;
+                restoreCurrentUtilization();
+                throw e;
+            } catch (OverutilizationHardStopException e) {
+                _origNumInstances = cachedOrigNumInstances;
+                restoreCurrentUtilization();
+                throw e;
+            } catch (UnsupportedResourceTypeException e) {
+                _origNumInstances = cachedOrigNumInstances;
+                restoreCurrentUtilization();
+                throw e;
             }
         }
     }
 
-    public void cacheCurrentUtilizationNumbers() {
+    protected void cacheCurrentUtilization() {
         _cachedCurrentUtilizationMap = (HashMap<String, Double>) _currentUtilizationMap.clone();
-        _cachedMaxUtilizationMap = (HashMap<String, Integer>) _maxUtilizationMap.clone();
     }
-
-    /**
-     * Adds the given EdifCellInstance object to the list of Instances that
-     * should be skipped when calling the nmrInstance and nmrInstances methods.
-     * 
-     * @param eci The EdifCellInstance object that should be ignored during
-     * replication
-     */
-    public void excludeInstanceFromNMR(EdifCellInstance eci) {
-        excludeInstanceFromNMR(eci.getName());
-    }
-
-    /**
-     * Adds the given EdifCellInstance object to the list of Instances that
-     * should be skipped when calling the tmrInstance and tmrInstances methods.
-     * 
-     * @param instanceName The String name of the EdifCellInstance object that
-     * should be ignored during triplication
-     */
-    public void excludeInstanceFromNMR(String instanceName) {
-        _excludeFromNMRInstances.add(instanceName);
-    }
-
-    /**
-     * Adds the CellType of the given EdifCellInstance object to the list of
-     * Types that should be skipped when calling the nmrInstance and
-     * nmrInstances methods. <b>All</b> of the instances of this same type will
-     * be skipped.
-     * 
-     * @param eci The EdifCellInstance object whose CellType should be ignored
-     * during replication
-     */
-    public void excludeCellTypeFromNMR(EdifCellInstance eci) {
-        excludeCellTypeFromNMR(eci.getType());
-    }
-
-    /**
-     * Adds the given EdifCellInstance object to the list of Instances that
-     * should be skipped when calling the nmrInstance and nmrInstances methods.
-     * <b>All</b> of the instances of this type will be skipped.
-     * 
-     * @param cellType A String representing the Cell Type that should be
-     * ignored during replication
-     */
-    public void excludeCellTypeFromNMR(String cellType) {
-        _excludeFromNMRCellTypes.add(cellType.toLowerCase());
-    }
-
-    public Collection<EdifCellInstance> getCurrentInstances() {
-        return _currentInstances;
-    }
-
-    // TODO : this should replace the TMR version of the method
-    public Collection<EdifCellInstance> getCurrentNMRInstances() {
-        return _currentNMRInstances;
+    
+    protected void restoreCurrentUtilization() {
+        if (_cachedCurrentUtilizationMap != null)
+        _currentUtilizationMap = _cachedCurrentUtilizationMap;        
     }
 
     public int getResourceLimit(EdifCellInstance eci) throws UnsupportedResourceTypeException {
-        String resourceType = XilinxResourceMapper.getResourceType(eci);
-        try {
-            return getResourceLimit(resourceType);
-        } catch (UnsupportedResourceTypeException e) {
-            throw new UnsupportedResourceTypeException("ECI " + eci + " has resource type " + resourceType
-                    + " which is not supported in the specified part.");
-        }
+        return getResourceLimit(eci.getCellType());
     }
 
     public int getResourceLimit(EdifCell cell) throws UnsupportedResourceTypeException {
-        String resourceType = XilinxResourceMapper.getResourceType(cell);
+        String resourceType = _resourceMapper.getResourceType(cell);
         try {
             return getResourceLimit(resourceType);
         } catch (UnsupportedResourceTypeException e) {
-            throw new UnsupportedResourceTypeException("Cell " + cell + " has resource type " + resourceType
-                    + " which is not supported in the specified part.");
+            throw new UnsupportedResourceTypeException("Resource type for cell: " + cell.toString() + " not supported in the specified part.");
         }
     }
 
-    public int getResourceLimit(String resourceType) {
-        if (resourceType == null) {
+    protected int getResourceLimit(String resourceType) {
+        Integer maxUtilizationI = _maxUtilizationMap.get(resourceType);
+        if (maxUtilizationI == null) {
             throw new UnsupportedResourceTypeException("");
-        } else if (resourceType.compareToIgnoreCase("") == 0) {
-            return -1;
-        } else {
-            Integer maxUtilizationI = _maxUtilizationMap.get(resourceType);
-            if (maxUtilizationI == null)
-                throw new UnsupportedResourceTypeException("Resource type " + resourceType
-                        + " which is not supported in the specified part.");
-            return maxUtilizationI.intValue();
         }
+        return maxUtilizationI.intValue();
     }
 
     public double getResourceUtilization(EdifCellInstance eci) throws UnsupportedResourceTypeException {
-        String resourceType = XilinxResourceMapper.getResourceType(eci);
-        try {
-            return getResourceUtilization(resourceType);
-        } catch (UnsupportedResourceTypeException e) {
-            throw new UnsupportedResourceTypeException("ECI " + eci + " has resource type " + resourceType
-                    + " which is not supported in the specified part.");
-        }
+        return getResourceUtilization(eci.getCellType());
     }
 
     public double getResourceUtilization(EdifCell cell) throws UnsupportedResourceTypeException {
-        String resourceType = XilinxResourceMapper.getResourceType(cell);
+        String resourceType = _resourceMapper.getResourceType(cell);
         try {
             return getResourceUtilization(resourceType);
         } catch (UnsupportedResourceTypeException e) {
-            throw new UnsupportedResourceTypeException("Cell " + cell + " has resource type " + resourceType
-                    + " which is not supported in the specified part.");
+            throw new UnsupportedResourceTypeException("Resource type for cell: " + cell.toString() + " not supported in the specified part.");
         }
     }
 
-    public double getResourceUtilization(String resourceType) throws UnsupportedResourceTypeException {
-        if (resourceType == null) {
-            throw new UnsupportedResourceTypeException("Type " + resourceType
-                    + " is not supported in the specified part.");
-        } else if (resourceType.compareToIgnoreCase("") == 0) {
-            // TODO: What should be done here???
-            //System.out.println("WARNING: Do not know resource type for cell type: "+eci.getCellType().getName());
-            return -1.0;
-        } else {
-            // TODO: had to change line below to get code to compile
-            Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
-            if (currentUtilizationD == null)
-                throw new UnsupportedResourceTypeException("Type " + resourceType
-                        + " is not supported in the specified part.");
-            return currentUtilizationD.doubleValue();
+    protected double getResourceUtilization(String resourceType) throws UnsupportedResourceTypeException {
+        Double currentUtilizationD = _currentUtilizationMap.get(resourceType);
+        if (currentUtilizationD == null) {
+            throw new UnsupportedResourceTypeException("");
         }
+        return currentUtilizationD.doubleValue();
     }
 
     public double getResourceUtilizationRatio(EdifCellInstance eci) throws UnsupportedResourceTypeException {
@@ -276,38 +228,39 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
         return getResourceUtilization(resourceType) / getResourceLimit(resourceType);
     }
 
-    /**
-     * A method to check if the given EdifCellInstance object will be skipped
-     * during replication.
-     * 
-     * @param eci The EdifCellInstance object to check
-     * @return true if this Instance will be ignored when calling nmrInstance
-     * and nmrInstances
-     */
-    public boolean isExcludedFromNMR(EdifCellInstance eci) {
-        if (_excludeFromNMRInstances.contains((eci.getName())))
-            return true;
-        if (_excludeFromNMRCellTypes.contains(eci.getType().toLowerCase()))
-            return true;
+//    /**
+//     * A method to check if the given EdifCellInstance object will be skipped
+//     * during replication.
+//     * 
+//     * @param eci The EdifCellInstance object to check
+//     * @return true if this Instance will be ignored when calling nmrInstance
+//     * and nmrInstances
+//     */
+//    public boolean isExcludedFromNMR(EdifCellInstance eci) {
+//        if (_excludeFromNMRInstances.contains((eci.getName())))
+//            return true;
+//        if (_excludeFromNMRCellTypes.contains(eci.getType().toLowerCase()))
+//            return true;
+//
+//        return false;
+//    }
 
-        return false;
-    }
-
     /**
-     * This function removes the instance eci from the normal list of cell
-     * instances. It also removes the utilization corresponding to eci from the
+     * This function removes the utilization corresponding to eci from the
      * device utilization count.
      * 
      * @param eci Instance to remove from instances list.
      * @return True if successful in finding & removing eci, false otherwise.
      */
-    public boolean removeSingleInstance(EdifCellInstance eci) throws UnsupportedResourceTypeException {
-        if (_currentInstances.contains(eci)) {
-            _currentInstances.remove(eci);
-            decrementResourceCount(eci);
-            return true;
+    public void removeSingleInstance(EdifCellInstance eci) throws UnsupportedResourceTypeException {
+        String resourceType = _resourceMapper.getResourceType(eci);
+        try {
+            decrementResourceCount(resourceType);
+        } catch (UnsupportedResourceTypeException e) {
+            throw new UnsupportedResourceTypeException("Unsupported resource type for instance " + eci);
         }
-        return false;
+        
+        _origNumInstances--;
     }
 
     /**
@@ -319,17 +272,17 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @return True if successful in finding & removing *ALL* ecis, false
      * otherwise.
      */
-    public boolean removeSingleInstances(Collection<EdifCellInstance> ecis) throws UnsupportedResourceTypeException {
-        HashSet<EdifCellInstance> cachedCurrentInstances = (HashSet<EdifCellInstance>) _currentInstances.clone();
-        cacheCurrentUtilizationNumbers();
+    public void removeSingleInstances(Collection<EdifCellInstance> ecis) throws UnsupportedResourceTypeException {
+        int cachedOrigNumInstances = _origNumInstances;
+        cacheCurrentUtilization();
         for (EdifCellInstance eci : ecis) {
-            if (removeSingleInstance(eci) == false) {
-                _currentInstances = cachedCurrentInstances;
-                revertToCachedUtilizationNumbers();
-                return false;
+            try {
+                removeSingleInstance(eci);
+            } catch (UnsupportedResourceTypeException e) {
+                _origNumInstances = cachedOrigNumInstances;
+                restoreCurrentUtilization();
             }
         }
-        return true;
     }
 
     /**
@@ -340,22 +293,17 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @param replicationFactor represents the n factor of NMR
      * @return True if successful in finding & removing eci, false otherwise.
      */
-    public boolean removeNMRInstance(EdifCellInstance eci, int replicationFactor)
+    public void removeNMRInstance(EdifCellInstance eci, int replicationFactor)
             throws UnsupportedResourceTypeException {
-        for (EdifCellInstance eci2 : _currentNMRInstances) {
-            if (eci.equals(eci2)) {
-                _currentNMRInstances.remove(eci2);
-                /*
-                 * This instance was counted twice for triplication so it's
-                 * count needs to be decremented twice for removal.
-                 */
-                for (int index = 1; index < replicationFactor; index++) {
-                    decrementResourceCount(eci);
-                }
-                return true;
+        String resourceType = _resourceMapper.getResourceType(eci);
+        try {
+            for (int index = 1; index < replicationFactor; index++) {
+                decrementResourceCount(resourceType);
+                _numInstances--;
             }
+        } catch (UnsupportedResourceTypeException e) {
+            throw new UnsupportedResourceTypeException("Unsupported resource type for instance: " + eci);
         }
-        return false;
     }
 
     /**
@@ -367,27 +315,82 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @return True if successful in finding & removing *ALL* ecis, false
      * otherwise.
      */
-    public boolean removeNMRInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
+    public void removeNMRInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws UnsupportedResourceTypeException {
-        HashSet<EdifCellInstance> cachedCurrentNMRInstances = (HashSet<EdifCellInstance>) _currentNMRInstances.clone();
-        //DeviceUtilization cachedDeviceUtilization = (DeviceUtilization)_deviceUtilization.clone();
-        cacheCurrentUtilizationNumbers();
+        int cachedNumInstances = _numInstances;        
+        cacheCurrentUtilization();
         for (EdifCellInstance eci : ecis) {
-            if (removeNMRInstance(eci, replicationFactor) == false) {
-                _currentNMRInstances = cachedCurrentNMRInstances;
-                //_deviceUtilization = cachedDeviceUtilization;
-                revertToCachedUtilizationNumbers();
-                return false;
+            try {
+                removeNMRInstance(eci, replicationFactor);
+            } catch (UnsupportedResourceTypeException e) {
+                _numInstances = cachedNumInstances;
+                restoreCurrentUtilization();
+                throw e;
             }
         }
-        return true;
     }
 
-    public void revertToCachedUtilizationNumbers() {
-        _currentUtilizationMap = _cachedCurrentUtilizationMap;
-        _maxUtilizationMap = _cachedMaxUtilizationMap;
-    }
+//    public void revertToCachedUtilizationNumbers() {
+//        _currentUtilizationMap = _cachedCurrentUtilizationMap;
+//        _maxUtilizationMap = _cachedMaxUtilizationMap;
+//    }
 
+    public void nmrCell(EdifCell cell, int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException, UnsupportedResourceTypeException {
+        /*
+         * We can go ahead and try to add the instance if it is a primitive
+         * otherwise we need to call addInstances on the collection of sub-cell
+         * instances within eci.
+         */
+        if (cell.isLeafCell() == true) {
+            String resourceType = _resourceMapper.getResourceType(cell);
+            if (resourceType == null) {
+                Collection<String> bbResources = cell.getBlackBoxResources();
+                if (bbResources == null) {
+                    System.out.println("WARNING: Cell " + cell
+                            + " does not map to a Xilinx primitve. If it is a black box,"
+                            + " it's internal utilization will not be tracked.");
+                }
+                else {
+                    System.out.println("WARNING:\n\t Cell " + cell
+                            + " does not map to a Xilinx primitve, and is assumed to be a black box "
+                            + "There is utilization information about this blackbox, and that will be "
+                            + "used to estimate the total utilization. \n");
+                    cacheCurrentUtilization();
+                    try {
+                        for (int i = 1; i < replicationFactor; i++) {
+                            for (String type : bbResources) {
+                                incrementResourceCount(type);
+                            }
+                        }
+                    } catch (OverutilizationEstimatedStopException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    } catch (OverutilizationHardStopException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    } catch (UnsupportedResourceTypeException e) {
+                        restoreCurrentUtilization();
+                        throw e;
+                    }
+                }
+            }
+            else {
+                // The instance needs to be counted an additional
+                // replicationFactor - 1 times to be replicated
+                try {
+                    for (int i = 1; i < replicationFactor; i++) {
+                        incrementResourceCount(resourceType);
+                    }
+                } catch (UnsupportedResourceTypeException e) {
+                    throw new UnsupportedResourceTypeException("Unsupported resource type for cell: " + cell);
+                }
+            }
+            _numInstances += (replicationFactor - 1);
+        }
+        else
+            nmrInstancesAtomic(cell.getSubCellList(), replicationFactor);
+    }
+    
     /**
      * This function adds the instance eci to the list of instances to be
      * replicated. It also adds the appropriate utilization to the device
@@ -399,36 +402,9 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * is 2, etc.)
      */
     public void nmrInstance(EdifCellInstance eci, int replicationFactor) throws OverutilizationEstimatedStopException,
-            OverutilizationHardStopException, UnsupportedResourceTypeException, DuplicateNMRRequestException {
-
-        if (_currentNMRInstances.contains(eci))
-            // TODO : change this exception eventually
-            throw new DuplicateNMRRequestException("Duplicate NMR request for cell instance " + eci + ".");
-        // Check for this Instance/Type in the exclude Sets
-        if (isExcludedFromNMR(eci)) {
-            //System.out.println("### Skipping exluded instance: "+eci);
-            return; // Do not replicate this Instance
-        }
-        /*
-         * We can go ahead and try to add the instance if it is a primitive
-         * otherwise we need to call addInstances on the collection of sub-cell
-         * instances within eci.
-         */
-        //if (eci.getCellType().isPrimitive() == true) {
-        if (eci.getCellType().isLeafCell() == true) {
-            // The instance needs to be counted an additional
-            // replicationFactor - 1 times to be replicated
-            for (int i = 1; i < replicationFactor; i++) {
-                incrementResourceCount(eci);
-            }
-        }
-        //      else if (eci.getCellType().isLeafCell() == true) {
-        //          System.out.println ("WARNING: In ResourceTracker->addInstance, non-primitive leaf cell being added.  No utilization information will be added for this cell instance.");
-        //      }           
-        else
-            nmrInstancesAtomic(eci.getCellType().getSubCellList(), replicationFactor);
-        // We get here if the instance fits in the device,
-        _currentNMRInstances.add(eci);
+            OverutilizationHardStopException, UnsupportedResourceTypeException {
+        
+        nmrCell(eci.getCellType(), replicationFactor);
     }
 
     /**
@@ -443,8 +419,8 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      */
     public void nmrInstancesAtomic(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
-            UnsupportedResourceTypeException, DuplicateNMRRequestException {
-        nmrInstances(ecis, false, false, replicationFactor);
+            UnsupportedResourceTypeException {
+        nmrInstances(ecis, false, false, replicationFactor, null);
     }
 
     /**
@@ -458,10 +434,10 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @throws OverutilizationEstimatedStopException
      * @throws OverutilizationHardStopException
      */
-    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor)
+    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor, Collection<EdifCellInstance> actuallyReplicated)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
-            UnsupportedResourceTypeException, DuplicateNMRRequestException {
-        nmrInstances(ecis, true, true, replicationFactor);
+            UnsupportedResourceTypeException {
+        nmrInstances(ecis, true, true, replicationFactor, actuallyReplicated);
     }
 
     /**
@@ -477,37 +453,38 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
      * @throws OverutilizationHardStopException
      */
     private void nmrInstances(Collection<EdifCellInstance> ecis, boolean skipEstimatedStops, boolean skipHardStops,
-            int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
-            UnsupportedResourceTypeException, DuplicateNMRRequestException {
+            int replicationFactor, Collection<EdifCellInstance> actuallyReplicated) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
+            UnsupportedResourceTypeException {
         if (ecis == null)
             return;
-        HashSet<EdifCellInstance> cachedCurrentNMRInstances = (HashSet<EdifCellInstance>) _currentNMRInstances.clone();
-        // DeviceUtilization cachedDeviceUtilization =
-        // (DeviceUtilization)_deviceUtilization.clone();
-        cacheCurrentUtilizationNumbers();
+        List<EdifCellInstance> replicated = new ArrayList<EdifCellInstance>();
+        
+        int cachedNumInstances = _numInstances;
+        cacheCurrentUtilization();
+        
         for (EdifCellInstance eci : ecis) {
             try {
                 nmrInstance(eci, replicationFactor);
             } catch (OverutilizationEstimatedStopException m) {
                 if (skipEstimatedStops == true)
                     continue;
-                _currentNMRInstances = cachedCurrentNMRInstances;
-                // _deviceUtilization = cachedDeviceUtilization;
-                revertToCachedUtilizationNumbers();
+                _numInstances = cachedNumInstances;
+                restoreCurrentUtilization();
                 throw m;
             } catch (OverutilizationHardStopException m) {
                 if (skipHardStops == true)
                     continue;
-                _currentNMRInstances = cachedCurrentNMRInstances;
-                // _deviceUtilization = cachedDeviceUtilization;
-                revertToCachedUtilizationNumbers();
+                _numInstances = cachedNumInstances;
+                restoreCurrentUtilization();
                 throw m;
-            } catch (DuplicateNMRRequestException m) {
-                _currentNMRInstances = cachedCurrentNMRInstances;
-                // _deviceUtilization = cachedDeviceUtilization;
-                revertToCachedUtilizationNumbers();
-                throw m;
-            }
+            } 
+            // reaches here if the instance was successfully added
+            replicated.add(eci);
+        }
+        
+        // return to the caller the instances that actually got added in case anything was skipped
+        if ((skipEstimatedStops || skipHardStops) && actuallyReplicated != null) {
+            actuallyReplicated.addAll(replicated);
         }
     }
 
@@ -537,19 +514,13 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     }
 
     protected void _init(EdifCell cell) throws OverutilizationEstimatedStopException, OverutilizationHardStopException {
-        // This ordering matters!!!!
-        // Get the top cell instance from the top cell
-        EdifCellInstance eci = cell.getLibrary().getLibraryManager().getEdifEnvironment().getTopCellInstance();
         // Initialize the resource tracker with the utilization of this instance
-        total_instances = cell.getSubCellList().size();
-        addSingleInstance(eci);
+        addSingleCell(cell);
     }
 
     protected void setDesiredCoverageFactor(double factorValue) {
         coverage_factor = factorValue;
     }
-
-    protected double total_instances;
 
     //2 just so it never gets in the way if you don't specify it
     protected double coverage_factor = 2.0;
@@ -557,19 +528,15 @@ public abstract class AbstractDeviceUtilizationTracker implements DeviceUtilizat
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables               ////
 
-    protected HashMap<String, Double> _cachedCurrentUtilizationMap;
-
-    protected HashMap<String, Integer> _cachedMaxUtilizationMap;
-
-    protected HashSet<EdifCellInstance> _currentInstances;
-
-    protected HashSet<EdifCellInstance> _currentNMRInstances;
+    protected HashMap<String, Double> _cachedCurrentUtilizationMap = null;
 
     protected HashMap<String, Double> _currentUtilizationMap;
 
-    protected HashSet<String> _excludeFromNMRInstances;
-
-    protected HashSet<String> _excludeFromNMRCellTypes;
-
     protected HashMap<String, Integer> _maxUtilizationMap;
+    
+    protected int _numInstances;
+    
+    protected int _origNumInstances;
+    
+    protected ResourceMapper _resourceMapper;
 }

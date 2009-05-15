@@ -1,0 +1,69 @@
+\section{JEdifAnalyze}
+JEdifAnalyze performs some basic circuit analysis necessary for
+subsequent executables. In particular, it performs feedback and IOB
+analysis. The results of JEdifAnalyze are saved in a circuit
+description file (.cdesc) required by later executables.
+
+The following options control the feedback and IOB analysis
+performed by this executable. The results of the analysis
+affect the execution of later steps in the toolflow.
+
+\begin{verbatim}
+>java edu.byu.ece.edif.jedif.JEdifAnalyze
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  <input_file>
+  (-o|--output) <output>
+
+  [--pack_registers <{i|o|b|n}>]
+  [--use_bad_cut_conn]
+  [--no_iob_feedback]
+
+  [(-p|--part) <part>]
+
+  [--write_config <config_file>]
+  [--use_config <config_file>]
+
+  [--log <logfile>]
+  [--debug[:<debug_log>]]
+  [(-V|--verbose) <{1|2|3|4|5}>]
+  [--append_log]
+\end{verbatim}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{File Options}
+
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the jedif source file to be analyzed
+
+\subsubsection{\texttt{(-o|--output) <output\_file>}}
+Filename and path to the ciruit description file (.cdesc) that will be output.
+
+\subsection{Analysis Options}
+\subsubsection{\texttt{--pack\_registers} \{i\textbar o\textbar b\textbar n\}}
+By default, the BL-TMR tool treats all ports on the input EdifCell as top-level
+ports (those that will be the inputs and outputs of the FPGA). The half-latch 
+tool must therefore treat any FFs that will be packed into the IOBs differently
+than other FFs (at least with Virtex devices). This option allows the user to
+specify which IOBs the registers should be packed into: inputs (\emph{i}),
+outputs (\emph{o}), both (\emph{b}), or none (\emph{n}). The default is to pack
+both input and output registers.
+
+\subsubsection{\texttt{--use\_bad\_cut\_conn}}
+Use bad cutgroup connectivity graph
+
+\subsubsection{\texttt{--no\_iob\_feedback}}
+Use this option to exclude IOBs from the feedback analysis. This is useful when
+a top-level inout port is involved in feedback but by design will never be 
+written to and read at the same time. Thus there is no \emph{real} feedback.
+Using this option may greatly reduce the amount of feedback found in the design
+and thus reduce the number of voters inserted.
+
+\input{option_Technology}
+\input{option_ConfigFile}
+\input{option_Logfile}
+
+
+ 

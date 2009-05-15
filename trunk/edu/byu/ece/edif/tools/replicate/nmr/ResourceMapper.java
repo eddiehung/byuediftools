@@ -22,6 +22,9 @@
  */
 package edu.byu.ece.edif.tools.replicate.nmr;
 
+import edu.byu.ece.edif.core.EdifCell;
+import edu.byu.ece.edif.core.EdifCellInstance;
+
 /////////////////////////////////////////////////////////////////////////
 //// ResourceMapper
 /**
@@ -33,5 +36,13 @@ package edu.byu.ece.edif.tools.replicate.nmr;
  * @version $Id$
  */
 public interface ResourceMapper {
+    
+    public double getApproxLutUsage(EdifCell cell);
+
+    public double getApproxLUTUsage(EdifCellInstance eci);
+
+    public String getResourceType(EdifCell cell);
+
+    public String getResourceType(EdifCellInstance eci);
 
 }

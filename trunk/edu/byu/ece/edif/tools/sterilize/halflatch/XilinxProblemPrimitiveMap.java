@@ -42,8 +42,7 @@ public class XilinxProblemPrimitiveMap implements ProblemPrimitiveMap, Serializa
      * @param cell The EdifCell this XilinxProblemPrimitiveMap should be
      * associated with.
      */
-    public XilinxProblemPrimitiveMap(EdifCell cell) {
-        _cell = cell;
+    public XilinxProblemPrimitiveMap() {
 
         // Analyze Design
         // - An EdifCell is passed in

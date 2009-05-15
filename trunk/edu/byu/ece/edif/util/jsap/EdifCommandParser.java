@@ -34,6 +34,8 @@ import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.defaultsources.PropertyDefaultSource;
 
 import edu.byu.ece.edif.jedif.EDIFMain;
+import edu.byu.ece.edif.util.jsap.commandgroups.CommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.ConfigFileCommandGroup;
 
 /**
  * A standard command line parser for the EDIF infrastructure, using the

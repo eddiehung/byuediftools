@@ -22,6 +22,7 @@
  */
 package edu.byu.ece.edif.util.iob;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -33,7 +34,7 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
  * 
  * @author Gavin Ransom
  */
-public abstract class AbstractIOB {
+public abstract class AbstractIOB implements Serializable {
 
     protected EdifSingleBitPort _esbp;
 

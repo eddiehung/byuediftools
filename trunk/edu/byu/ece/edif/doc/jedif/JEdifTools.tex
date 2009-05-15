@@ -5,6 +5,7 @@
 %
 % Author: Brian Pratt <bhpratt@gmail.com>
 %         James Carroll <jcarroll@byu.net>
+%         Jonathan Johnson <jonjohn@byu.net>
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \documentclass[english]{article}
@@ -15,6 +16,7 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{moreverb}
+\numberwithin{figure}{section}
 %\usepackage[latin1]{inputenc}
 \IfFileExists{url.sty}{\usepackage{url}}
                       {\newcommand{\url}{\texttt}}
@@ -23,7 +25,7 @@
 \newif\ifpdf 
 \ifx\pdfoutput\undefined 
    \pdffalse % we are not running PDFLaTeX 
-\else 
+\else
    \pdfoutput=1 % we are running PDFLaTeX 
    \pdftrue 
 \fi
@@ -37,9 +39,8 @@
      urlcolor=rltblue,       % \href{...}{...} external (URL)
      filecolor=rltgreen,     % \href{...} local file
      linkcolor=rltred,       % \ref{...} and \pageref{...}
-     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.4.0 - 30
-     May2008}, % pdfauthor={BYU Configurable Computing Lab},%
-     pdfproducer={pdfLaTeX},%
+     pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.5.0 -
+     15 May2008}, % pdfauthor={BYU Configurable Computing Lab},% pdfproducer={pdfLaTeX},%
      %pdfadjustspacing=1,
      pdftex]{hyperref}
 \fi
@@ -73,7 +74,7 @@
 \makeatother
 
 \title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\ ~ \\
-  Version 0.4.1 - 1 Dec 2008 \\  }
+  Version 0.5.0 - 15 May 2009 \\  }
   
 \author{Brigham Young University \\ Configurable Computing Lab}
 
@@ -89,111 +90,173 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-The BYU-LANL Triple Modular Redundancy (BL-TMR) Tool is an EDIF-based tool to 
-insert redundancy in an FPGA design in order to increase reliability. Triple 
-modular redundancy (TMR) is applied to the EDIF input file according to the 
-options chosen by the user. Partial TMR focuses on ``persistent'' components of 
-the design in order to get the ``most bang for your buck.''
+The BYU-LANL Triple Modular Redundancy (BL-TMR) Tool is an EDIF-based
+tool to insert redundancy in an FPGA design in order to increase
+reliability. Triple modular redundancy (TMR) and/or duplication with
+compare (DWC) are applied to an EDIF input file according to the
+options chosen by the user. Partial replication focuses on ``persistent''
+components of the design in order to get the ``most bang for your buck.''
 
-\section{TMR Toolflow}
-The Tool is split into several subtools. This allows the user to adjust various 
-command-line options in one phase, and then move onto the next phase, without
-having to wait for the entire TMR process to complete.
+The tool is also capable of inserting detectors for doing error detection using
+DWC. Single- and dual-rail error detectors can be inserted in both triplicated
+and duplicated designs. Special persistence detectors can be inserted in order
+to give the ability to classify detected errors as persistent or non-persistent.
+
+\section{Replication Toolflow}
+The tool is split into several subtools. This allows the user to
+adjust various command-line options in one phase, and then move onto
+the next phase. Some phases such as JEdifNMRSelection are designed to be run in
+passes in order to obtain the desired results. For example, in order to mix
+duplication and triplication in a design, you can run JEdifNMRSelection twice,
+once to select partitions to triplicate, and once more to select partitions to
+duplicate.
 
 \subsection{JEdifBuild}
-JEdifBuild creates merged netlists in a .jedif file format from 
-multiple .edif files. The .jedif file format is used by all the TMR tools.
+JEdifBuild creates merged netlists in a .jedif file format from
+multiple .edf files. By default, JEdifBuild also flattens the design
+and optionally performs FMAP removal, RLOC removal, SRL replacement,
+and half-latch removal (functions performed by JEdifSterilize in
+previous versions of the toolflow). The .jedif file format is an
+intermediate file format used by the remainder of the replication
+tools.
 
-\subsection{JEdifNetList}
-JEdifNetList will convert a .jedif file into an .edf file for use with other
-standard edif tools 
+\subsection{JEdifAnalyze}
+JEdifAnalyze performs some basic circuit analysis necessary for
+subsequent executables. In particular, it performs feedback and IOB
+analysis. The results of JEdifAnalyze are saved in a circuit
+description file (.cdesc) required by later executables.
 
-\subsection{JEdifSterilize}
-The first Tool in the TMR chain. This tool removes HalfLatches and FMAPs. If the 
-design does not have any, this tool is optional.
+\subsection{JEdifNMRSelection}
+JEdifNMRSelection determines which parts of a design will be
+replicated. This executable can be run in multiple passes to select
+different parts of a design for different kinds of replication. Each
+run of JEdifNMRSelection can select portions of a design for a single
+replication type (i.e. duplication, replication). Design portions can
+be selected for replication based on available space or specific cell
+types, instances, ports, and clock domains specified by the user. The
+results of JEdifNMRSelection are saved in a replication description
+file (.rdesc). This file can be modified by subsequent runs of this
+and other executables in the toolflow.
 
-\subsection{JEdifTMRAnalysis}
-This tool determines what parts of the cell to triplicate, and where to put voters,
-based on user input and the size of the device.
-
-\subsection{JEdifCutset}
-This tool finds all the feedback in the design, and creates of list of voters
-to be instered to interupt all feedback.
+\subsection{JEdifVoterSelection}
+JEdifVoterSelection determines the locations where voters will be
+inserted into a triplicated design (or triplicated portions of a
+design). Voter locations are determined using a feedback cutset
+algorithm and rules for voting where downscaling is necessary. The
+results are added into the replication description file (.rdesc).
 
 \subsection{JEdifMoreFrequentVoting}
 \emph{Optional:} Inserts extra voters for more frequent voting within
 the design.
 
-\subsection{JEdifTMR}
-Takes information about voter placement from the previous steps, and
-creates a new design incorperating that information. Can output either
-a JEdif or an EDIF file.
+\subsection{JEdifDetectionSelection}
+\emph{Optional:}
+JEdifDetection determines detector locations for both triplicated and
+duplicated design portions using user-specified options. Like
+JEdifNMRSelection, this tool is designed to be run in multiple passes
+(only one replication type can be processed per pass). Results are
+saved in the replication description file (.rdesc).
 
-\subsection{EdifTMR}
-The EdifTMR tools combines all the tools in the JEdifTMR toolflow into
-one easy step. If you already know exactly what setting you wish use
-to perform TMR, this tool will be faster.
+\subsection{JEdifPersistenceDetection}
+\emph{Optional:} JEdifPersistenceDetection determines additional
+detector locations necessary for classifying persistent/non-persistent
+errors detected in a design. It is designed to be run in multiple
+passes. Results are saved in the replication description file
+(.rdesc).
 
-\subsection{JEdifQuery}
-JEdifQuery is a tool used to query the contents of a jedif file and to 
-provide summary information about the EDIF design contained within.
+\subsection{JEdifNMR}
+JEdifNMR performs the replication selected by previously run
+tools. Information about what to replicate and where to insert
+voters/detectors is obtained from the replication description file
+(.rdesc) created by the previous steps.
 
 \subsection{Other JEdif tools}
+
+\subsubsection{JEdifNetList}
+JEdifNetList converts a .jedif file into an .edf file for use with other
+standard edif tools.
+
+\subsubsection{JEdifQuery}
+JEdifQuery is a tool used to query the contents of a .jedif file and
+to provide summary information about the EDIF design contained within.
+
+\subsubsection{JEdifReplicationQuery}
+JEdifReplicationQuery is a tool used to query the contents of a
+replication description file (.rdesc) and provide summary information
+about the kind of replication that will be performed on a design. It
+reports information about replication types, organs inserted
+(i.e. voters, detectors), and detection domains.
+
 \subsubsection{JEdifClockDomain} 
-The BYU-LANL JEdif Clock Domain Parser is a jedif-based tool to parse FPGA
+The JEdifClockDomain tool is a .jedif based tool to parse FPGA
 designs to obtain information about the clock(s). The parser first identifies
 all clocks in a design. This information is then used to optionally display
 other information, such as classifying Xilinx primitives into one or more 
 domains, showing clock crossings, etc.
 
-It is analagous to the EDIF-based Clock Domain Parser.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Toolflow Illustration}
-\includegraphics[scale=0.8]{tool_flow.png}
+\includegraphics[scale=0.7]{tool_flow.pdf}
 \newpage
 \input{Build}
 \newpage
-\input{Netlist}
+\input{Analyze}
 \newpage
-\input{Sterilize}
+\input{NMRSelection}
 \newpage
-\input{TMRAnalysis}
-\newpage
-\input{Cutset}
+\input{VoterSelection}
 \newpage
 \input{MoreFrequentVoting}
 \newpage
-\input{TMR}
+\input{DetectionSelection}
 \newpage
-\input{EdifTMR}
+\input{PersistenceDetection}
+\newpage
+\input{NMR}
+\newpage
+\input{Netlist}
 \newpage
 \input{Query}
+\newpage
+\input{ReplicationQuery}
 \newpage
 \input{ClockDomain}
 \newpage
 
+\input{PreMitigation}
+
 \input{Examples}
 \newpage
-\section{Sample Makefile for TMR tool flow}
-\verbatimtabinput{makefile}
+\section{Sample Makefile for TMR}
+\verbatimtabinput{makefile_tmr}
+\newpage
+\section{Sample Makefile for DWC}
+\verbatimtabinput{makefile_dwc}
+\newpage
+\section{Sample Makefile for mixed TMR/DWC}
+\verbatimtabinput{makefile_tmr_dwc}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Special Notes}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Naming Conventions}
 \label{naming conventions}
-The BL-TMR tool alters the names of triplicated signals, cell instances, and 
-ports. Be aware of this when using placement (or other) constraints. An output 
-port named \texttt{myOutport} in the original EDIF file will, when triplicated, 
-become \texttt{myOutport\_TMR\_0, myOutport\_TMR\_1, and myOutport\_TMR\_2}. 
-Similarly, a flip-flop whose instance name is \texttt{myFF} in the original file
-will become \texttt{myFF\_TMR\_0}, \texttt{myFF\_TMR\_1}, 
-\texttt{and myFF\_TMR\_2}.
+The BL-TMR tool alters the names of replicated signals, cell instances, and 
+ports. Be aware of this when using placement (or other) constraints. An output
+port named \texttt{myOutport} in the original EDIF file, when triplicated,
+would become \texttt{myOutport\_TMR\_0}, \texttt{myOutport\_TMR\_1}, and
+\texttt{myOutport\_TMR\_2}. When duplicated, the output port would become
+\texttt{myOutport\_DWC\_0} and \texttt{myOutport\_DWC\_1}. Similarly, a
+flip-flop whose instance name is \texttt{myFF} in the original file, when
+triplicated, would become \texttt{myFF\_TMR\_0}, \texttt{myFF\_TMR\_1}, and
+\texttt{myFF\_TMR\_2}. When duplicated, the instance would become
+\texttt{myFF\_DWC\_0} and \texttt{myFF\_DWC\_1}. Net names follow the same
+convention.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Allocating More Memory for the JVM}
@@ -209,32 +272,6 @@ heap space for the JVM:
 \begin{verbatim}
 > java -Xmx256M byucc.edif.tools.tmr.FlattenTMR ...
 \end{verbatim}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{RLOC Constraints}
-The BL-TMR tool does not support RLOC constraints at this time. RLOC constraints 
-must therefore be removed before processing the resulting EDIF file. RLOCs may 
-be removed from the either the source EDIF files (including any external EDIF 
-files) or from the triplicated output file. Automated RLOC removal may be added 
-to the tool in a later release.
-
-To remove RLOC constraints from an EDIF file, you can use the UNIX 
-\texttt{grep} tool. The following example uses \texttt{grep} to find all lines 
-in the source EDIF file \texttt{myDesign\_BL-TMR.edf} that do \emph{not} contain 
-the string \texttt{RLOC} and copy them to the destination EDIF file 
-\texttt{myDesign\_tmr\_noRLOCs.edf.} Note that you may \emph{not} use the same 
-file for the source and destination.
-
-\begin{verbatim}
-> grep -v RLOC myDesign_BL-TMR.edf > myDesign_BL-TMR_noRLOCs.edf
-\end{verbatim}
-
-This trick is guaranteed to work for EDIF files created by the BL-TMR tool as 
-well as all Xilinx CoreGen EDIF files. It is \emph{not} guaranteed to work for 
-all EDIF files in general since it relies on the fact that each RLOC constraint 
-with its associated parentheses do not spread across multiple lines (which is 
-not required by the EDIF file format). For example, it does not work for EDIF 
-files created with the JHDL netlister.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Change Log}

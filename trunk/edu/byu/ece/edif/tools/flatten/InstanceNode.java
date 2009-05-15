@@ -24,8 +24,8 @@ package edu.byu.ece.edif.tools.flatten;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
 
@@ -42,7 +42,7 @@ public class InstanceNode implements HierarchicalInstance {
 
     /**
      * Construct a new top level InstanceNode based on the given
-     * EdifCellInstance. Record the nets of the original isntance as
+     * EdifCellInstance. Record the nets of the original instance as
      * HierarchicalNet objects
      * 
      * @param instance the EdifCellInstance which corresponds to the node to be
@@ -63,14 +63,9 @@ public class InstanceNode implements HierarchicalInstance {
      */
     public InstanceNode(InstanceNode parent, EdifCellInstance instance) {
         _parent = parent;
-        _self = instance;
-
-        // record nets
-        Collection<EdifNet> nets = getCellType().getNetList();
-        if (nets != null)
-            for (EdifNet net : nets) {
-                addHierarchicalNet(net);
-            }
+        _isLeafNode = instance.getCellType().isLeafCell();
+        _origInstanceName = instance.getName();
+        _origCellTypeName = instance.getCellType().getName();
     }
 
     /**
@@ -80,9 +75,11 @@ public class InstanceNode implements HierarchicalInstance {
      */
     public InstanceNode(InstanceNode instanceNode) {
         _parent = instanceNode._parent;
-        _self = instanceNode._self;
-        _children = new ArrayList(instanceNode._children);
-        _nets = new ArrayList(instanceNode._nets);
+        _origInstanceName = instanceNode._origInstanceName;
+        _origCellTypeName = instanceNode._origCellTypeName;
+        _children = new ArrayList<HierarchicalInstance>(instanceNode._children);
+        _netList = new ArrayList<HierarchicalNet>(instanceNode._netList);
+        _isLeafNode = instanceNode._isLeafNode;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -90,29 +87,13 @@ public class InstanceNode implements HierarchicalInstance {
 
     /**
      * Construct a new InstanceNode based on the given EdifCellInstance and add
-     * it as a child of this node. This will only be done if the given
-     * EdifCellInstance is actually a child of this InstanceNode.
+     * it as a child of this node.
      * 
      * @param childInstance the EdifCellInstance on which to base the child node
      * to be created
-     * @return a reference to the newly created child node, or null if none was
-     * created (if the given EdifCellInstance was not actually a child of this
-     * node)
-     */
-    public InstanceNode addChild(EdifCellInstance childInstance) {
-        if (!getCellType().contains(childInstance)) {
-            System.err.println("error: attempting to add a child to the wrong parent");
-            return null;
-        }
-        return addChildNoCheck(childInstance);
-    }
-
-    /**
-     * Add a Child Node without checking to see if it belongs in this Cell
-     * 
      * @return a reference to the newly created child node
      */
-    public InstanceNode addChildNoCheck(EdifCellInstance childInstance) {
+    public InstanceNode addChild(EdifCellInstance childInstance) {
         InstanceNode child = new InstanceNode(this, childInstance);
         if (_children == null)
             _children = new ArrayList<HierarchicalInstance>();
@@ -132,11 +113,11 @@ public class InstanceNode implements HierarchicalInstance {
     }
 
     /**
-     * @return the cell type of the EdifCellInstance which corresponds to this
-     * node
+     * @return the name of the cell type of the original EdifCellInstance which
+     * corresponds to this node.
      */
-    public EdifCell getCellType() {
-        return _self.getCellType();
+    public String getCellTypeName() {
+        return _origCellTypeName;
     }
 
     /**
@@ -144,15 +125,14 @@ public class InstanceNode implements HierarchicalInstance {
      * the original instance
      */
     public Collection<HierarchicalNet> getHierarchicalNets() {
-        return _nets;
+        return _netList;
     }
 
     /**
-     * @return a reference to the EdifCellInstance which corresponds to this
-     * node
+     * @return the name of the original EdifCellInstance which corresponds to this node
      */
-    public EdifCellInstance getInstance() {
-        return _self;
+    public String getInstanceName() {
+        return _origInstanceName;
     }
 
     /**
@@ -167,15 +147,12 @@ public class InstanceNode implements HierarchicalInstance {
      * the cell type of the corresponding EdifCellInstance is a leaf cell)
      */
     public boolean isLeafNode() {
-        return getCellType().isLeafCell();
+        return _isLeafNode;
     }
 
     public String toString() {
-        return _self.toString();
+        return "Original Instance Name: " + _origInstanceName + ", Original Cell Type: " + _origCellTypeName;
     }
-
-    ///////////////////////////////////////////////////////////////////
-    ////                         private methods                   ////
 
     /**
      * Given an EdifNet, construct a corresponding HierarchicalNet and add it to
@@ -186,16 +163,19 @@ public class InstanceNode implements HierarchicalInstance {
      * fail if this node already contains a HierarchicalNet based on the given
      * EdifNet).
      */
-    private boolean addHierarchicalNet(EdifNet net) {
+    public HierarchicalNet addHierarchicalNet(EdifNet net) {
+        if (_netList == null)
+            _netList = new ArrayList<HierarchicalNet>();
         HierarchicalNet hierarchicalNet = new UniqueHierarchyNet(this, net);
-        if (_nets == null)
-            _nets = new ArrayList<HierarchicalNet>();
-        else if (_nets.contains(hierarchicalNet))
-            return false;
-        _nets.add(hierarchicalNet);
-        return true;
+        _netList.add(hierarchicalNet);
+        return hierarchicalNet;
     }
 
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                   ////
+
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
 
@@ -208,7 +188,7 @@ public class InstanceNode implements HierarchicalInstance {
      * A Collection of HierarchicalNets which correspond to nets in the original
      * instance
      */
-    private Collection<HierarchicalNet> _nets;
+    private List<HierarchicalNet> _netList;
 
     /**
      * A reference to the node's parent InstanceNode
@@ -216,7 +196,14 @@ public class InstanceNode implements HierarchicalInstance {
     private InstanceNode _parent;
 
     /**
-     * A reference to the original EdifCellInstance
+     * The name of the original EdifCellInstance
      */
-    private EdifCellInstance _self;
+    private String _origInstanceName;
+    
+    /**
+     * The name of the cell type of the original EdifCellInstance
+     */
+    private String _origCellTypeName;
+    
+    private boolean _isLeafNode;
 }

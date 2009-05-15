@@ -1050,7 +1050,7 @@ public class HalfLatchEdifCell extends EdifCell {
         EdifCell top_cell = XilinxMergeParser.parseAndMergeXilinx(args);
         EdifEnvironment environment = top_cell.getLibrary().getLibraryManager().getEdifEnvironment();
 
-        XilinxHalfLatchArchitecture hlArchitecture = new XilinxHalfLatchArchitecture(top_cell);
+        XilinxHalfLatchArchitecture hlArchitecture = new XilinxHalfLatchArchitecture();
 
         // This should do the actual half latch removal
         SequentialEdifHalfLatchRemover sequentialEdifHalfLatchRemover = new SequentialEdifHalfLatchRemover(

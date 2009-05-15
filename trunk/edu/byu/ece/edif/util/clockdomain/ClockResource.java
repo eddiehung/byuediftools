@@ -41,8 +41,8 @@ public class ClockResource {
     public ClockResource(EdifCellInstance eci) {
         _driver = eci;
         _clocks = new LinkedHashSet<EdifNet>();
-        if (XilinxResourceMapper.getResourceType(_driver).equals(XilinxResourceMapper.DCM)
-                || XilinxResourceMapper.getResourceType(_driver).equals(XilinxResourceMapper.DLL)) {
+        if (XilinxResourceMapper.getInstance().getResourceType(_driver).equals(XilinxResourceMapper.DCM)
+                || XilinxResourceMapper.getInstance().getResourceType(_driver).equals(XilinxResourceMapper.DLL)) {
             for (EdifPortRef epr : _driver.getInputEPRs()) {
                 if (epr.getPort().getName().toLowerCase().equals("clkfb"))
                     _feedback = epr.getNet();

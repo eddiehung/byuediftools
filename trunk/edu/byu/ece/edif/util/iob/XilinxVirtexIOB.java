@@ -58,7 +58,8 @@ public class XilinxVirtexIOB extends XilinxIOB {
     }
 
     public void setIBUF(EdifCellInstance ibuf, EdifCellInstanceGraph graph) {
-        if (ibuf != null && !XilinxResourceMapper.getResourceType(ibuf).equals(XilinxResourceMapper.IO))
+    	String resourceType = XilinxResourceMapper.getInstance().getResourceType(ibuf);
+        if (ibuf != null && !(resourceType.equals(XilinxResourceMapper.IO) || resourceType.equals(XilinxResourceMapper.IBUFG)))
             throw new EdifRuntimeException("Attempting to add non-I/O Buffer as an input buffer");
         _ibuf = ibuf;
         iobComponentsDFS(ibuf, graph);
@@ -87,7 +88,7 @@ public class XilinxVirtexIOB extends XilinxIOB {
     }
 
     public void setOBUF(EdifCellInstance obuf, EdifCellInstanceGraph graph) {
-        if (obuf != null && !XilinxResourceMapper.getResourceType(obuf).equals(XilinxResourceMapper.IO))
+        if (obuf != null && !XilinxResourceMapper.getInstance().getResourceType(obuf).equals(XilinxResourceMapper.IO))
             throw new EdifRuntimeException("Attempting to add non-I/O Buffer as an input buffer");
         _obuf = obuf;
         iobComponentsDFS(obuf, graph);

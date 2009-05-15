@@ -51,7 +51,7 @@ public class EdifTools {
     public static int countXilinxFlipFlops(Collection<EdifCellInstance> ecis) {
         int count = 0;
         for (EdifCellInstance eci : ecis) {
-            if (XilinxResourceMapper.getResourceType(eci).equals(XilinxResourceMapper.FF))
+            if (XilinxResourceMapper.getInstance().getResourceType(eci).equals(XilinxResourceMapper.FF))
                 count++;
         }
         return count;

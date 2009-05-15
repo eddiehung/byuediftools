@@ -45,68 +45,43 @@ public interface DeviceUtilizationTracker {
 
     public void addSingleInstances(Collection<EdifCellInstance> ecis) throws OverutilizationEstimatedStopException,
             OverutilizationHardStopException, UnsupportedResourceTypeException;
-
-    public void cacheCurrentUtilizationNumbers();
+    
+    public void addSingleCell(EdifCell cell) throws OverutilizationEstimatedStopException, OverutilizationHardStopException, UnsupportedResourceTypeException;
 
     public void decrementResourceCount(String resourceType) throws UnsupportedResourceTypeException;
-
-    public void decrementResourceCount(EdifCellInstance eci) throws UnsupportedResourceTypeException;
-
-    public void decrementVoterCount() throws UnsupportedResourceTypeException;
-
-    public void excludeCellTypeFromNMR(EdifCellInstance eci);
-
-    public void excludeCellTypeFromNMR(String cellType);
-
-    public void excludeInstanceFromNMR(EdifCellInstance eci);
-
-    public void excludeInstanceFromNMR(String instanceName);
-
-    public Collection<EdifCellInstance> getCurrentInstances();
-
-    public Collection<EdifCellInstance> getCurrentNMRInstances();
 
     public int getResourceLimit(EdifCell cell) throws UnsupportedResourceTypeException;
 
     public int getResourceLimit(EdifCellInstance eci) throws UnsupportedResourceTypeException;
 
-    public String getResourceType(EdifCellInstance eci);
-
     public double getResourceUtilization(EdifCell cell) throws UnsupportedResourceTypeException;
 
     public double getResourceUtilization(EdifCellInstance eci) throws UnsupportedResourceTypeException;
 
-    public int getVoterCount();
-
     public void incrementResourceCount(String resourceType) throws OverutilizationEstimatedStopException,
             OverutilizationHardStopException, UnsupportedResourceTypeException;
 
-    public void incrementResourceCount(EdifCellInstance eci) throws OverutilizationEstimatedStopException,
-            OverutilizationHardStopException, UnsupportedResourceTypeException;
+    public void removeSingleInstance(EdifCellInstance eci) throws UnsupportedResourceTypeException;
 
-    public void incrementVoterCount() throws OverutilizationHardStopException, OverutilizationEstimatedStopException;
+    public void removeSingleInstances(Collection<EdifCellInstance> ecis) throws UnsupportedResourceTypeException;
 
-    public boolean removeSingleInstance(EdifCellInstance eci) throws UnsupportedResourceTypeException;
-
-    public boolean removeSingleInstances(Collection<EdifCellInstance> ecis) throws UnsupportedResourceTypeException;
-
-    public boolean removeNMRInstance(EdifCellInstance eci, int replicationFactor)
+    public void removeNMRInstance(EdifCellInstance eci, int replicationFactor)
             throws UnsupportedResourceTypeException;
 
-    public boolean removeNMRInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
+    public void removeNMRInstances(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws UnsupportedResourceTypeException;
-
-    public void revertToCachedUtilizationNumbers();
 
     public void nmrInstance(EdifCellInstance eci, int replicationFactor) throws OverutilizationEstimatedStopException,
-            OverutilizationHardStopException, UnsupportedResourceTypeException, DuplicateNMRRequestException;
+            OverutilizationHardStopException, UnsupportedResourceTypeException;
 
+    public void nmrCell(EdifCell cell, int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException, UnsupportedResourceTypeException;
+    
     public void nmrInstancesAtomic(Collection<EdifCellInstance> ecis, int replicationFactor)
             throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
-            UnsupportedResourceTypeException, DuplicateNMRRequestException;
+            UnsupportedResourceTypeException;
 
-    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
-            UnsupportedResourceTypeException, DuplicateNMRRequestException;
+    public void nmrInstancesAsManyAsPossible(Collection<EdifCellInstance> ecis, int replicationFactor, Collection<EdifCellInstance> actuallyReplicated) throws OverutilizationEstimatedStopException, OverutilizationHardStopException,
+            UnsupportedResourceTypeException;
 
     public String toString();
 }

@@ -39,9 +39,10 @@ public interface HierarchicalInstance extends Serializable {
     ////                         public methods                    ////
 
     /**
-     * @return the cell type of the EdifCellInstance associated with this node
+     * @return the name of the cell type of the original EdifCellInstance
+     * associated with this node
      */
-    public EdifCell getCellType();
+    public String getCellTypeName();
 
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
@@ -58,10 +59,10 @@ public interface HierarchicalInstance extends Serializable {
     public Collection<HierarchicalNet> getHierarchicalNets();
 
     /**
-     * @return the EdifCellInstance associated with this node
+     * @return the name of the original EdifCellInstance associated with this node
      */
-    public EdifCellInstance getInstance();
-
+    public String getInstanceName();
+    
     /**
      * @return this node's parent HierarchicalInstance
      */

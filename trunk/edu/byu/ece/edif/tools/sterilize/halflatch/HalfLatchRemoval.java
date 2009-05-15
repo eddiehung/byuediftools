@@ -16,7 +16,8 @@ import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopyReplace;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.AbstractEdifEnvironmentCopyReplace;
+import edu.byu.ece.edif.tools.sterilize.lutreplace.BasicEdifEnvironmentCopyReplace;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.ReplacementContext;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchRemove;
@@ -83,9 +84,9 @@ public class HalfLatchRemoval {
 		}
 
 		// Create an environment copy used for replacement
-		EdifEnvironmentCopyReplace ecr = null;
+		AbstractEdifEnvironmentCopyReplace ecr = null;
 		try {
-			ecr = new EdifEnvironmentCopyReplace(env, cellsToReplace);
+			ecr = new BasicEdifEnvironmentCopyReplace(env, cellsToReplace);
 		} catch (EdifNameConflictException e) {
 			System.err.println(e);
 			System.exit(1);

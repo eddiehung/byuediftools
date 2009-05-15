@@ -22,10 +22,30 @@
  */
 package edu.byu.ece.edif.tools.replicate.nmr.xilinx;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import edu.byu.ece.edif.arch.xilinx.XilinxLibrary;
 import edu.byu.ece.edif.arch.xilinx.XilinxTools;
 import edu.byu.ece.edif.core.EdifCell;
+import edu.byu.ece.edif.core.EdifCellInstance;
+import edu.byu.ece.edif.core.EdifLibrary;
+import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifNameable;
 import edu.byu.ece.edif.core.EdifNet;
+import edu.byu.ece.edif.core.EdifPortRef;
+import edu.byu.ece.edif.core.EdifRuntimeException;
+import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.tools.replicate.nmr.AbstractNMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.nmr.Organ;
+import edu.byu.ece.edif.tools.replicate.nmr.ReplicationType;
+import edu.byu.ece.edif.tools.replicate.nmr.tmr.TMRReplicationType;
+import edu.byu.ece.edif.tools.replicate.wiring.NetManager;
+import edu.byu.ece.edif.tools.replicate.wiring.PortConnection;
+import edu.byu.ece.edif.tools.replicate.wiring.SinglePortConnection;
 
 /**
  * Provides a Xilinx implementation of NMR. It is intended that this class be
@@ -33,7 +53,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.AbstractNMRArchitecture;
  * 
  * @since Created on May 23, 2005
  */
-public abstract class XilinxNMRArchitecture extends AbstractNMRArchitecture {
+public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
 
     public XilinxNMRArchitecture() {
         // Initialize the set of known Bad Cut Connections for Xilinx parts
@@ -41,34 +61,6 @@ public abstract class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         _init();
     }
 
-    //	public boolean isTriplicatableCellType(EdifCellInstance eci) {
-    //        boolean result;
-    //        String cellTypeName = eci.getCellType().getName();
-    //        if (XILINX_NON_TRIPLICATABLE_CELLS.contains(cellTypeName))
-    //            result = false;
-    //        else
-    //            result = true;
-    //        return result;
-    //    }
-    //
-    //    // List of non-triplicatable cell-types in the Xilinx architecture. HashSet
-    //    // String look-up is fast.
-    //    static protected final HashSet<String> XILINX_NON_TRIPLICATABLE_CELLS;
-    //    static {
-    //        XILINX_NON_TRIPLICATABLE_CELLS = new LinkedHashSet<String>();
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("BUFG");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("IBUF");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("IBUFG");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("OBUF");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("OBUFG");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("OBUFT");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("CAPTURE_VIRTEX");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("STARTUP_VIRTEX");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("GND");
-    //        XILINX_NON_TRIPLICATABLE_CELLS.add("VCC");
-    //    }
-
-    // Javadoc comment inherited from TMRArchitecture.
     public boolean isAFlipFlop(String cellType) {
         for (int i = 0; i < XILINX_FLIP_FLOPS.length; i++) {
             if (cellType.compareToIgnoreCase(XILINX_FLIP_FLOPS[i]) == 0)
@@ -162,5 +154,182 @@ public abstract class XilinxNMRArchitecture extends AbstractNMRArchitecture {
             "FDCPE", "FDCPE_1", "FDCPX1", "FDCPX1_1", "FDDRCPE", "FDDRRSE", "FDE", "FDE_1", "FDP", "FDP_1", "FDPE",
             "FDPE_1", "FDR", "FDR_1", "FDRE", "FDRE_1", "FDRS", "FDRS_1", "FDRSE", "FDRSE_1", "FDS", "FDS_1", "FDSE",
             "FDSE_1" };
+
+	public Organ getDefaultRestoringOrganForReplicationType(Class<? extends ReplicationType> c) {
+		Organ result = null;
+		if (c == TMRReplicationType.class)
+			result = XilinxTMRVoter.getInstance();
+		return result;
+	}
+	
+	public List<PortConnection> prepareForDetectionOutput(List<? extends PortConnection> unpreparedOutput, boolean registerDetection, boolean addObuf, String clockNetName, NetManager netManager) {
+		List<PortConnection> result = new ArrayList<PortConnection>();
+		for (PortConnection pc : unpreparedOutput) {
+			PortConnection output = pc;
+			if (registerDetection) {
+				EdifNameable name = netManager.getTopCell().getUniqueInstanceNameable(NamedObject.createValidEdifNameable("fd"));
+				output = insertFD(name, output, clockNetName, netManager);
+			}
+			if (addObuf) {
+				EdifNameable name = netManager.getTopCell().getUniqueInstanceNameable(NamedObject.createValidEdifNameable("obuf"));
+				output = insertOBUF(name, output, netManager);
+			}
+			result.add(output);			
+		}
+		return result;
+	}
+	
+	public PortConnection insertOBUF(EdifNameable name, PortConnection input, NetManager netManager) {
+		EdifCell parent = netManager.getTopCell();
+		
+        // 1. Obtain a reference to the OBUF EdifCell
+        EdifCell obuf = getOBUFCell(parent);
+
+        // 2. Create a new instance
+        EdifCellInstance obufCellInstance = new EdifCellInstance(name, parent, obuf);
+
+        try {
+            parent.addSubCell(obufCellInstance);
+        } catch (EdifNameConflictException e) {
+            e.toRuntime();
+        }
+
+        // Hook up input to I port
+        PortConnection I = new SinglePortConnection(obuf.getPort("I").getSingleBitPort(0), obufCellInstance);
+        netManager.wirePortConnections(input, I);
+
+        PortConnection O = new SinglePortConnection(obuf.getPort("O").getSingleBitPort(0), obufCellInstance);
+        return O;
+    }
+	
+	public PortConnection insertFD(EdifNameable name, PortConnection input, String clockNetName, NetManager netManager) {
+		EdifCell parent = netManager.getTopCell();
+		
+		// 1. Obtain a reference to the FD EdifCell
+		EdifCell fd = getFDCell(parent);
+		
+		// 2. Create a new instance
+		EdifCellInstance fdCellInstance = new EdifCellInstance(name, parent, fd);
+		
+		try {
+			parent.addSubCell(fdCellInstance);
+		} catch (EdifNameConflictException e) {
+			e.toRuntime();
+		}
+		
+		// find clock net and hook to FD clock input
+		EdifNet clockNet = parent.getNet(clockNetName);
+		if (clockNet == null)
+			throw new EdifRuntimeException("Error: Cannot find specified clock net (" + clockNetName + ") for error detection signal output registers.");
+		EdifPortRef c = new EdifPortRef(clockNet, fd.getPort("C").getSingleBitPort(0), fdCellInstance);
+		clockNet.addPortConnection(c);
+				
+		// Hook up input to D port
+		PortConnection d = new SinglePortConnection(fd.getPort("D").getSingleBitPort(0), fdCellInstance);
+		netManager.wirePortConnections(input, d);
+		
+		// return output (Q) PortConnection
+		PortConnection q = new SinglePortConnection(fd.getPort("Q").getSingleBitPort(0), fdCellInstance);
+		return q;
+	}
+	
+	protected EdifCell getOBUFCell(EdifCell parent) {
+
+        /*
+         * If the obuf cell has already been defined, return the associated Edif
+         * Cell.
+         */
+		EdifCell obufCell = _cellToObufMap.get(parent);
+		if (obufCell != null)
+			return obufCell;
+		
+        String obufCellName = "OBUF";
+
+        // Step #1 - Get Xilinx primitive
+        EdifLibrary xilinxLibrary = XilinxLibrary.library;
+
+        EdifCell buf = xilinxLibrary.getCell(obufCellName);
+
+        // Step #2 - Search for the Xilinx primitive in library manager
+        Collection<EdifCell> matchingOBUFCells = parent.getLibrary().getLibraryManager().getCells(obufCellName);
+
+        // Iterate over all cells to see if the primitive exists
+        if (matchingOBUFCells != null) {
+            // Iterate over the matching cells and see if it exists
+            for (EdifCell ce : matchingOBUFCells) {
+                if (ce.equalsInterface(buf)) {
+                    // The AND exists - tag it as the merger cell
+                    obufCell = ce;
+                    _cellToObufMap.put(parent, obufCell);
+                    return obufCell;
+                }
+            }
+        }
+
+        // Step #3 - The primitive does not exist in our library. Add it.
+        EdifLibrary lib = parent.getLibrary().getLibraryManager().getFirstPrimitiveLibrary();
+        if (lib == null)
+            lib = parent.getLibrary();
+
+        try {
+            lib.addCell(buf);
+        } catch (EdifNameConflictException e) {
+            e.toRuntime();
+        }
+        _cellToObufMap.put(parent, buf);
+
+        return buf;
+    }
+	
+	protected EdifCell getFDCell(EdifCell parent) {
+
+        /*
+         * If the fd cell has already been defined, return the associated Edif
+         * Cell.
+         */
+		EdifCell fdCell = _cellToFDMap.get(parent);
+		if (fdCell != null)
+			return fdCell;
+		
+        String fdCellName = "FD";
+
+        // Step #1 - Get Xilinx primitive
+        EdifLibrary xilinxLibrary = XilinxLibrary.library;
+
+        EdifCell fd = xilinxLibrary.getCell(fdCellName);
+
+        // Step #2 - Search for the Xilinx primitive in library manager
+        Collection<EdifCell> matchingFDCells = parent.getLibrary().getLibraryManager().getCells(fdCellName);
+
+        // Iterate over all cells to see if the primitive exists
+        if (matchingFDCells != null) {
+            // Iterate over the matching cells and see if it exists
+            for (EdifCell ce : matchingFDCells) {
+                if (ce.equalsInterface(fd)) {
+                    // The AND exists - tag it as the merger cell
+                    fdCell = ce;
+                    _cellToFDMap.put(parent, fdCell);
+                    return fdCell;
+                }
+            }
+        }
+
+        // Step #3 - The primitive does not exist in our library. Add it.
+        EdifLibrary lib = parent.getLibrary().getLibraryManager().getFirstPrimitiveLibrary();
+        if (lib == null)
+            lib = parent.getLibrary();
+
+        try {
+            lib.addCell(fd);
+        } catch (EdifNameConflictException e) {
+            e.toRuntime();
+        }
+        _cellToFDMap.put(parent, fd);
+
+        return fd;
+    }
+	
+	Map<EdifCell, EdifCell> _cellToObufMap = new LinkedHashMap<EdifCell, EdifCell>();
+	Map<EdifCell, EdifCell> _cellToFDMap = new LinkedHashMap<EdifCell, EdifCell>();
 
 }

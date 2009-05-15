@@ -10,10 +10,10 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.jedif.EDIFMain;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.util.jsap.ClockDomainCommandGroup;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
-import edu.byu.ece.edif.util.jsap.LogFileCommandGroup;
-import edu.byu.ece.edif.util.jsap.MergeParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.ClockDomainCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 
 public class JEdifClockDomain extends EDIFMain {
     public static void main(String args[]) {

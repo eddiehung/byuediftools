@@ -38,7 +38,6 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationEstimatedStopException;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationException;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationHardStopException;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
 import edu.byu.ece.edif.util.graph.EdifCellBadCutGroupings;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
@@ -185,7 +184,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         // specified in the "constants" section of this function 
         System.out.println("Creating new TMR architecture object for part " + part + " of family " + family
                 + " from vendor " + vendor);
-        NMRArchitecture tmrArch = new XilinxTMRArchitecture();
+        NMRArchitecture tmrArch = new XilinxNMRArchitecture();
 
         // Create an instance connectivity object
         System.out.println("Creating a connectivity object...");
@@ -231,7 +230,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         for (Iterator i = groups.iterator(); i.hasNext();) {
             Collection group = (Collection) i.next();
             try {
-                duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor);
+                duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor, null);
             } catch (OverutilizationEstimatedStopException e1) {
                 System.out
                         .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "
@@ -248,7 +247,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
                 // This call adds everything else in the group
                 // except those instances which cause hard stops
                 try {
-                    duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor);
+                    duTracker.nmrInstancesAsManyAsPossible(group, _replicationFactor, null);
                 } catch (OverutilizationEstimatedStopException e3) {
                     System.out
                             .println("WARNING: Group of instances not added to resource tracker due to estimated resource constraints. "
@@ -300,6 +299,7 @@ public class XilinxVirtexIIProDeviceUtilizationTracker extends XilinxDeviceUtili
         addResourceForTracking(XilinxResourceMapper.IO, 0.0, maxIO);
         addResourceForTracking(XilinxResourceMapper.RES, 0.0, maxIO); // One per IOB
         addResourceForTracking(XilinxResourceMapper.BUFG, 0.0, _v2maxClk);
+        addResourceForTracking(XilinxResourceMapper.IBUFG, 0.0, _v2maxClk);
 
         super._init(cell);
     }

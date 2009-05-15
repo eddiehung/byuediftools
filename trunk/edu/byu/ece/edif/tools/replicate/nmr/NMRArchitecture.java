@@ -22,10 +22,12 @@
  */
 package edu.byu.ece.edif.tools.replicate.nmr;
 
-import edu.byu.ece.edif.core.EdifCell;
-import edu.byu.ece.edif.core.EdifCellInstance;
+import java.util.List;
+
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
+import edu.byu.ece.edif.tools.replicate.wiring.NetManager;
+import edu.byu.ece.edif.tools.replicate.wiring.PortConnection;
 
 /**
  * Specifies an interface for architectures that are supported under the NMR
@@ -35,22 +37,6 @@ import edu.byu.ece.edif.core.EdifPortRef;
  * @since Created on May 20, 2005
  */
 public interface NMRArchitecture {
-
-    /**
-     * Creates an EdifCell object that performs the majority voter function.
-     * This method also hooks up the input wires and the output wire that are
-     * passed in as parameters.
-     * 
-     * @param parent The parent EdifCell object in which the voter will be
-     * inserted.
-     * @param name The instance name for the new voter.
-     * @param inputs An array of EdifNet objects. The inputs to the voter should
-     * be connected to these nets.
-     * @param output An EdifNet object that should be connected to the output of
-     * the voter.
-     * @return voter object
-     */
-    public EdifCellInstance createVoter(EdifCell parent, String name, EdifNet inputs[], EdifNet output);
 
     /**
      * Determines whether the connection between the given EdifPortRef object
@@ -67,5 +53,13 @@ public interface NMRArchitecture {
      * @return true if the given EdifNet is a clock net, false otherwise
      */
     public boolean isClockNet(EdifNet net);
+    
+    public Organ getDefaultRestoringOrganForReplicationType(Class<? extends ReplicationType> c);
+    
+    public boolean isAFlipFlop(String cellType);
+
+    public boolean isBRAM(String cellType);
+    
+    public List<PortConnection> prepareForDetectionOutput(List<? extends PortConnection> unpreparedOutput, boolean registerDetection, boolean addObuf, String clockNetName, NetManager netManager);
 
 }

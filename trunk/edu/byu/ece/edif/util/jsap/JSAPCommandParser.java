@@ -198,7 +198,7 @@ public class JSAPCommandParser extends JSAP {
 
         try {
 
-            p.store(new PrintStream(filename), filename + ", created by " + NMRCommandParser.class.getName());
+            p.store(new PrintStream(filename), filename + ", created by " + this.getClass().getName());
         } catch (IOException e) {
             System.err.println(e);
         }

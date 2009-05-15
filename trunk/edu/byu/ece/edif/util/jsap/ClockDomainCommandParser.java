@@ -46,7 +46,6 @@ import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
  * @see DWCCommandParser
  * @see JSAP
  * @see JSAPCommandParser
- * @see TMRCommandParser
  * @see <a href="http://www.martiansoftware.com/jsap/doc/javadoc/index.html">
  * JSAP API</a>
  * @see <a href="http://www.martiansoftware.com/jsap/">JSAP Homepage</a>

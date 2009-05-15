@@ -43,10 +43,11 @@ import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCellInstance;
+import edu.byu.ece.edif.tools.flatten.FlatteningNode;
 import edu.byu.ece.edif.tools.flatten.HierarchicalInstance;
 import edu.byu.ece.edif.tools.flatten.InstanceNode;
-import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 
 public class HalfLatchFlattenedEdifCell extends FlattenedEdifCell {
 
@@ -128,8 +129,8 @@ public class HalfLatchFlattenedEdifCell extends FlattenedEdifCell {
         //   FlattenedEdifCell's)
         boolean success = super.addSubCell(cellInstance);
         if (success == true) {
-            // Must use addChildNoCheck since the original Cell has been modified
-            HierarchicalInstance instanceNode = _topInstanceNode.addChildNoCheck(cellInstance);
+
+        	HierarchicalInstance instanceNode = _topFlatteningNode.addChild(cellInstance).getInstanceNode();
             // Also add mapping from instanceNode to flat instance
             _nodesToFlatInstances.put(instanceNode, (FlattenedEdifCellInstance) cellInstance);
         }
@@ -291,8 +292,8 @@ public class HalfLatchFlattenedEdifCell extends FlattenedEdifCell {
         // 4. Copy the FlattenedEdifCell properties
         //    a. Copy _oldToNewNets Map
 
-        // 4a. The top level HierarchicalInstance - Make a copy
-        _topInstanceNode = new InstanceNode((InstanceNode) flatCell.getTopInstanceNode());
+        // 4a. The top level HierarchicalInstance - Use the same one (it is atomic)
+        _topFlatteningNode = flatCell.getTopFlatteningNode();
 
         // 1. Copy the cell properties
         if (flatCell.getPropertyList() != null) {
@@ -836,7 +837,7 @@ public class HalfLatchFlattenedEdifCell extends FlattenedEdifCell {
             e.toRuntime();
         }
 
-        XilinxHalfLatchArchitecture hlArchitecture = new XilinxHalfLatchArchitecture(flatCell);
+        XilinxHalfLatchArchitecture hlArchitecture = new XilinxHalfLatchArchitecture();
 
         // This should do the actual half latch removal
         //SequentialEdifHalfLatchRemover sequentialEdifHalfLatchRemover = new SequentialEdifHalfLatchRemover(new XilinxHalfLatchArchitecture(), safeConstantPolarity, true);

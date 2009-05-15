@@ -1,0 +1,36 @@
+\section{JEdifReplicationQuery}
+JEdifReplicationQuery is used to query the contents of a replication
+description (.rdesc) file and to provide information about the type(s) of
+replication that will be applied to a design given the information in the file.
+
+The tool gives information about each of the replication types (i.e.
+triplication, duplication) used in the design. The ports and instances selected
+for each type are displayed.
+
+The tool also gives information about organs (i.e. voters, comparators) that
+will be inserted into the design on each net. An organ summary is provided that
+lists the total number of each kind of organ to be inserted.
+
+Finally, the tool lists any detection outputs to be used as well as information
+about whether an output register (and which clock net) and output buffer will
+be used. A list of nets that will be detected on is given for each detection
+output.
+
+\begin{verbatim}
+>java edu.byu.ece.edif.jedif.JEdifReplicationQuery
+Options:
+  [-h|--help]
+  [-v|--version]
+
+  <input_file>
+  (-r|--rep_desc) <rep_desc>
+\end{verbatim}
+
+\subsection{File Options:}
+\subsubsection{\texttt{<input\_file>}}
+Filename and path to the .jedif source file containing the EDIF environment to
+be queried.
+
+\subsubsection{\texttt{(-r|--rep\_desc) <rep\_desc>}}
+Filename and path to the replication description (.rdesc) file containing the
+replication information.

@@ -40,7 +40,7 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRGraphUtilities;
-import edu.byu.ece.edif.tools.replicate.nmr.tmr.XilinxTMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.graph.BasicEdge;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
@@ -270,7 +270,7 @@ public class EdifOutputPortRefGraph extends AbstractEdifGraph {
         sccDFS.printSCCs();
 
         // 7. SCC Decomposition
-        NMRArchitecture tmrArch = new XilinxTMRArchitecture();
+        NMRArchitecture tmrArch = new XilinxNMRArchitecture();
         Collection<EdifPortRef> cuts = NMRGraphUtilities.createDecomposeValidCutSetFanout(graph, sccDFS, tmrArch);
         System.out.println(cuts.size() + " cuts to disconnect");
 

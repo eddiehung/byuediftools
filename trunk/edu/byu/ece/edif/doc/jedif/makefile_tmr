@@ -1,0 +1,42 @@
+DESIGN=my_design
+
+BUILD = edu.byu.ece.edif.jedif.JEdifBuild
+ANALYZE = edu.byu.ece.edif.jedif.JEdifAnalyze
+NMR_SELECTION = edu.byu.ece.edif.jedif.JEdifNMRSelection
+VOTER_SELECTION = edu.byu.ece.edif.jedif.JEdifVoterSelection
+MFV = edu.byu.ece.edif.jedif.JEdifMoreFrequentVoting
+DETECTION_SELECTION = edu.byu.ece.edif.jedif.JEdifDetectionSelection
+PERSISTENCE_DETECTION = edu.byu.ece.edif.jedif.JEdifPersistenceDetection
+NMR = edu.byu.ece.edif.jedif.JEdifNMR
+
+JVM_OPTS = -Xmx1G
+
+PART = xcv1000-5-bg560
+
+BUILD_OPTS = --remove_hl --replace_luts --remove_fmaps --remove_rlocs
+ANALYZE_OPTS = --part $(PART)
+NMR_SELECTION_OPTS = --part $(PART) --replication_type triplication --full_nmr --nmr_inports --nmr_outports
+VOTER_OPTS = 
+NMR_OPTS = --part $(PART)
+
+all: $(DESIGN)_nmr.edf
+
+$(DESIGN)_nmr.edf: $(DESIGN).jedif voter_selection.touch
+	java $(JVM_OPTS) $(NMR) $(DESIGN).jedif --rep_desc $(DESIGN).rdesc $(NMR_OPTS) -o $(DESIGN)_nmr.edf
+
+voter_selection.touch: $(DESIGN).jedif nmr_selection.touch
+	java $(JVM_OPTS) $(VOTER_SELECTION) $(DESIGN).jedif --rep_desc $(DESIGN).rdesc --c_desc $(DESIGN).cdesc $(VOTER_OPTS)
+	touch voter_selection.touch
+
+nmr_selection.touch: $(DESIGN).cdesc
+	java $(JVM_OPTS) $(NMR_SELECTION) $(DESIGN).jedif --c_desc $(DESIGN).cdesc --rep_desc $(DESIGN).rdesc $(NMR_SELECTION_OPTS)
+	touch nmr_selection.touch
+
+$(DESIGN).cdesc: $(DESIGN).jedif
+	java $(JVM_OPTS) $(ANALYZE) $(DESIGN).jedif -o $(DESIGN).cdesc $(ANALYZE_OPTS)
+
+$(DESIGN).jedif: $(DESIGN).edf
+	java $(JVM_OPTS) $(BUILD) $(DESIGN).edf $(BUILD_OPTS)
+
+clean:
+	rm -rf $(DESIGN).jedif $(DESIGN).cdesc $(DESIGN).rdesc $(DESIGN)_nmr.edf *.log *.touch
