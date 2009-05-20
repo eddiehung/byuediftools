@@ -40,7 +40,8 @@
      filecolor=rltgreen,     % \href{...} local file
      linkcolor=rltred,       % \ref{...} and \pageref{...}
      pdftitle={BYU-LANL Triple Modular Redundancy Usage Guide Version 0.5.0 -
-     15 May2008}, % pdfauthor={BYU Configurable Computing Lab},% pdfproducer={pdfLaTeX},%
+     20 May, 2009}, % pdfauthor={BYU Configurable Computing Lab},%
+     pdfproducer={pdfLaTeX},%
      %pdfadjustspacing=1,
      pdftex]{hyperref}
 \fi
@@ -73,8 +74,7 @@
 \usepackage{babel}
 \makeatother
 
-\title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\ ~ \\
-  Version 0.5.0 - 15 May 2009 \\  }
+\title{BYU-LANL Triple Modular Redundancy \\ Usage Guide \\  }
   
 \author{Brigham Young University \\ Configurable Computing Lab}
 
@@ -87,6 +87,11 @@
 \newpage
 \tableofcontents
 \newpage
+
+\section{Toolflow Illustration}
+\includegraphics[scale=0.7]{tool_flow.pdf}
+\newpage
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -194,8 +199,6 @@ optionally display other information, such as classifying Xilinx
 primitives into one or more domains, showing clock crossings, etc.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Toolflow Illustration}
-\includegraphics[scale=0.7]{tool_flow.pdf}
 \newpage
 \input{Build}
 \newpage

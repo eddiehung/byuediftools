@@ -1,7 +1,7 @@
 Change Log for BYU EDIF Tools
 
 -------------------------------------------------------------------
-Proton Release - Version 0.5.0 (15 May 2009)
+Proton Release - Version 0.5.0 (20 May 2009)
 -------------------------------------------------------------------
 
 New Features:
