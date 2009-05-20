@@ -1,7 +1,7 @@
 
  Release Notes for BYU EDIF Tools
 
-Proton Release - Version 0.5.0 (15 May 2009)
+Proton Release - Version 0.5.0 (20 May 2009)
 
 This release has involved a large amount of refactoring and a restructuring
 of the replication toolflow. The replication process in now much more modular,
