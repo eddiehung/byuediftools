@@ -151,6 +151,11 @@ public class PseudoNet extends NamedPropertyObject {
             net.addPortConnection(epr);
         }
     }
+    
+    public String toString() {
+    	return "PseudoNet: " + _connections + ", top level connections: " + _topLevelConnections + ", " + _hierarchicalNets;
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
@@ -226,7 +231,11 @@ public class PseudoNet extends NamedPropertyObject {
             Connection c = (Connection) o;
             return (c._instance == _instance && c._esbp == _esbp);
         }
-
+        
+        public String toString() {
+        	return "(" + _instance + ", " + _esbp + ")";
+        }
+        
         ///////////////////////////////////////////////////////////////////
         ////                         private variables                 ////
 

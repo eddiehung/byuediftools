@@ -120,7 +120,7 @@ public class NetConnections {
     }
 
     /**
-     * This map holds all of the net connectivity information for determing
+     * This map holds all of the net connectivity information for determining
      * which nets match nets on a higher level of hierarchy
      */
     Map<InstanceNode, Map<EdifSingleBitPort, PseudoNet>> _connections = new LinkedHashMap<InstanceNode, Map<EdifSingleBitPort, PseudoNet>>();
