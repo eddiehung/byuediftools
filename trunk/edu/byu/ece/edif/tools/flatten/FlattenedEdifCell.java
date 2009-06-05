@@ -595,12 +595,14 @@ public class FlattenedEdifCell extends EdifCell {
             }
             Collection<PseudoNet> possibleJoinedNets = connections.getJoinedNetList(pseudoNet);
             if (possibleJoinedNets != null) {
-                for (PseudoNet joinedPseudoNet : possibleJoinedNets) {
-                    joinedPseudoNet.insertPortRefs(newNet);
-                    for (HierarchicalNet hNet : joinedPseudoNet.getHierarchicalNets()) {
-                    	_hierarchyNetsToFlatNets.put(hNet, newNet);
-                    }
-                    newPseudoNets.remove(joinedPseudoNet);
+            	for (PseudoNet joinedPseudoNet : possibleJoinedNets) {
+            		if (joinedPseudoNet != pseudoNet) {
+            			joinedPseudoNet.insertPortRefs(newNet);
+            			for (HierarchicalNet hNet : joinedPseudoNet.getHierarchicalNets()) {
+            				_hierarchyNetsToFlatNets.put(hNet, newNet);
+            			}
+            			newPseudoNets.remove(joinedPseudoNet);
+            		}
                 }
             }
             try {
