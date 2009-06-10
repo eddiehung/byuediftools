@@ -119,12 +119,25 @@ public class JEdifVoterSelection extends EDIFMain {
 		
 		// add organ specifications for cutset (use forceRestore)
 		for (EdifPortRef cut : cuts) {
-			EdifNet net = cut.getNet();
+		    EdifNet net = cut.getNet();
+		    Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
+		    ReplicationType replicationType = null;
+		    for (EdifPortRef driver : drivers) {
+		        ReplicationType driverType = rDesc.getReplicationType(driver);
+		        if (replicationType == null)
+		            replicationType = driverType;
+		        else {
+		            if (replicationType != driverType) {
+		                System.out.println(drivers);
+		                throw new EdifRuntimeException("Unexpected: Net drivers have different ReplicationTypes");
+		            }
+		        }
+		    }
 
-			// check to see if there is already a voter to be inserted on this net -- use it if there is
-			Set<OrganSpecification> prevSpecs = rDesc.getOrganSpecifications(net);
-						
-			List<EdifPortRef> forceRefs = new ArrayList<EdifPortRef>(1);
+		    // check to see if there is already a voter to be inserted on this net -- use it if there is
+		    Set<OrganSpecification> prevSpecs = rDesc.getOrganSpecifications(net);
+
+		    List<EdifPortRef> forceRefs = new ArrayList<EdifPortRef>(1);
 			forceRefs.add(cut);
 			
 			// this is confusing so I'll explain it -- when prevSpecs is not null and contains an OrganSpecification
@@ -132,7 +145,7 @@ public class JEdifVoterSelection extends EDIFMain {
 			// have forceRefs appended to it. ReplicationType.forceRestore() will return null, so nothing new will be added
 			// to the ReplicationDescription -- only the existing OrganSpecification will be modified as necessary. The
 			// effect is to create a new OrganSpecification only when necessary.
-			rDesc.addOrganSpecifications(net, rDesc.getReplicationType(cut).forceRestore(net, forceRefs, prevSpecs, rDesc));
+			rDesc.addOrganSpecifications(net, replicationType.forceRestore(net, forceRefs, prevSpecs, rDesc));
 		}
 		
 		// rewrite replication description file
