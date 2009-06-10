@@ -127,11 +127,13 @@ public class TMRReplicationType extends AbstractReplicationType {
         
         for (EdifPortRef sink : origSinks) {
             ReplicationType sinkRepType = desc.getReplicationType(sink);
-            int sinkFactor = sinkRepType.getReplicationFactor();
-            if (numVoters < sinkFactor)
-                numVoters = sinkFactor;
-            if (forceAllSinksVoterOutputs || (forceRestoreRefs != null && forceRestoreRefs.contains(sink)))
+
+            if (forceAllSinksVoterOutputs || (forceRestoreRefs != null && forceRestoreRefs.contains(sink))) {
                 sinksGettingVoterOutputs.add(sink);
+                int sinkFactor = sinkRepType.getReplicationFactor();
+                if (numVoters < sinkFactor)
+                    numVoters = sinkFactor;
+            }
         }
         
         List<OrganSpecification> result = null;
