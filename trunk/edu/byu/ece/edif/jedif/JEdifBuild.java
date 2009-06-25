@@ -122,16 +122,16 @@ public class JEdifBuild extends EDIFMain {
         // Serialize output
         // If the circuit got flattened, the preserved hierarchy also goes in
         // the serialized output (after the EdifEnvironment)
+        Collection objects = new ArrayList(2);
+        objects.add(env);
+        if (hierarchy != null)
+            objects.add(hierarchy);
         if (!result.userSpecified(OutputFileCommandGroup.OUTPUT_OPTION)) {
             String name = MergeParserCommandGroup.getInputFileName(result);
-            name = name.substring(0, name.lastIndexOf('.'));
-            Collection objects = new ArrayList(2);
-            objects.add(env);
-            if (hierarchy != null)
-                objects.add(hierarchy);            
+            name = name.substring(0, name.lastIndexOf('.'));     
             JEdifOutputCommandGroup.serializeObjects(out, name + ".jedif", objects);
         } else {
-            JEdifOutputCommandGroup.serializeObject(out, result, env);
+            JEdifOutputCommandGroup.serializeObjects(out, result, objects);
         }
         out.println();
         

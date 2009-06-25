@@ -23,6 +23,7 @@
 package edu.byu.ece.edif.util.jsap.commandgroups;
 
 import java.io.PrintStream;
+import java.util.Collection;
 
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
@@ -61,14 +62,21 @@ public class JEdifOutputCommandGroup extends OutputFileCommandGroup {
      * @param obj: Object to serialize
      */
     public static void serializeObject(PrintStream out, JSAPResult result, EdifEnvironment environ) {
-        if (!getNoDelete(result)) {
-            environ.getLibraryManager().pruneNonReferencedCells();
-        }
+       
         String output_filename = getOutputFileName(result);
         if (!output_filename.contains("."))
             output_filename = output_filename.concat(".jedif");
 
-        serializeObject(out, output_filename, environ);
+        serializeObject(out, output_filename,  environ);
+    }
+    
+    public static void serializeObjects(PrintStream out, JSAPResult result, Collection objects) {
+       
+        String output_filename = getOutputFileName(result);
+        if (!output_filename.contains("."))
+            output_filename = output_filename.concat(".jedif");
+
+        serializeObjects(out, output_filename, objects);
     }
 
     Switch _deleteOldCells;
