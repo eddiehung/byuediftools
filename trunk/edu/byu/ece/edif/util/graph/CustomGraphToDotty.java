@@ -182,9 +182,9 @@ public class CustomGraphToDotty {
             if (node instanceof EdifCellInstance) {
                 EdifCellInstance eci = (EdifCellInstance) node;
                 String lcName = eci.getName().toLowerCase();
+                String lcCellName = eci.getCellType().getName().toLowerCase();
                 
-                
-                if (lcName.startsWith("fd"))
+                if (lcCellName.startsWith("fd"))
                     shape = "box";
                 else if (lcName.contains("voter"))
                     shape = "triangle";
