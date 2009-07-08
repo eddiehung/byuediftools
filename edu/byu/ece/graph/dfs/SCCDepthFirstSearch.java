@@ -39,6 +39,16 @@ import edu.byu.ece.graph.DirectedGraph;
 public class SCCDepthFirstSearch extends DepthFirstSearchForest {
 
     public SCCDepthFirstSearch(DirectedGraph graph) {
+        List nodesInOrder = new ArrayList();
+        nodesInOrder.addAll(graph.getNodes());
+        _init(graph, nodesInOrder);
+    }
+    
+    public SCCDepthFirstSearch(DirectedGraph graph, List nodesInOrder) {
+        _init(graph, nodesInOrder);
+    }
+    
+    public void _init(DirectedGraph graph, List nodesInOrder) {
         _graph = graph;
 
         Date startTime = new Date();
@@ -46,7 +56,7 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
             System.out.print("Starting DFS1 . . . ");
 
         // 1. Perform the search first on the inverted graph 
-        DepthFirstSearchForest dfs1 = new DepthFirstSearchForest(graph.invert());
+        DepthFirstSearchForest dfs1 = new DepthFirstSearchForest(graph.invert(), nodesInOrder);
         long seconds = (new Date().getTime() - startTime.getTime()) / 1000;
         if (localDEBUG)
             System.out.println("finished in " + seconds + " seconds. " + dfs1.getTrees().size() + " trees.");
@@ -63,7 +73,6 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
 
         if (localDEBUG)
             System.out.println("SCCs found:" + this.getTrees().size());
-
     }
 
     /**

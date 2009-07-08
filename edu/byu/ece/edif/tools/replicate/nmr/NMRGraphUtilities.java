@@ -24,12 +24,16 @@ package edu.byu.ece.edif.tools.replicate.nmr;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
+import edu.byu.ece.edif.arch.xilinx.XilinxTools;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNameConflictException;
@@ -150,6 +154,129 @@ public class NMRGraphUtilities {
 
     public static final int DEFAULT_SCC_SORT_TYPE = 3;
 
+    
+    public static List<Edge> createBasicDecompositionCutset(AbstractEdifGraph graph, SCCDepthFirstSearch sccs, NMRArchitecture arch) {
+
+        List<Edge> cuts = new ArrayList<Edge>();
+        Stack<DepthFirstTree> s = new Stack<DepthFirstTree>();
+
+        for (DepthFirstTree scc : sccs.getTrees()) {
+            s.push(scc);
+        }
+
+        SCCDepthFirstSearch lastSearch = sccs;
+        
+        // Iterate until a valid cutset has been found.
+        while (!s.empty()) {
+
+            // Pop off DFS search tree (SCC)
+            DepthFirstTree subSCCDFSTree = s.pop();
+
+
+            Collection backEdges = subSCCDFSTree.getBackEdges();
+            Collection badEdges = findBadEdges(backEdges, arch);
+            backEdges.removeAll(badEdges);
+            
+            if (badEdges.size() == 0) { // if all cuts are good
+                // remove all back edges, done with this SCC
+                graph.removeEdges(backEdges);
+                cuts.addAll(backEdges);
+            }
+            else {
+                if (backEdges.size() != 0) { // if some are good, some are bad
+                    // remove good back eges, put subSCCs on stack
+                    graph.removeEdges(backEdges);
+                    cuts.addAll(backEdges);
+                    BasicGraph sccSubGraph = graph.getSubGraph(subSCCDFSTree.getNodes());
+                    SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccSubGraph);
+                    for (DepthFirstTree scc : sccDFS.getTopologicallySortedTreeList()) {
+                        s.push(scc);
+                    }
+                }
+                else { // else all the cuts are bad
+                    // redo the SCC decomposition of the current SCC with a different search order,
+                    // putting the resulting SCC on the stack
+                    LinkedList visitOrder  = new LinkedList(subSCCDFSTree.getNodes());
+                    visitOrder.addFirst(visitOrder.pollLast());
+                    BasicGraph sccSubGraph = graph.getSubGraph(visitOrder);
+                    SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccSubGraph, visitOrder);
+                    for (DepthFirstTree scc : sccDFS.getTopologicallySortedTreeList()) {
+                        s.push(scc);
+                    }
+                }   
+            }
+        }  
+        
+        return cuts;
+    }
+    
+    public static Collection<EdifPortRef> createAfterFFsCutset(AbstractEdifGraph graph, NMRArchitecture nmrArch) {
+        Collection<EdifPortRef> cuts = new LinkedHashSet<EdifPortRef>();
+        for (Object node : graph.getNodes()) {
+            // make sure it's an instance, not a single bit port
+            if (node instanceof EdifCellInstance) {
+                EdifCellInstance eci = (EdifCellInstance) node;
+                // make sure it's a register node
+                if (XilinxTools.isRegisterCell(eci.getCellType())) {
+                    // make sure it has a Q output and find it
+                    EdifPortRef eprQ = null;
+                    EdifCellInstanceEdge edgeQ = null;
+                    for (Object edge : graph.getOutputEdges(node)) {
+                        if (edge instanceof EdifCellInstanceEdge) {
+                            EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                            EdifPortRef epr = eciEdge.getSourceEPR();
+                            if (epr.getPort().getName().equalsIgnoreCase("Q")) {
+                                eprQ = epr;
+                                edgeQ = eciEdge;
+                                // make sure this is not a bad cut
+                                if (!nmrArch.isBadCutConnection(eciEdge.getSourceEPR(), eciEdge.getSinkEPR())) {
+                                    // remove edge from graph (for verification purposes--later we'll see if there are any SCCs left)
+                                    graph.removeEdge(edgeQ);
+                                    cuts.add(eciEdge.getSinkEPR()); // add the sinks not the source (in case any of the sinks are a bad cut)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return cuts;
+    }
+    
+    public static Collection<EdifPortRef> createBeforeFFsCutset(AbstractEdifGraph graph, NMRArchitecture nmrArch) {
+        Collection<EdifPortRef> cuts = new LinkedHashSet<EdifPortRef>();
+        for (Object node : graph.getNodes()) {
+            // make sure it's an instance, not a single bit port
+            if (node instanceof EdifCellInstance) {
+                EdifCellInstance eci = (EdifCellInstance) node;
+                // make sure it's a register node
+                if (XilinxTools.isRegisterCell(eci.getCellType())) {
+                    // make sure it has a D input and find it
+                    EdifPortRef eprD = null;
+                    EdifCellInstanceEdge edgeD = null;
+                    for (Object edge : graph.getInputEdges(node)) {
+                        if (edge instanceof EdifCellInstanceEdge) {
+                            EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                            EdifPortRef epr = eciEdge.getSinkEPR();
+                            if (epr.getPort().getName().equalsIgnoreCase("D")) {
+                                eprD = epr;
+                                edgeD = eciEdge;
+                                // make sure this is not a bad cut
+                                if (!nmrArch.isBadCutConnection(eciEdge.getSourceEPR(), eciEdge.getSinkEPR())) {
+                                    // remove edge from graph (for verification purposes--later we'll see if there are any SCCs left)
+                                    graph.removeEdge(edgeD);
+                                    cuts.add(eprD);
+                                }
+                                break; // there's only one D
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return cuts;
+    }
+    
     /**
      * Create a valid set of cuts which break all feedback in the given SCC.
      * This method breaks up the SCC little by little instead of generating the
@@ -306,6 +433,121 @@ public class NMRGraphUtilities {
     }
 
     /**
+     * Checking for "highest fanin" needs to mean something slightly different than direct
+     * fanin (because fanin is always 1 for a regular flip-flop). Perhaps it can be highest
+     * fanin within a certain number of levels of logic backwards??
+     * 
+     * @param graph
+     * @param sccs
+     * @param arch
+     * @return
+     */
+    public static Collection<EdifPortRef> createHighestFFFaninCutset(AbstractEdifGraph graph, SCCDepthFirstSearch sccs, NMRArchitecture arch) {
+        Collection<EdifPortRef> cuts = new LinkedHashSet<EdifPortRef>();
+        Stack<DepthFirstTree> s = new Stack<DepthFirstTree>();
+
+        for (DepthFirstTree scc : sccs.getTrees()) {
+            s.push(scc);
+        }
+
+        while (!s.empty()) {
+            DepthFirstTree subSCCDFSTree = s.pop();
+
+
+            // Find the FF node with the highest fan-in
+            EdifCellInstance highFaninNode = null;
+            EdifPortRef highFaninDInput = null;
+            EdifCellInstanceEdge highFaninDEdge = null;
+            int highFaninCount = 0;
+            
+            for (Iterator i = subSCCDFSTree.getNodes().iterator(); i.hasNext();) {
+                Object node = i.next();
+                
+                if (node instanceof EdifCellInstance) {
+                    EdifCellInstance eci = (EdifCellInstance) node;
+                    // make sure this is a register
+                    if (!XilinxTools.isRegisterCell(eci.getCellType()))
+                        continue;
+                    
+                    // make sure it has a D input and find it
+                    EdifPortRef eprD = null;
+                    EdifCellInstanceEdge edgeD = null;
+                    for (Object edge : graph.getInputEdges(node)) {
+                        if (edge instanceof EdifCellInstanceEdge) {
+                            EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                            EdifPortRef epr = eciEdge.getSinkEPR();
+                            if (eciEdge.getSinkEPR().getPort().getName().equalsIgnoreCase("D")) {
+                                eprD = epr;
+                                edgeD = eciEdge;
+                            }
+                        }
+                    }
+                    if (eprD == null)
+                        continue;
+                    
+                    int numPredecessors = computeFanin(node, graph, 5);
+                    // check to see if predecessors may be greater
+                    if (numPredecessors > highFaninCount) {
+
+                        // Find all bad cuts for this input
+                        Collection inputEdges = new ArrayList();
+                        inputEdges.add(edgeD);
+                        Collection<EdifPortRefEdge> badEdges = getBadEdges(inputEdges, arch);
+                        if (badEdges.size() == 0) {
+                            highFaninCount = numPredecessors;
+                            highFaninDInput = eprD;
+                            highFaninDEdge = edgeD;
+                            highFaninNode = eci;
+                        }
+                    }
+                }
+            }
+            if (highFaninNode == null) {
+                throw new EdifRuntimeException("Error: no flip-flop D input with good cut found in the SCC. This cutset algorithm only works with feedback created with registers that have a D input.");
+            }
+            
+            // cut high fan-in node
+            graph.removeEdge(highFaninDEdge);
+            BasicGraph sccSubGraph = graph.getSubGraph(subSCCDFSTree.getNodes());
+            cuts.add(highFaninDInput);
+
+            // Recompute the SCCs from broken graph
+            SCCDepthFirstSearch newSearch = new SCCDepthFirstSearch(sccSubGraph);
+            for (DepthFirstTree scc : newSearch.getTrees()) {
+                s.push(scc);
+            }
+        }
+        return cuts;
+    }
+
+    public static int computeFanin(Object node, AbstractEdifGraph graph, int levels) {
+        Stack nodes = new Stack();
+        Set visited = new HashSet();
+        Set<EdifNet> foundNets = new HashSet<EdifNet>();
+        nodes.add(node);
+        while (!nodes.isEmpty()) {
+            Object currentNode = nodes.pop();
+            visited.add(currentNode);
+            if (currentNode instanceof EdifCellInstance) {
+                EdifCellInstance currentEci = (EdifCellInstance) currentNode;
+                for (Object edge: graph.getInputEdges(currentNode)) {
+                    if (edge instanceof EdifCellInstanceEdge) {
+                        EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                        foundNets.add(eciEdge.getNet());
+                    }
+                }
+                if (nodes.size() < levels) {
+                    for (Object predecessor : graph.getPredecessors(currentEci)) {
+                        if (!visited.contains(predecessor))
+                            nodes.push(predecessor);
+                    }
+                }
+            }
+        }
+        return foundNets.size();
+    }
+    
+    /**
      * Create a valid set of cuts which break all feedback in the given SCC.
      * This method breaks up the SCC little by little instead of generating the
      * entire cutset at once. Thus, cuts are determined in sets, breaking the
@@ -367,6 +609,9 @@ public class NMRGraphUtilities {
                             outputEdges.removeAll(badEdges);
                             hasBadCut = true;
                         }
+                        else {
+                            hasBadCut = false;
+                        }
                         highFanoutCount = outputEdges.size();
                         highFanoutNode = node;
                     }
@@ -375,8 +620,9 @@ public class NMRGraphUtilities {
             if (DEBUG)
                 System.out.println("\tNode " + highFanoutNode + " has fanout of " + highFanoutCount
                         + " chosen for cutting");
-
+            
             // Break up the SCC by removing all of the "good" edges
+            outputEdges = sccSubGraph.getOutputEdges(highFanoutNode);
             sccSubGraph.removeEdges(outputEdges);
             if (hasBadCut) {
                 if (DEBUG)
@@ -491,6 +737,9 @@ public class NMRGraphUtilities {
                             outputEdges.removeAll(badEdges);
                             hasBadCut = true;
                         }
+                        else {
+                            hasBadCut = false;
+                        }
                         highFanoutCount = outputEdges.size();
                         highFanoutNode = epr;
                     }
@@ -516,6 +765,9 @@ public class NMRGraphUtilities {
                                 outputEdges.removeAll(badEdges);
                                 hasBadCut = true;
                             }
+                            else {
+                                hasBadCut = false;
+                            }
                             highFanoutCount = outputEdges.size();
                             highFanoutNode = node;
                         }
@@ -528,6 +780,7 @@ public class NMRGraphUtilities {
                         + " chosen for cutting");
 
             // Break up the SCC by removing all of the "good" edges
+            outputEdges = sccSubGraph.getOutputEdges(highFanoutNode);
             sccSubGraph.removeEdges(outputEdges);
             if (hasBadCut) {
                 if (DEBUG)
