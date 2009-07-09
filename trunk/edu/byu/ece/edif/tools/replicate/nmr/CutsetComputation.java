@@ -19,7 +19,6 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifOutputPortRefGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
-import edu.byu.ece.edif.util.graph.EdifPortRefGraph;
 import edu.byu.ece.edif.util.jsap.commandgroups.CutFeedbackCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
