@@ -68,6 +68,26 @@ feedback is cut. This option has been shown to produce inferior results in
 general to the other two but in some few cases it \emph{may} give better timing
 results (not likely in real-world designs).
 
+\subsubsection{\texttt{--basic\_decomposition}}
+This is a basic SCC decomposition similar to the original connectivity cutset.
+It removes feedback edges in an arbitrary order until all feedback is cut. It
+varies slightly from the original connectivity cutset algorithm in the method
+used to select edges to cut. This algorithm is experimental.
+
+\subsubsection{\texttt{--highest\_ff\_fanin\_cutset}}
+This is the highest flip-flop fanin cutset. It finds the flip-flop with the
+highest fan-in in each SCC (where fan-in is defined as the number of nets
+feeding into the data input up to 5 levels backwards in a reverse DFS) and
+places a voter just before the input. This algorithm is experimental.
+
+\subsubsection{\texttt{--after\_ff\_cutset}}
+This cutset algorithm simply places a voter after each flip-flop in a circuit.
+This algorithm is experimental.
+
+\subsubsection{\texttt{--before\_ff\_cutset}}
+This cutset algorithm simply places a voter before each flip-flop in a circuit.
+This algorithm is experimental.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \input{option_ConfigFile}

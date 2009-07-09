@@ -1,6 +1,26 @@
 Change Log for BYU EDIF Tools
 
 -------------------------------------------------------------------
+Proton Release - Version 0.5.1 (9 July 2009)
+-------------------------------------------------------------------
+
+New Features:
+
+    * Four new cutset algorithms (experimental)
+    * An experimental recovery distance analyzer (measures # of FFs between voters)
+    
+Bug Fixes:
+    
+    * A flattening bug in which certain portRefs could be duplicated
+    * 2 voter insertion bugs related to the number of voters inserted
+      at particular locations
+    * An issue related to preserved hierarchy not being written to a
+      flattened .jedif file when the -o option was used with JEdifBuild
+    
+Enhancements / Other:
+	
+	
+-------------------------------------------------------------------
 Proton Release - Version 0.5.0 (20 May 2009)
 -------------------------------------------------------------------
 

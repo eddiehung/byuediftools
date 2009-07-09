@@ -1,5 +1,13 @@
 
  Release Notes for BYU EDIF Tools
+ 
+Proton Release - Version 0.5.1 (9 July 2009)
+
+This is a maintenance release for "proton." A few important issues were
+discovered and resolved over the past few weeks, making this release
+necessary. Some experimental code used for voter insertion research has
+also been included (4 new cutset algorithms and a voter recovery distance
+analyzer).
 
 Proton Release - Version 0.5.0 (20 May 2009)
 
