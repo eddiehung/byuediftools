@@ -1239,11 +1239,14 @@ public class EdifMergeParser {
                         dirName += File.separator;
                     for (EdifCell blackBox : blackBoxes) {
                         for (int i = 0; i < EDIF_EXTENSIONS.length; i++) {
-                            String fName = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
-                            if (filename_exists(dirName, fName) && !fileNameToEnv.containsKey(fName)
-                                    && (!fName.equals(filename))) {
+                            String fullPath = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
+                            String fName = blackBox.getName() + "."
+									+ EDIF_EXTENSIONS[i];
+							if (filename_exists(dirName, fName)
+									&& !fileNameToEnv.containsKey(fullPath)
+                                    && (!fullPath.equals(filename))) {
                                 // does this file exist? and did we already parse it?
-                                fileNameToEnv.put(fName, getMergedEdifEnvironment(fName, dirs, files_i, primLib,
+                                fileNameToEnv.put(fullPath, getMergedEdifEnvironment(fullPath, dirs, files_i, primLib,
                                         fileNameToEnv, openPins, quitOnError));
                             }
                         }
@@ -1300,8 +1303,7 @@ public class EdifMergeParser {
     }
 
     private static boolean filename_exists(String dName, String file) {
-        if (file.startsWith("./"))
-            file = file.substring(2);
+
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File d, String name) {
             	boolean result = false;
