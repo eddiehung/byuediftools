@@ -197,7 +197,7 @@ public class NMRGraphUtilities {
                     // redo the SCC decomposition of the current SCC with a different search order,
                     // putting the resulting SCC on the stack
                     LinkedList visitOrder  = new LinkedList(subSCCDFSTree.getNodes());
-                    visitOrder.addFirst(visitOrder.pollLast());
+                    visitOrder.addFirst(visitOrder.removeLast());
                     BasicGraph sccSubGraph = graph.getSubGraph(visitOrder);
                     SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccSubGraph, visitOrder);
                     for (DepthFirstTree scc : sccDFS.getTopologicallySortedTreeList()) {
