@@ -57,6 +57,10 @@ import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopy;
 public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     
     public EdifEnvironmentReplicate(EdifEnvironment oldEnvironment, ReplicationDescription desc, NMRArchitecture arch) throws EdifNameConflictException {
+        this(oldEnvironment, desc, arch, null);
+    }
+    
+    public EdifEnvironmentReplicate(EdifEnvironment oldEnvironment, ReplicationDescription desc, NMRArchitecture arch, EdifNameable topCellName) throws EdifNameConflictException {
         super(oldEnvironment);
         _origTopCell = oldEnvironment.getTopCell();
         _desc = desc;
@@ -64,6 +68,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         _netMap = new LinkedHashMap<EdifNet, List<EdifNet>>();
         _portMap = new LinkedHashMap<EdifPort, List<EdifPort>>();
         _arch = arch;
+        _topCellName = topCellName;
     }
     
     /**
@@ -376,8 +381,12 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
      * on the top cell.
      */
     public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name) throws EdifNameConflictException {
-
-        EdifCell newCell = new EdifCell(destLibrary, name);
+        
+        EdifNameable topCellName = name;
+        if (origCell == _origTopCell && _topCellName != null) {
+            topCellName = _topCellName;
+        }
+        EdifCell newCell = new EdifCell(destLibrary, topCellName);
         _cellMap.put(origCell, newCell);
         // copy properties
         newCell.copyProperties(origCell);
@@ -482,4 +491,5 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     protected Map<EdifNet, List<EdifNet>> _netMap;
     protected Map<EdifPort, List<EdifPort>> _portMap;
     protected NetManager _netManager;
+    protected EdifNameable _topCellName;
 }
