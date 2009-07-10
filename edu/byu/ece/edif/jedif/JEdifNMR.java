@@ -11,7 +11,9 @@ import com.martiansoftware.jsap.Switch;
 
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifNameable;
 import edu.byu.ece.edif.core.EdifRuntimeException;
+import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.replicate.nmr.EdifEnvironmentReplicate;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
@@ -29,6 +31,7 @@ public class JEdifNMR extends EDIFMain {
 
 	public static String GENERATE_EDIF_FLAG = "edif";
 	public static String DOMAIN_REPORT = "write_domain_report";
+	public static String RENAME_TOP_CELL = "rename_top_cell";
 	
 	public static void main(String[] args) {
 		
@@ -70,9 +73,19 @@ public class JEdifNMR extends EDIFMain {
         domain_report.setHelp("When this option is specified, a domain report is written to the given file name. " +
         		"The domain report lists the domain (i.e. 0, 1, or 2 for TMR) of each cell instance in the replicated design.");
         
+        // Option for renaming the top cell
+        FlaggedOption rename_top_cell = new FlaggedOption(RENAME_TOP_CELL);
+        rename_top_cell.setStringParser(JSAP.STRING_PARSER);
+        rename_top_cell.setRequired(JSAP.NOT_REQUIRED);
+        rename_top_cell.setShortFlag(JSAP.NO_SHORTFLAG);
+        rename_top_cell.setLongFlag(RENAME_TOP_CELL);
+        rename_top_cell.setUsageName(RENAME_TOP_CELL);
+        rename_top_cell.setHelp("Use this option to specify a name for the design's top cell.");
+                
         try {
 			parser.registerParameter(edif_flag);
 			parser.registerParameter(domain_report);
+			parser.registerParameter(rename_top_cell);
 		} catch (JSAPException e1) {
 			// won't get here
 		}
@@ -99,7 +112,13 @@ public class JEdifNMR extends EDIFMain {
 		EdifEnvironmentReplicate replicator = null;
 		EdifEnvironment newEnv = null;
 		try {
-			replicator = new EdifEnvironmentReplicate(env, rdesc, arch);
+		    if (result.userSpecified(RENAME_TOP_CELL)) {
+		        EdifNameable topCellName = NamedObject.createValidEdifNameable(result.getString(RENAME_TOP_CELL));
+		        replicator = new EdifEnvironmentReplicate(env, rdesc, arch, topCellName);
+		    }
+		    else {
+		        replicator = new EdifEnvironmentReplicate(env, rdesc, arch);
+		    }
 			newEnv = replicator.replicate();
 		} catch (EdifNameConflictException e) {
 			e.printStackTrace();
