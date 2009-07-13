@@ -2,6 +2,7 @@ package edu.byu.ece.edif.tools.sterilize.lutreplace;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
@@ -79,6 +80,6 @@ public abstract class AbstractEdifEnvironmentCopyReplace extends EdifEnvironment
     	return context;
     }
     
-    protected HashMap<EdifCellInstance, ReplacementContext> _oldInstancesToReplace = new HashMap<EdifCellInstance, ReplacementContext>();
+    protected HashMap<EdifCellInstance, ReplacementContext> _oldInstancesToReplace = new LinkedHashMap<EdifCellInstance, ReplacementContext>();
 
 }

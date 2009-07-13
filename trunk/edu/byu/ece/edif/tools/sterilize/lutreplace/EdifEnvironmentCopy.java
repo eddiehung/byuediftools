@@ -23,6 +23,7 @@
 package edu.byu.ece.edif.tools.sterilize.lutreplace;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
@@ -337,15 +338,15 @@ public class EdifEnvironmentCopy {
         newNet.addPortConnection(newEpr);
     }
 
-    protected HashMap<EdifCellInstance, EdifCellInstance> _instanceMap = new HashMap<EdifCellInstance, EdifCellInstance>();
+    protected HashMap<EdifCellInstance, EdifCellInstance> _instanceMap = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
 
-    protected HashMap<EdifPort, EdifPort> _portMap = new HashMap<EdifPort, EdifPort>();
+    protected HashMap<EdifPort, EdifPort> _portMap = new LinkedHashMap<EdifPort, EdifPort>();
 
-    protected HashMap<EdifNet, EdifNet> _netMap = new HashMap<EdifNet, EdifNet>();
+    protected HashMap<EdifNet, EdifNet> _netMap = new LinkedHashMap<EdifNet, EdifNet>();
 
-    protected HashMap<EdifCell, EdifCell> _cellMap = new HashMap<EdifCell, EdifCell>();
+    protected HashMap<EdifCell, EdifCell> _cellMap = new LinkedHashMap<EdifCell, EdifCell>();
 
-    protected HashMap<EdifLibrary, EdifLibrary> _libMap = new HashMap<EdifLibrary, EdifLibrary>();
+    protected HashMap<EdifLibrary, EdifLibrary> _libMap = new LinkedHashMap<EdifLibrary, EdifLibrary>();
 
     protected EdifEnvironment _newEnv;
 
