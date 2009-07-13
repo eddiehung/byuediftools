@@ -765,11 +765,16 @@ public class RAM_Replacement {
 		} else {							 // dual output ports
 			if (width == 1) {								// word width = 1
 				EdifNet dpoNet = dpo;
-				EdifNet spoNet = spo;
-				EdifPortRef dpoEPR = new EdifPortRef(dpoNet, mOESBP, muxInstances[muxInstanceNumber/2-1]);
-				EdifPortRef spoEPR = new EdifPortRef(spoNet, mOESBP, muxInstances[muxInstanceNumber-1]);
-				dpoNet.addPortConnection(dpoEPR);
-				spoNet.addPortConnection(spoEPR);
+				if (dpo != null) {
+				    EdifPortRef dpoEPR = new EdifPortRef(dpoNet, mOESBP, muxInstances[muxInstanceNumber/2-1]);
+				    dpoNet.addPortConnection(dpoEPR);
+				}
+				
+                EdifNet spoNet = spo;
+                if (spo != null) {
+                    EdifPortRef spoEPR = new EdifPortRef(spoNet, mOESBP, muxInstances[muxInstanceNumber-1]);
+                    spoNet.addPortConnection(spoEPR);
+                }
 			} else if (width == 2 || width == 4) {			// word width = 2 or 4
 				for (int i = 0; i < muxInstanceNumber/2; i++) {
 					EdifNet dpoNet = null;
