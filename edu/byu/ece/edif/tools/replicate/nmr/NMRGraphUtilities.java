@@ -205,8 +205,7 @@ public class NMRGraphUtilities {
                     }
                 }   
             }
-        }  
-        
+        }
         return cuts;
     }
     

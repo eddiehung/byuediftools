@@ -2,6 +2,7 @@ package edu.byu.ece.edif.tools.sterilize.lutreplace;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
@@ -60,6 +61,6 @@ public class BasicReplacementContext implements ReplacementContext {
     }
     
     protected EdifCellInstance _oldInstanceToReplace;
-    protected HashMap<EdifSingleBitPort,EdifNet> _oldSBPortNewNetMap = new HashMap<EdifSingleBitPort,EdifNet>();
+    protected HashMap<EdifSingleBitPort,EdifNet> _oldSBPortNewNetMap = new LinkedHashMap<EdifSingleBitPort,EdifNet>();
     protected EdifCell _newParentCell;
 }

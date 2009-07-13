@@ -8,7 +8,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import com.martiansoftware.jsap.JSAPResult;
 
@@ -106,6 +105,7 @@ public class JEdifReplicationQuery extends EDIFMain {
 		// Display organ specification information
 		Map<EdifNet, Set<OrganSpecification>> organMap = rdesc.getOrganSpecifications();
 		Map<Organ, Integer> numKindOrgan = new LinkedHashMap<Organ, Integer>();
+		System.out.println("organMap.size() = " + organMap.size());
 		if (organMap.size() > 0) {
 			System.out.println();
 			System.out.println("Restoring/Detecting Organs (by net):");

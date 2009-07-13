@@ -103,7 +103,7 @@ public class CutsetComputation {
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
             if (checkSCCDFS.getTrees().size() > 0)
-                throw new EdifRuntimeException("Error: unable to cut all feedback using after FFs cutset");
+                throw new EdifRuntimeException("Error: unable to cut all feedback using before FFs cutset");
         }
 
         else if (HighestFFFanoutCutset || HighestFanoutCutset) {
