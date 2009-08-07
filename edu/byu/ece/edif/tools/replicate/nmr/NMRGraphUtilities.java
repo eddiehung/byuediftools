@@ -224,21 +224,20 @@ public class NMRGraphUtilities {
                         if (edge instanceof EdifCellInstanceEdge) {
                             EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
                             EdifPortRef epr = eciEdge.getSourceEPR();
-                            if (epr.getPort().getName().equalsIgnoreCase("Q")) {
-                                eprQ = epr;
-                                edgeQ = eciEdge;
-                                // make sure this is not a bad cut
-                                if (!nmrArch.isBadCutConnection(eciEdge.getSourceEPR(), eciEdge.getSinkEPR())) {
-                                    // remove edge from graph (for verification purposes--later we'll see if there are any SCCs left)
-                                    graph.removeEdge(edgeQ);
-                                    cuts.add(eciEdge.getSinkEPR()); // add the sinks not the source (in case any of the sinks are a bad cut)
-                                }
+                            eprQ = epr;
+                            edgeQ = eciEdge;
+                            // make sure this is not a bad cut
+                            if (!nmrArch.isBadCutConnection(eciEdge.getSourceEPR(), eciEdge.getSinkEPR())) {
+                                // remove edge from graph (for verification purposes--later we'll see if there are any SCCs left)
+                                graph.removeEdge(edgeQ);
+                                cuts.add(eciEdge.getSinkEPR()); // add the sinks not the source (in case any of the sinks are a bad cut)
                             }
                         }
                     }
                 }
             }
         }
+        
         return cuts;
     }
     
@@ -273,6 +272,7 @@ public class NMRGraphUtilities {
                 }
             }
         }
+
         return cuts;
     }
     
@@ -432,9 +432,8 @@ public class NMRGraphUtilities {
     }
 
     /**
-     * Checking for "highest fanin" needs to mean something slightly different than direct
-     * fanin (because fanin is always 1 for a regular flip-flop). Perhaps it can be highest
-     * fanin within a certain number of levels of logic backwards??
+     * The highest fanin flip-flop is the flip-flop with the most nets leading into the D
+     * input going five levels of instances backwards.
      * 
      * @param graph
      * @param sccs
@@ -444,14 +443,13 @@ public class NMRGraphUtilities {
     public static Collection<EdifPortRef> createHighestFFFaninCutset(AbstractEdifGraph graph, SCCDepthFirstSearch sccs, NMRArchitecture arch) {
         Collection<EdifPortRef> cuts = new LinkedHashSet<EdifPortRef>();
         Stack<DepthFirstTree> s = new Stack<DepthFirstTree>();
-
+        
         for (DepthFirstTree scc : sccs.getTrees()) {
             s.push(scc);
         }
 
         while (!s.empty()) {
             DepthFirstTree subSCCDFSTree = s.pop();
-
 
             // Find the FF node with the highest fan-in
             EdifCellInstance highFaninNode = null;
@@ -485,13 +483,14 @@ public class NMRGraphUtilities {
                         continue;
                     
                     int numPredecessors = computeFanin(node, graph, 5);
+                    
                     // check to see if predecessors may be greater
                     if (numPredecessors > highFaninCount) {
 
                         // Find all bad cuts for this input
                         Collection inputEdges = new ArrayList();
                         inputEdges.add(edgeD);
-                        Collection<EdifPortRefEdge> badEdges = getBadEdges(inputEdges, arch);
+                        Collection<Edge> badEdges = findBadEdges(inputEdges, arch);
                         if (badEdges.size() == 0) {
                             highFaninCount = numPredecessors;
                             highFaninDInput = eprD;
@@ -501,16 +500,148 @@ public class NMRGraphUtilities {
                     }
                 }
             }
-            if (highFaninNode == null) {
-                throw new EdifRuntimeException("Error: no flip-flop D input with good cut found in the SCC. This cutset algorithm only works with feedback created with registers that have a D input.");
+            if (highFaninNode != null) {
+                // cut high fan-in node
+                graph.removeEdge(highFaninDEdge);
+                BasicGraph sccSubGraph = graph.getSubGraph(subSCCDFSTree.getNodes());
+                cuts.add(highFaninDInput);
+                
+                // Recompute the SCCs from broken graph
+                SCCDepthFirstSearch newSearch = new SCCDepthFirstSearch(sccSubGraph);
+                for (DepthFirstTree scc : newSearch.getTrees()) {
+                    s.push(scc);
+                }
             }
-            
-            // cut high fan-in node
-            graph.removeEdge(highFaninDEdge);
-            BasicGraph sccSubGraph = graph.getSubGraph(subSCCDFSTree.getNodes());
-            cuts.add(highFaninDInput);
+        }
+        return cuts;
+    }
+    
+    /**
+     * The highest fanin flip-flop is the flip-flop with the most nets leading into the D
+     * input going five levels of instances backwards.
+     * 
+     * @param graph
+     * @param sccs
+     * @param arch
+     * @return
+     */
+    public static Collection<EdifPortRef> createHighestFFFaninOutputCutset(AbstractEdifGraph graph, SCCDepthFirstSearch sccs, NMRArchitecture arch) {
+        Collection<EdifPortRef> cuts = new LinkedHashSet<EdifPortRef>();
+        Stack<DepthFirstTree> s = new Stack<DepthFirstTree>();
 
+        for (DepthFirstTree scc : sccs.getTrees()) {
+            s.push(scc);
+        }
+
+        while (!s.empty()) {
+            DepthFirstTree subSCCDFSTree = s.pop();
+
+            // Find the FF node with the highest fan-in
+            EdifCellInstance highFaninNode = null;
+            List<Edge> highFaninEdgesQ = null;
+            Set<EdifPortRef> highFaninQEPRs = null;
+            int highFaninCount = 0;
+            
+            for (Iterator i = subSCCDFSTree.getNodes().iterator(); i.hasNext();) {
+                Object node = i.next();
+                
+                if (node instanceof EdifCellInstance) {
+                    EdifCellInstance eci = (EdifCellInstance) node;
+                    // make sure this is a register
+                    if (!XilinxTools.isRegisterCell(eci.getCellType()))
+                        continue;
+                    
+                    // Find the outputs
+                    Set<EdifPortRef> eprsQ = new LinkedHashSet<EdifPortRef>();
+                    List<Edge> edgesQ = new ArrayList<Edge>();
+                    for (Object edge : graph.getOutputEdges(node)) {
+                        if (edge instanceof EdifCellInstanceEdge) {
+                            EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                            EdifPortRef epr = eciEdge.getSourceEPR();
+                            eprsQ.add(epr);
+                            edgesQ.add(eciEdge);
+                        }
+                    }
+                    
+                    if (eprsQ.size() != 0) {
+                        int numPredecessors = computeFanin(node, graph, 5);
+                        // check to see if predecessors may be greater
+                        if (numPredecessors > highFaninCount) {
+                            // Find bad cuts for the output of the flip flop
+                            Collection<Edge> badEdgesQ = findBadEdges(edgesQ, arch);
+                            if (badEdgesQ.size() == 0) {
+                                highFaninCount = numPredecessors;
+                                highFaninNode = eci;
+                                highFaninEdgesQ = edgesQ;
+                                highFaninQEPRs = eprsQ;
+                            }
+                        }
+                    }
+                }
+            }
+            if (highFaninNode == null) {
+                
+                List<Edge> highFaninEdgesQ2 = null;
+                Set<EdifPortRef> highFaninQEPRs2 = null;
+                int highFaninCount2 = 0;
+                
+                // do partial cuts here
+                for (Iterator i = subSCCDFSTree.getNodes().iterator(); i.hasNext();) {
+                    Object node = i.next();
+                    
+                    if (node instanceof EdifCellInstance) {
+                        EdifCellInstance eci = (EdifCellInstance) node;
+                        // make sure this is a register
+                        if (!XilinxTools.isRegisterCell(eci.getCellType()))
+                            continue;
+                        
+                        // Find the outputs
+                        //Set<EdifPortRef> eprsQ = new LinkedHashSet<EdifPortRef>();
+                        List<Edge> edgesQ = new ArrayList<Edge>();
+                        for (Object edge : graph.getOutputEdges(node)) {
+                            if (edge instanceof EdifCellInstanceEdge) {
+                                EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                                EdifPortRef epr = eciEdge.getSourceEPR();
+                                //eprsQ.add(epr);
+                                edgesQ.add(eciEdge);
+                            }
+                        }
+                        if (edgesQ.size() != 0) {
+                            int numPredecessors = computeFanin(node, graph, 5);
+                            // check to see if predecessors may be greater
+                            if (numPredecessors > highFaninCount2) {
+                                // Find bad cuts for the outputs of the register
+                                Collection<Edge> badEdgesQ = findBadEdges(edgesQ, arch);
+                                edgesQ.removeAll(badEdgesQ);
+                                if (edgesQ.size() > 0) {
+                                    highFaninCount2 = numPredecessors;
+                                    highFaninEdgesQ2 = edgesQ;
+                                    highFaninQEPRs2 = new LinkedHashSet<EdifPortRef>();
+                                    for (Edge edge : edgesQ) {
+                                        EdifCellInstanceEdge eciEdge = (EdifCellInstanceEdge) edge;
+                                        highFaninQEPRs2.add(eciEdge.getSinkEPR());
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+                // cut good cuts coming from high fanin node
+                if (highFaninQEPRs != null) {
+                    graph.removeEdges(highFaninEdgesQ2);
+                    cuts.addAll(highFaninQEPRs2);
+                }
+                else {
+                    throw new EdifRuntimeException("Error: no flip-flop D input with good cuts on the Q output found in the SCC. This cutset algorithm only works with feedback created with registers using a D input and Q output.");
+                }
+            }
+            else {
+                // cut high fan-in node
+                graph.removeEdges(highFaninEdgesQ);
+                cuts.addAll(highFaninQEPRs);
+            }
             // Recompute the SCCs from broken graph
+            BasicGraph sccSubGraph = graph.getSubGraph(subSCCDFSTree.getNodes());
             SCCDepthFirstSearch newSearch = new SCCDepthFirstSearch(sccSubGraph);
             for (DepthFirstTree scc : newSearch.getTrees()) {
                 s.push(scc);

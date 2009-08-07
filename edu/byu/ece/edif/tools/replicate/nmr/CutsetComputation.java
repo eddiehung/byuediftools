@@ -49,19 +49,13 @@ public class CutsetComputation {
         boolean basicDecomposition = CutFeedbackCommandGroup.getBasicDecomposition(result);
         boolean AfterFlipFlopsCutset = CutFeedbackCommandGroup.getAfterFFCutset(result);
         boolean BeforeFlipFlopsCutset = CutFeedbackCommandGroup.getBeforeFFCutset(result);
-
+        boolean HighestFFFaninOutputCutset = CutFeedbackCommandGroup.getFFFaninOuput(result);
+        
         NMRArchitecture nmrArch = TechnologyCommandGroup.getArch(result);
-        //boolean cutIOBFeedback = CutFeedbackCommandGroup.getCutIOB(result);
 
         Collection<EdifPortRef> PRGcuts = null;
         List<Edge> cutSet = new ArrayList<Edge>();
         long startTime = 0;
-
-        /*
-         * TODO:Intense rewriting to equate EdifConnectivity and
-         * EdifPortRefGraphs
-         */
-        //if (HighestFFFanoutCutset || HighestFanoutCutset) {
 
         if (HighestFFFaninCutset) {
             EdifCellInstanceGraph graph = new EdifCellInstanceGraph(flatCell);
@@ -74,8 +68,29 @@ public class CutsetComputation {
             startTime = LogFileCommandGroup.reportTime(startTime, "finding highest FF fan-in cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
+            if (checkSCCDFS.getTrees().size() > 0) {
+                out.println("Warning: unable to cut all feedback using highest FF fan-in cutset. Using basic decomposition for remaining feedback.");
+                PRGcuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
+            }
+            checkSCCDFS = new SCCDepthFirstSearch(graph);
+            if (checkSCCDFS.getTrees().size() > 0) {                
+                throw new EdifRuntimeException("Error: unable to cut all feedback using highest FF fan-in cutset and basic decomposition.");
+            }
+        }
+        
+        else if (HighestFFFaninOutputCutset) {
+            EdifCellInstanceGraph graph = new EdifCellInstanceGraph(flatCell);
+            removeClockFeedback(graph);
+            removeIOBFeedback(cDesc, graph);
+            LogFile.out().println("Finding FF fan-in output cutest. . .");
+            startTime = System.currentTimeMillis();
+            SCCDepthFirstSearch PRGsccDFS = new SCCDepthFirstSearch(graph);
+            PRGcuts = NMRGraphUtilities.createHighestFFFaninOutputCutset(graph, PRGsccDFS, nmrArch);
+            startTime = LogFileCommandGroup.reportTime(startTime, "finding highest FF fan-in output cutset", out);
+            
+            SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
             if (checkSCCDFS.getTrees().size() > 0)
-                throw new EdifRuntimeException("Error: unable to cut all feedback using FF fan-in cutset");
+                throw new EdifRuntimeException("Error: unable to cut all feedback using highest FF fan-in output cutset");            
         }
         
         else if (AfterFlipFlopsCutset) {
@@ -102,8 +117,16 @@ public class CutsetComputation {
             startTime = LogFileCommandGroup.reportTime(startTime, "computing before FFs cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
-            if (checkSCCDFS.getTrees().size() > 0)
-                throw new EdifRuntimeException("Error: unable to cut all feedback using before FFs cutset");
+            if (checkSCCDFS.getTrees().size() > 0) {
+                out.println("Warning: unable to cut all feedback by placing voters before FFs. Using basic decomposition for remaining feedback.");
+                PRGcuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
+            }
+            
+            checkSCCDFS = new SCCDepthFirstSearch(graph);
+            if (checkSCCDFS.getTrees().size() > 0) {
+                throw new EdifRuntimeException("Error: unable to cut all feedback using before flip-flops cutset and basic decomposition.");                
+            }
+            
         }
 
         else if (HighestFFFanoutCutset || HighestFanoutCutset) {
