@@ -130,7 +130,7 @@ public class BadCutConnections implements Serializable {
         // Get the names of the source and sink to look up
         String sourceName = (_getEPRName(sourceCellType, sourcePortName)).toUpperCase();
         String sinkName = (_getEPRName(sinkCellType, sinkPortName)).toUpperCase();
-
+        
         // Does this source have an entry in the Map?
         HashSet<String> sinkEPRSet = (HashSet<String>) _badConnectionMap.get(sourceName);
         // Check for wildcard set
@@ -192,7 +192,7 @@ public class BadCutConnections implements Serializable {
             return false;
         EdifCell sourceEC = sourceECI.getCellType();
         EdifCell sinkEC = sinkECI.getCellType();
-        if (sourceEC == null || sinkEC == null)
+        if (sourceEC == null || sinkEC == null) 
             return false;
         EdifSingleBitPort sourceESBP = sourceEPR.getSingleBitPort();
         EdifSingleBitPort sinkESBP = sinkEPR.getSingleBitPort();
@@ -211,7 +211,6 @@ public class BadCutConnections implements Serializable {
         String sourcePortName = sourceEP.getName();
         String sinkCellType = sinkECI.getType();
         String sinkPortName = sinkEP.getName();
-
         return isBadCutConnection(sourceCellType, sourcePortName, sinkCellType, sinkPortName);
     }
 

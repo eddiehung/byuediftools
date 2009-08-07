@@ -64,6 +64,12 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         ff_fanin.setDefault(FALSE).setHelp("Use highest flip-flop fanin cutset option");
         this.addCommand(ff_fanin);
         
+        ff_fanin_output = new Switch(HIGHEST_FF_FANIN_OUTPUT_CUTSET);
+        ff_fanin_output.setShortFlag(JSAP.NO_SHORTFLAG);
+        ff_fanin_output.setLongFlag(HIGHEST_FF_FANIN_OUTPUT_CUTSET);
+        ff_fanin_output.setDefault(FALSE).setHelp("Use highest flip-flop fanin output cutset option");
+        this.addCommand(ff_fanin_output);
+        
         connectivity = new Switch(CONNECTIVITY_CUTSET);
         connectivity.setShortFlag(JSAP.NO_SHORTFLAG);
         connectivity.setLongFlag(CONNECTIVITY_CUTSET);
@@ -102,9 +108,13 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         return result.getBoolean(HIGHEST_FF_FANIN_CUTSET);
     }
     
+    static public boolean getFFFaninOuput(JSAPResult result) {
+        return result.getBoolean(HIGHEST_FF_FANIN_OUTPUT_CUTSET);
+    }
+    
     static public boolean getFFFanout(JSAPResult result) {
         // the extra checks are because this one defaults to true
-        return (result.getBoolean(HIGHEST_FF_FANOUT_CUTSET) && !getFanout(result) && !getConnectivity(result) && !getBasicDecomposition(result) &&!getFFFanin(result) && !getAfterFFCutset(result) && !getBeforeFFCutset(result));
+        return (result.getBoolean(HIGHEST_FF_FANOUT_CUTSET) && !getFanout(result) && !getConnectivity(result) && !getBasicDecomposition(result) &&!getFFFanin(result) && !getAfterFFCutset(result) && !getBeforeFFCutset(result) && !getFFFaninOuput(result));
     }
     
     static public boolean getBeforeFFCutset(JSAPResult result) {
@@ -119,13 +129,15 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         return result.getBoolean(BASIC_DECOMPOSITION);
     }
 
-    protected Switch fanout, ff_fanout, connectivity, basic_decomposition, ff_fanin, after_ff_cutset, before_ff_cutset;
+    protected Switch fanout, ff_fanout, connectivity, basic_decomposition, ff_fanin, ff_fanin_output, after_ff_cutset, before_ff_cutset;
 
     public static final String HIGHEST_FANOUT_CUTSET = "highest_fanout_cutset";
 
     public static final String HIGHEST_FF_FANOUT_CUTSET = "highest_ff_fanout_cutset";
 
     public static final String HIGHEST_FF_FANIN_CUTSET = "highest_ff_fanin_cutset";
+    
+    public static final String HIGHEST_FF_FANIN_OUTPUT_CUTSET = "highest_ff_fanin_output_cutset";
     
     public static final String CONNECTIVITY_CUTSET = "connectivity_cutset";
     
