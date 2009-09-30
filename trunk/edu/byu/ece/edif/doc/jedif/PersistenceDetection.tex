@@ -29,9 +29,14 @@ Options:
   [--no_oregs]
   [--clock_net <clock_net>]
 
+  [--after_ff_cutset]
+  [--before_ff_cutset]
+  [--connectivity_cutset]
+  [--basic_decomposition]
   [--highest_fanout_cutset]
   [--highest_ff_fanout_cutset]
-  [--connectivity_cutset]
+  [--highest_ff_fanin_input_cutset]
+  [--highest_ff_fanin_output_cutset]
 
   [--write_config <config_file>]
   [--use_config <config_file>]
@@ -99,44 +104,11 @@ required unless output register insertion is disabled with the
 This tool uses a feedback cutset in order to determine locations where
 detectors should be inserted to classify persistent errors. If a cutset was
 already computed in a previous tool (i.e. JEdifVoterSelection) it will be
-reused and the cutset options in this section will have no effect.
+reused and the cutset options in this section will have no effect. The cutset
+options use the same algorithms as the algorithms in the JEdifVoterSelection
+section (except detectors are inserted instead of triplicated voters). See
+the JEdifVoterSelection section for a thorough description of the algorithms.
 
-\subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
-This algorighm finds the flip-flop with the highest fanout in each SCC and 
-places a detector on the output. This algorithm has proven very good at reducing 
-the number of paths that have more than one detector between flip-flops and
-gives good timing and area results. This is the default algorithm.
-
-\subsubsection{\texttt{--highest\_fanout\_cutset}}
-This algorithm finds the instance with the highest fanout in each SCC.
-It then places a detector on this output. This algorithm has proven worse 
-at reducing the number of detectors between flip-flops.
-
-\subsubsection{\texttt{--connectivity\_cutset}}
-This is the original algorithm that removes arbitray feedback edges until all
-feedback is cut. This option has been shown to produce inferior results in
-general to the other two but in some few cases it \emph{may} give better timing
-results (not likely in real-world designs).
-
-\subsubsection{\texttt{--basic\_decomposition}}
-This is a basic SCC decomposition similar to the original connectivity cutset.
-It removes feedback edges in an arbitrary order until all feedback is cut. It
-varies slightly from the original connectivity cutset algorithm in the method
-used to select edges to cut. This algorithm is experimental.
-
-\subsubsection{\texttt{--highest\_ff\_fanin\_cutset}}
-This is the highest flip-flop fanin cutset. It finds the flip-flop with the
-highest fan-in in each SCC (where fan-in is defined as the number of nets
-feeding into the data input up to 5 levels backwards in a reverse DFS) and
-places a detector just before the input. This algorithm is experimental.
-
-\subsubsection{\texttt{--after\_ff\_cutset}}
-This cutset algorithm simply places a detector after each flip-flop in a
-circuit. This algorithm is experimental.
-
-\subsubsection{\texttt{--before\_ff\_cutset}}
-This cutset algorithm simply places a detector before each flip-flop in a
-circuit. This algorithm is experimental.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

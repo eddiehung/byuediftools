@@ -5,10 +5,10 @@ design). Voter locations are determined using a feedback cutset
 algorithm and rules for voting where downscaling is necessary. The
 results are added into the replication description file (.rdesc).
 
-At times, the user may wish to force voter insertion on certain nets and
-disable voter insertion on others. This can be accomplished by inserting
-\texttt{`force\_restore'} and \texttt{`do\_not\_restore'} properties on
-selected nets in the .edf file as follows:\\
+At times, the user may wish to force voter insertion on certain nets
+and disable voter insertion on others. This can be accomplished by
+inserting \texttt{`force\_restore'} and \texttt{`do\_not\_restore'}
+properties on selected nets in the .edf file as follows:\\
 \texttt{(property force\_restore (boolean (true)))}\\
 \texttt{(property do\_not\_restore (boolean (true)))}\\
 \begin{verbatim}
@@ -20,11 +20,16 @@ Options:
   <input_file>
   (-r|--rep_desc) <rep_desc>
   (-c|--c_desc) <c_desc>
-
-  [--highest_ff_fanout_cutset]
-  [--highest_fanout_cutset]
+    
+  [--after_ff_cutset]
+  [--before_ff_cutset]
   [--connectivity_cutset]
-
+  [--basic_decomposition]
+  [--highest_fanout_cutset]
+  [--highest_ff_fanout_cutset]
+  [--highest_ff_fanin_input_cutset]
+  [--highest_ff_fanin_output_cutset]
+  
   [--write_config <config_file>]
   [--use_config <config_file>]
 
@@ -48,45 +53,138 @@ JEdifAnalyze.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Cutset Algorithms}
-This tool can use several different algorithms to determine where to place
-voters so that the voters cut all the feedback in the design. 
 
-\subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
-This algorighm finds the flip-flop with the highest fanout in each SCC and 
-places a voter on the output. This algorithm has proven very good at reducing 
-the number of paths that have more than one voter between flip-flops and gives
-good timing and area results. This is the default algorithm.
+Synchronization voters are essential in FPGA circuits that use TMR
+because they ensure that the internal state of all three TMR
+replicates are synchronized after configuration scrubbing.  Adding
+synchronization voters in a design manually, however, is a difficult
+and error prone process.  This tool uses automated cutset algorithms
+for selecting synchronization voter locations and inserting them in
+the design.
 
-\subsubsection{\texttt{--highest\_fanout\_cutset}}
-This algorithm finds the instance with the highest fanout in each SCC.
-It then places a voter on this output. This algorithm has proven worse 
-at reducing the number of voters between flip-flops.
+Synchronization voter insertion algorithms must determine a set of
+nets within a design that cuts {\em all} feedback in the
+design. Voters are placed on each of these nets to ensure
+synchronization voting occurs within the feedback structures of a
+design.  Determining a set of voter locations that satisfy this
+constraint is an instance of the feedback edge set (FES) problem. The
+algorithms used in this tool solve the FES problem for voter insertion
+in a way that avoids illegal cut locations. In addition, many of the
+algorithms employ heuristics based on FPGA architecture that attempt
+to minimize circuit area or timing impact.
 
-\subsubsection{\texttt{--connectivity\_cutset}}
-This is the original algorithm that removes arbitray feedback edges until all
-feedback is cut. This option has been shown to produce inferior results in
-general to the other two but in some few cases it \emph{may} give better timing
-results (not likely in real-world designs).
-
-\subsubsection{\texttt{--basic\_decomposition}}
-This is a basic SCC decomposition similar to the original connectivity cutset.
-It removes feedback edges in an arbitrary order until all feedback is cut. It
-varies slightly from the original connectivity cutset algorithm in the method
-used to select edges to cut. This algorithm is experimental.
-
-\subsubsection{\texttt{--highest\_ff\_fanin\_cutset}}
-This is the highest flip-flop fanin cutset. It finds the flip-flop with the
-highest fan-in in each SCC (where fan-in is defined as the number of nets
-feeding into the data input up to 5 levels backwards in a reverse DFS) and
-places a voter just before the input. This algorithm is experimental.
-
-\subsubsection{\texttt{--after\_ff\_cutset}}
-This cutset algorithm simply places a voter after each flip-flop in a circuit.
-This algorithm is experimental.
+The first two algorithms are very simple voter insertion algorithms
+that solve the problem in a local manner. These will be followed by
+five algorithms based on strongly connected component (SCC)
+decomposition that attempt to meet the constraints while using fewer
+voters and applying timing-based heuristics. The run-time complexity
+of each algorithm will be given in terms of $|V|$ (the number of nodes
+in the circuit graph) and $|E|$ (the number of edges in the circuit
+graph).
 
 \subsubsection{\texttt{--before\_ff\_cutset}}
-This cutset algorithm simply places a voter before each flip-flop in a circuit.
-This algorithm is experimental.
+The \emph{Voters Before Every Flip-Flop} algorithm places a voter
+before the data input of every flip-flop in a circuit.  While this
+algorithm does not detect feedback in the circuit, this approach will
+intersect sequential feedback as all synchronous feedback contains at
+least one flip-flop.  This algorithm requires only a simple analysis
+of the circuit and runs in $O(|V|)$ time. Although it is simple, the
+algorithm ensures that only one set of triplicated voters can be
+placed in a single timing path, which helps reduce the negative timing
+impact of voter insertion. A simple timing path is the path from one
+flip-flop to another; when voters are placed only directly before each
+flip-flop, it is impossible to have more than one flip-flop in a
+single timing path. The disadvantage of this algorithm is that it adds
+far more voters than necessary.
+
+\subsubsection{\texttt{--after\_ff\_cutset}}
+The \emph{Voters After Every Flip-Flop} algorithm places a voter after
+the output of each flip-flop in a circuit. As with the \emph{Voters
+Before Every Flip-Flop} algorithm, this algorithm is guaranteed to
+intersect every cycle with a voter because in standard synchronous
+circuits, each cycle must have at least one flip-flop. This algorithm
+also runs in $O(|V|)$ time. Like the previous algorithm, it ensures
+that only a single set of triplicated voters is inserted in each
+timing path. In a study with 15 benchmark designs, this algorithm
+provided the best average timing result.
+
+\subsubsection{\texttt{--connectivity\_cutset}}
+This is the original algorithm that removes arbitray feedback edges
+until all feedback is cut. This option has been shown to produce
+inferior results in general to the others but in some few cases it
+\emph{may} give better timing results (this is not likely in
+real-world designs).
+
+\subsubsection{\texttt{--basic\_decomposition}}
+The \emph{Basic SCC Decomposition Algorithm} uses temporary
+information obtained during SCC decomposition to completely cut each
+SCC in a single step.  This approach computes SCC decomposition using
+Kosaraju's algorithm which uses two depth-first searches (DFS). The
+DFS {\em back edges} computed during Kosaraju's algorithm are used to
+remove {\em all} cycles in the SCC (removing all DFS back edges from
+an SCC removes all feedback)\footnote{In some cases, this approach
+selects edges that correspond to illegal cut locations.  When this
+happens, special case exception logic is used to find a set of edges
+that completely cuts the feedback in the SCC.}. This algorithm runs
+quickly on average, but typically induces poor timing performance in
+the resulting circuit. The algorithm's runtime complexity is $O(|V|^2
++ |V||E|)$.
+
+\subsubsection{\texttt{--highest\_fanout\_cutset}}
+The \emph{Highest Fanout SCC Decomposition Algorithm} is an attempt to
+reduce the number of voters used to intersect the cycles of a
+circuit. It uses a heuristic that suggests that a significant amount
+of feedback can be cut by inserting voters on a single net with high
+fanout. At each iteration, the SCC in question is analyzed to find the
+node with the highest legal cut fanout. The legal cut output edges
+from this node are then removed from the graph. In this manner, edge
+removal is prioritized with high fanout nets. The result is that this
+algorithm cuts all of a circuit's feedback using fewer voters than
+most other algorithms. The algorithm runs in $O(|V|^2|E|)$ time.
+
+\subsubsection{\texttt{--highest\_ff\_fanout\_cutset}}
+The \emph{Highest Flip-Flop Fanout SCC Decomposition Algorithm} is
+similar to the previous algorithm but identifies high fanout nets that
+originate from flip-flops. This algorithm has two priorities:
+inserting a small number of voters and reducing the negative impacts
+of voter insertion on timing performance. When more than one set of
+voters is inserted in a single timing path (i.e. a path from one
+register to the next), the voters negatively affect timing performance
+more than is necessary.  For each SCC processed by this algorithm, the
+flip-flop with the highest legal cut fanout in the SCC is
+determined. The legal cut output edges from this node are
+removed. Since a timing path consists of the logic from one flip-flop
+to the next, inserting voters only directly after flip-flop outputs
+ensures that at most one voter will be inserted per timing path. The
+runtime of this algorithm is the same as the previous algorithm,
+$O(|V|^2|E|)$. In a study with 15 benchmark designs, this algorithm
+provided the second best average timing result, and the best
+combination overall of area and timing results.
+
+\subsubsection{\texttt{--highest\_ff\_fanin\_input\_cutset}}
+Inserting triplicated voters just before a flip-flop with high fan-in
+can cut a significant amount of feedback.  In this algorithm,
+flip-flop fan-in is defined as the number of nets that directly or
+indirectly feed into the data input of a flip-flop going up to five
+levels backwards as computed by a depth-limited DFS traversal.  For
+each SCC being processed, this algorithm finds the flip-flop in the
+SCC with the highest fan-in that also has a data input edge that is a
+legal voter location and removes its data input edge. The run time of
+this algorithm is $O(|V|^3 + 2|V|^2|E| + |V||E|^2)$. The intent is the
+same as that of the previous algorithm: to reduce the number of voters
+used to cut feedback and limit voters to one set of triplicated voters
+per timing path.
+
+\subsubsection{\texttt{--highest\_ff\_fanin\_output\_cutset}}
+This algorithm is very similar to the preceding algorithm and has the
+same objectives. It is different only in that it inserts voters
+directly after flip-flops with high fan-in instead of directly
+before. For each SCC being processed, the algorithm finds the
+flip-flop in the SCC with the highest fan-in and a legal voter
+location output edge and removes the data output edge. The runtime is
+the same as that of the previous algorithm, $O(|V|^3 + 2|V|^2|E| +
+|V||E|^2)$. In a study with 15 benchmark designs, this algorithm
+provided the third best average timing result.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
