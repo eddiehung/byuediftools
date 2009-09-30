@@ -46,6 +46,30 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
     public CutFeedbackCommandGroup() {
         super();
 
+        after_ff_cutset = new Switch(AFTER_FF_CUTSET);
+        after_ff_cutset.setShortFlag(JSAP.NO_SHORTFLAG);
+        after_ff_cutset.setLongFlag(AFTER_FF_CUTSET);
+        after_ff_cutset.setDefault(FALSE).setHelp("This cutset algorithm inserts a voter after every flip-flop.");
+        this.addCommand(after_ff_cutset);
+        
+        before_ff_cutset = new Switch(BEFORE_FF_CUTSET);
+        before_ff_cutset.setShortFlag(JSAP.NO_SHORTFLAG);
+        before_ff_cutset.setLongFlag(BEFORE_FF_CUTSET);
+        before_ff_cutset.setDefault(FALSE).setHelp("This cutset algorithm inserts a voter before every flip-flop.");
+        this.addCommand(before_ff_cutset);
+        
+        connectivity = new Switch(CONNECTIVITY_CUTSET);
+        connectivity.setShortFlag(JSAP.NO_SHORTFLAG);
+        connectivity.setLongFlag(CONNECTIVITY_CUTSET);
+        connectivity.setDefault(FALSE).setHelp("Use older connectivity graph for cutset");
+        this.addCommand(connectivity);
+
+        basic_decomposition = new Switch(BASIC_DECOMPOSITION);
+        basic_decomposition.setShortFlag(JSAP.NO_SHORTFLAG);
+        basic_decomposition.setLongFlag(BASIC_DECOMPOSITION);
+        basic_decomposition.setDefault(FALSE).setHelp("Use basic SCC decomposition cutset option");
+        this.addCommand(basic_decomposition);
+        
         fanout = new Switch(HIGHEST_FANOUT_CUTSET);
         fanout.setShortFlag(JSAP.NO_SHORTFLAG);
         fanout.setLongFlag(HIGHEST_FANOUT_CUTSET);
@@ -61,7 +85,7 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         ff_fanin = new Switch(HIGHEST_FF_FANIN_CUTSET);
         ff_fanin.setShortFlag(JSAP.NO_SHORTFLAG);
         ff_fanin.setLongFlag(HIGHEST_FF_FANIN_CUTSET);
-        ff_fanin.setDefault(FALSE).setHelp("Use highest flip-flop fanin cutset option");
+        ff_fanin.setDefault(FALSE).setHelp("Use highest flip-flop fanin input cutset option");
         this.addCommand(ff_fanin);
         
         ff_fanin_output = new Switch(HIGHEST_FF_FANIN_OUTPUT_CUTSET);
@@ -69,30 +93,6 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         ff_fanin_output.setLongFlag(HIGHEST_FF_FANIN_OUTPUT_CUTSET);
         ff_fanin_output.setDefault(FALSE).setHelp("Use highest flip-flop fanin output cutset option");
         this.addCommand(ff_fanin_output);
-        
-        connectivity = new Switch(CONNECTIVITY_CUTSET);
-        connectivity.setShortFlag(JSAP.NO_SHORTFLAG);
-        connectivity.setLongFlag(CONNECTIVITY_CUTSET);
-        connectivity.setDefault(FALSE).setHelp("Use older connectivity graph for cutset");
-        this.addCommand(connectivity);
-
-        basic_decomposition = new Switch(BASIC_DECOMPOSITION);
-        basic_decomposition.setShortFlag(JSAP.NO_SHORTFLAG);
-        basic_decomposition.setLongFlag(BASIC_DECOMPOSITION);
-        basic_decomposition.setDefault(FALSE).setHelp("Use basic SCC decomposition cutset option");
-        this.addCommand(basic_decomposition);
-        
-        after_ff_cutset = new Switch(AFTER_FF_CUTSET);
-        after_ff_cutset.setShortFlag(JSAP.NO_SHORTFLAG);
-        after_ff_cutset.setLongFlag(AFTER_FF_CUTSET);
-        after_ff_cutset.setDefault(FALSE).setHelp("This cutset algorithm inserts a voter after every flip-flop.");
-        this.addCommand(after_ff_cutset);
-        
-        before_ff_cutset = new Switch(BEFORE_FF_CUTSET);
-        before_ff_cutset.setShortFlag(JSAP.NO_SHORTFLAG);
-        before_ff_cutset.setLongFlag(BEFORE_FF_CUTSET);
-        before_ff_cutset.setDefault(FALSE).setHelp("This cutset algorithm inserts a voter before every flip-flop.");
-        this.addCommand(before_ff_cutset);
         
     }
 
@@ -135,7 +135,7 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
 
     public static final String HIGHEST_FF_FANOUT_CUTSET = "highest_ff_fanout_cutset";
 
-    public static final String HIGHEST_FF_FANIN_CUTSET = "highest_ff_fanin_cutset";
+    public static final String HIGHEST_FF_FANIN_CUTSET = "highest_ff_fanin_input_cutset";
     
     public static final String HIGHEST_FF_FANIN_OUTPUT_CUTSET = "highest_ff_fanin_output_cutset";
     

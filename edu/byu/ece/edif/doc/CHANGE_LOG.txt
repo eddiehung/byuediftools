@@ -1,6 +1,31 @@
 Change Log for BYU EDIF Tools
 
 -------------------------------------------------------------------
+Proton Release - Version 0.5.2 (30 September 2009)
+-------------------------------------------------------------------
+
+New Features:
+
+    * One new cutset algorithm was added (Highest Flip-Flop Fan-in
+      Output algorithm)
+    * A command-line parameter for renaming the top cell was added
+      to JEdifNMR
+          
+Bug Fixes:
+
+    * A bug affecting the way black box files are found was fixed
+    * A bug in EdifEnvironmentCopy causing non-deterministic EDIF
+      output was fixed
+    * A RAM replacement bug causing a null pointer exception was
+      fixed.
+    
+Enhancements / Other:
+
+    * The documentation has been updated with a more thorough
+      description of each of the synchronization voter insertion
+      algorithms (cutset algorithms).
+
+-------------------------------------------------------------------
 Proton Release - Version 0.5.1 (9 July 2009)
 -------------------------------------------------------------------
 
