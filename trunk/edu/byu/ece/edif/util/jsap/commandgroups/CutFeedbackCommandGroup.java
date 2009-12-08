@@ -94,6 +94,12 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         ff_fanin_output.setDefault(FALSE).setHelp("Use highest flip-flop fanin output cutset option");
         this.addCommand(ff_fanin_output);
         
+        no_synchronization_voters = new Switch(NO_SYNCHRONIZATION_VOTERS);
+        no_synchronization_voters.setShortFlag(JSAP.NO_SHORTFLAG);
+        no_synchronization_voters.setLongFlag(NO_SYNCHRONIZATION_VOTERS);
+        no_synchronization_voters.setDefault(FALSE).setHelp("Do not insert feedback synchronization voters");
+        this.addCommand(no_synchronization_voters);
+        
     }
 
     static public boolean getFanout(JSAPResult result) {
@@ -114,7 +120,11 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
     
     static public boolean getFFFanout(JSAPResult result) {
         // the extra checks are because this one defaults to true
-        return (result.getBoolean(HIGHEST_FF_FANOUT_CUTSET) && !getFanout(result) && !getConnectivity(result) && !getBasicDecomposition(result) &&!getFFFanin(result) && !getAfterFFCutset(result) && !getBeforeFFCutset(result) && !getFFFaninOuput(result));
+        return (result.getBoolean(HIGHEST_FF_FANOUT_CUTSET) && !getFanout(result) && !getConnectivity(result) && !getBasicDecomposition(result) &&!getFFFanin(result) && !getAfterFFCutset(result) && !getBeforeFFCutset(result) && !getFFFaninOuput(result) && !getNoSynchronizationVoters(result));
+    }
+    
+    static public boolean getNoSynchronizationVoters(JSAPResult result) {
+    	return result.getBoolean(NO_SYNCHRONIZATION_VOTERS);
     }
     
     static public boolean getBeforeFFCutset(JSAPResult result) {
@@ -129,7 +139,7 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
         return result.getBoolean(BASIC_DECOMPOSITION);
     }
 
-    protected Switch fanout, ff_fanout, connectivity, basic_decomposition, ff_fanin, ff_fanin_output, after_ff_cutset, before_ff_cutset;
+    protected Switch fanout, ff_fanout, connectivity, basic_decomposition, ff_fanin, ff_fanin_output, after_ff_cutset, before_ff_cutset, no_synchronization_voters;
 
     public static final String HIGHEST_FANOUT_CUTSET = "highest_fanout_cutset";
 
@@ -147,6 +157,8 @@ public class CutFeedbackCommandGroup extends AbstractCommandGroup {
     
     public static final String BEFORE_FF_CUTSET = "before_ff_cutset";
 
+    public static final String NO_SYNCHRONIZATION_VOTERS = "no_synchronization_voters";
+    
     public static final String FALSE = "false";
 
     public static final String TRUE = "true";

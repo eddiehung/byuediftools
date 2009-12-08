@@ -50,10 +50,11 @@ public class CutsetComputation {
         boolean AfterFlipFlopsCutset = CutFeedbackCommandGroup.getAfterFFCutset(result);
         boolean BeforeFlipFlopsCutset = CutFeedbackCommandGroup.getBeforeFFCutset(result);
         boolean HighestFFFaninOutputCutset = CutFeedbackCommandGroup.getFFFaninOuput(result);
+        boolean emptyCutset = CutFeedbackCommandGroup.getNoSynchronizationVoters(result);
         
         NMRArchitecture nmrArch = TechnologyCommandGroup.getArch(result);
 
-        Collection<EdifPortRef> PRGcuts = null;
+        Collection<EdifPortRef> portRefCuts = null;
         List<Edge> cutSet = new ArrayList<Edge>();
         long startTime = 0;
 
@@ -64,13 +65,13 @@ public class CutsetComputation {
             LogFile.out().println("Finding FF fan-in cutset. . .");
             startTime = System.currentTimeMillis();
             SCCDepthFirstSearch PRGsccDFS = new SCCDepthFirstSearch(graph);
-            PRGcuts = NMRGraphUtilities.createHighestFFFaninCutset(graph, PRGsccDFS, nmrArch);
+            portRefCuts = NMRGraphUtilities.createHighestFFFaninCutset(graph, PRGsccDFS, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "finding highest FF fan-in cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
             if (checkSCCDFS.getTrees().size() > 0) {
                 out.println("Warning: unable to cut all feedback using highest FF fan-in cutset. Using basic decomposition for remaining feedback.");
-                PRGcuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
+                portRefCuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
             }
             checkSCCDFS = new SCCDepthFirstSearch(graph);
             if (checkSCCDFS.getTrees().size() > 0) {                
@@ -85,7 +86,7 @@ public class CutsetComputation {
             LogFile.out().println("Finding FF fan-in output cutest. . .");
             startTime = System.currentTimeMillis();
             SCCDepthFirstSearch PRGsccDFS = new SCCDepthFirstSearch(graph);
-            PRGcuts = NMRGraphUtilities.createHighestFFFaninOutputCutset(graph, PRGsccDFS, nmrArch);
+            portRefCuts = NMRGraphUtilities.createHighestFFFaninOutputCutset(graph, PRGsccDFS, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "finding highest FF fan-in output cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
@@ -99,7 +100,7 @@ public class CutsetComputation {
             removeIOBFeedback(cDesc, graph);
             LogFile.out().println("Computing after FFs cutset. . .");
             startTime = System.currentTimeMillis();
-            PRGcuts = NMRGraphUtilities.createAfterFFsCutset(graph, nmrArch);
+            portRefCuts = NMRGraphUtilities.createAfterFFsCutset(graph, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "computing after FFs cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
@@ -113,13 +114,13 @@ public class CutsetComputation {
             removeIOBFeedback(cDesc, graph);
             LogFile.out().println("Computing before FFs cutset. . .");
             startTime = System.currentTimeMillis();
-            PRGcuts = NMRGraphUtilities.createBeforeFFsCutset(graph, nmrArch);
+            portRefCuts = NMRGraphUtilities.createBeforeFFsCutset(graph, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "computing before FFs cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
             if (checkSCCDFS.getTrees().size() > 0) {
                 out.println("Warning: unable to cut all feedback by placing voters before FFs. Using basic decomposition for remaining feedback.");
-                PRGcuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
+                portRefCuts.addAll(getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(graph, checkSCCDFS, nmrArch), graph, nmrArch));
             }
             
             checkSCCDFS = new SCCDepthFirstSearch(graph);
@@ -142,13 +143,13 @@ public class CutsetComputation {
                 LogFile.out().println("Finding highest fanout cutset. . .");
                 startTime = System.currentTimeMillis();
                 SCCDepthFirstSearch PRGsccDFS = new SCCDepthFirstSearch(graph);
-                PRGcuts = NMRGraphUtilities.createDecomposeValidCutSetFanout(graph, PRGsccDFS, nmrArch);
+                portRefCuts = NMRGraphUtilities.createDecomposeValidCutSetFanout(graph, PRGsccDFS, nmrArch);
                 startTime = LogFileCommandGroup.reportTime(startTime, "finding highest fan-out cutset", out);
             } else if (HighestFFFanoutCutset){
                 LogFile.out().println("Finding FF Fanout Cutset...");
                 startTime = System.currentTimeMillis();
                 SCCDepthFirstSearch PRGsccDFS = new SCCDepthFirstSearch(graph);
-                PRGcuts = NMRGraphUtilities.createDecomposeValidCutSetFFFanout(graph, PRGsccDFS, nmrArch);            
+                portRefCuts = NMRGraphUtilities.createDecomposeValidCutSetFFFanout(graph, PRGsccDFS, nmrArch);            
                 startTime = LogFileCommandGroup.reportTime(startTime, "finding highest FF fan-out cutset", out);
             }
             
@@ -168,7 +169,7 @@ public class CutsetComputation {
                 BasicDepthFirstSearchTree scc = (BasicDepthFirstSearchTree) i.next();
                 cutSet.addAll(NMRGraphUtilities.createDecomposeValidCutSet(eciConnectivityGraph, scc, nmrArch));
             }
-            PRGcuts = getPortRefsToCutFromEdges(cutSet, eciConnectivityGraph, nmrArch);
+            portRefCuts = getPortRefsToCutFromEdges(cutSet, eciConnectivityGraph, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "finding connectivity cutset", out);
         }
 
@@ -181,21 +182,25 @@ public class CutsetComputation {
             LogFile.out().println("Finding basic decomposition cutset. . .");
             startTime = System.currentTimeMillis();   
             SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(eciConnectivityGraph);
-            PRGcuts = getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(eciConnectivityGraph, sccDFS, nmrArch), eciConnectivityGraph, nmrArch);
+            portRefCuts = getPortRefsToCutFromEdges(NMRGraphUtilities.createBasicDecompositionCutset(eciConnectivityGraph, sccDFS, nmrArch), eciConnectivityGraph, nmrArch);
             startTime = LogFileCommandGroup.reportTime(startTime, "finding basic decomposition cutset", out);
 
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(eciConnectivityGraph);
             if (checkSCCDFS.getTrees().size() > 0)
                 throw new EdifRuntimeException("Error: unable to cut all feedback using basic decomposition cutset");
         }
+        
+        else if (emptyCutset) {
+        	portRefCuts = new ArrayList<EdifPortRef>(0);
+        }
 
 
         if (debug) {
-            for (EdifPortRef epr : PRGcuts) {
+            for (EdifPortRef epr : portRefCuts) {
                 LogFile.debug().println("" + epr);
             }
         }
-        return PRGcuts;
+        return portRefCuts;
     }
 
     /**
