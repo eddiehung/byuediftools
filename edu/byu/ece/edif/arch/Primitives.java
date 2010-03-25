@@ -28,14 +28,17 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 
+/** 
+ * Collection of static methods for tagging cells as primitives.
+ */
 public class Primitives {
 
     /**
      * Tag all leaf cells of a library as primitive.
      */
     public static void tagLeafCellsAsPrimitives(EdifLibrary lib) {
-        for (Iterator i = lib.iterator(); i.hasNext();) {
-            EdifCell cell = (EdifCell) i.next();
+        for (Iterator<EdifCell> i = lib.iterator(); i.hasNext();) {
+            EdifCell cell = i.next();
             if (cell.isLeafCell())
                 cell.setPrimitive();
         }
@@ -49,8 +52,8 @@ public class Primitives {
      * compared against all cells in this library to match with primitives
      */
     public static void tagPrimitives(EdifLibrary lib, EdifLibrary primitives) {
-        for (Iterator i = lib.iterator(); i.hasNext();) {
-            EdifCell cell = (EdifCell) i.next();
+        for (Iterator<EdifCell> i = lib.iterator(); i.hasNext();) {
+            EdifCell cell = i.next();
             cell.tagAsPrimitive(primitives);
         }
     }
@@ -63,8 +66,8 @@ public class Primitives {
      * @see EdifCell#tagAsPrimitive
      */
     public static void tagPrimitives(EdifLibraryManager elm, EdifLibrary primitives) {
-        for (Iterator i = elm.iterator(); i.hasNext();) {
-            EdifLibrary lib = (EdifLibrary) i.next();
+        for (Iterator<EdifLibrary> i = elm.iterator(); i.hasNext();) {
+            EdifLibrary lib = i.next();
             tagPrimitives(lib, primitives);
         }
     }
@@ -73,8 +76,8 @@ public class Primitives {
      * Tag all leaf cells as primitive.
      */
     public static void tagLeafCellsAsPrimitives(EdifLibraryManager elm) {
-        for (Iterator i = elm.iterator(); i.hasNext();) {
-            EdifLibrary lib = (EdifLibrary) i.next();
+        for (Iterator<EdifLibrary> i = elm.iterator(); i.hasNext();) {
+            EdifLibrary lib = i.next();
             Primitives.tagLeafCellsAsPrimitives(lib);
         }
     }
