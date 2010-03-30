@@ -12,7 +12,11 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
+import edu.byu.ece.edif.core.EdifTypedValue;
+import edu.byu.ece.edif.core.IntegerTypedValue;
 import edu.byu.ece.edif.core.NamedPropertyObject;
+import edu.byu.ece.edif.core.Property;
+import edu.byu.ece.edif.util.generate.WeightedModule;
 import edu.byu.ece.graph.AbstractGraph;
 import edu.byu.ece.graph.AbstractGraphToDotty;
 import edu.byu.ece.graph.Edge;
@@ -203,6 +207,17 @@ public class CustomGraphToDotty {
                 else if (lcName.contains("_dwc1") || lcName.contains("_dwc_1"))
                 	color = "purple";
                 	
+                else {
+                    Property prop = eci.getProperty(WeightedModule.WEIGHT_PROPERTY);
+                    if (prop != null) {
+                        EdifTypedValue value = prop.getValue();
+                        if (value instanceof IntegerTypedValue) {
+                            IntegerTypedValue intValue = (IntegerTypedValue) value;
+                            int weight = intValue.getIntegerValue();
+                            color = colors[weight % colors.length];
+                        }
+                    }
+                }
             }
             else if (node instanceof EdifSingleBitPort) {
                 shape = "oval";
@@ -365,6 +380,8 @@ public class CustomGraphToDotty {
         return sb.toString();
     }
 
+    public static final String[] colors = { "blue", "red", "green", "yellow", "gray", "brown", "purple", "cyan" };
+    
     public enum Color {
         /*
          * whites
