@@ -232,18 +232,18 @@ public class BuildWrapper extends JHDLWrapper {
 
         try {
             // If the option has help in it then show the options.
-            if (args[0].equals("--help")) {
-                printHelp();
-                System.exit(1);
-            }
+			if (args.length > 0 && args[0].equals("--help")) {
+				printHelp();
+				System.exit(1);
+			}
+            // If the wrong # of args was delivered then print usage.
+			if (args.length < MINARGNUMBER) {
+				printUsage();
+				System.exit(1);
+			}
             // ensure that the first argument is the edif file name
             if (!(args[0].endsWith(".edn") || args[0].endsWith(".edf"))) {
                 System.err.println("ERROR: First argument must be the EDIF file name.");
-                printUsage();
-                System.exit(1);
-            }
-            // If the wrong # of args was delivered then print usage.
-            if (args.length < MINARGNUMBER) {
                 printUsage();
                 System.exit(1);
             }
@@ -614,7 +614,8 @@ public class BuildWrapper extends JHDLWrapper {
     private static void printUsage() {
         System.out.println("Use --help flag for a description of options.");
         System.out.println("Usage:");
-        System.out.println("java BuildWrapper <top edif filename> [-wedif filename] [-w] "
+        System.out
+				.println("\tjava BuildWrapper <top edif filename> [-wedif filename] [-w] "
                 + "[-nocvt] [-b2EDIF] -t Technology" + " [-nomerge] (-f fileName)+ (-L directory)*");
     }
 
