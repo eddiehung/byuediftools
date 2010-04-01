@@ -455,6 +455,18 @@ public class EdifCellInstanceGraph extends AbstractEdifGraph {
         return successors;
     }
 
+    /**
+	 * Finds and retrieves all of the top-level port nodes in the graph
+	 */
+	public Collection<EdifSingleBitPort> getTopLevelPortNodes() {
+		Collection<EdifSingleBitPort> topLevelPortNodes = new ArrayList<EdifSingleBitPort>();
+		for (Object node : getNodes()) {
+			if (node instanceof EdifSingleBitPort)
+				topLevelPortNodes.add((EdifSingleBitPort) node);
+		}
+		return topLevelPortNodes;
+	}
+
     @Override
     public EdifCellInstanceGraph getSubGraph(Collection nodeCollection) {
         return (EdifCellInstanceGraph) super.getSubGraph(nodeCollection);
