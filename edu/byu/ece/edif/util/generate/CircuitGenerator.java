@@ -46,6 +46,9 @@ public class CircuitGenerator {
 			e.printStackTrace();
 		}
 		
+		_environment.setVersion("0.1");
+		_environment.setProgram("BYU EDIF Circuit Generator");
+		_environment.setAuthor("BYU Configurable Computing Laboratory");
 	}
 	
 	public String getName() {
