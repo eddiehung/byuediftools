@@ -139,6 +139,10 @@ public class JEdifRPRSelection extends EDIFMain {
                         }
                     }
                 }
+                String cellName = eci.getCellType().getName();
+                if (cellName.equalsIgnoreCase("VCC") || cellName.equalsIgnoreCase("GND")) {
+                    rDesc.addInstance(eci, replicationType);
+                }
             }
         }
         
