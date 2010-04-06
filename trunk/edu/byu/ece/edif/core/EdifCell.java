@@ -696,7 +696,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
     /**
      * @return A Collection object containing all input ports
      */
-    public Collection getInputPorts() {
+    public Collection<EdifPort> getInputPorts() {
         return _interface.getInputPorts();
     }
 
