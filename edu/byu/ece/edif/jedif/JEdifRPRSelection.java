@@ -10,6 +10,8 @@ import com.martiansoftware.jsap.JSAPResult;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
+import edu.byu.ece.edif.core.EdifPort;
+import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.EdifTypedValue;
 import edu.byu.ece.edif.core.IntegerTypedValue;
 import edu.byu.ece.edif.core.Property;
@@ -24,6 +26,8 @@ import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedDummyTrimmer;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
 import edu.byu.ece.edif.util.generate.WeightedModule;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
+import edu.byu.ece.edif.util.iob.AbstractIOB;
+import edu.byu.ece.edif.util.iob.IOBAnalyzer;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.CircuitDescriptionCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.ConfigFileCommandGroup;
@@ -142,6 +146,61 @@ public class JEdifRPRSelection extends EDIFMain {
                 String cellName = eci.getCellType().getName();
                 if (cellName.equalsIgnoreCase("VCC") || cellName.equalsIgnoreCase("GND")) {
                     rDesc.addInstance(eci, replicationType);
+                }
+            }
+        }
+        
+        // look for inputs connected to replicated instances and tag them for replication
+        IOBAnalyzer iobAnalyzer = cDesc.getIOBAnalyzer();
+        for (EdifPort port : topCell.getInputPorts()) {
+            // skip multi-bit ports -- for now we only support bit blasted ports
+            if (port.getWidth() > 1) {
+                continue;
+            }
+            EdifSingleBitPort esbp = port.getSingleBitPort(0);
+            AbstractIOB iob = iobAnalyzer.getIOB(esbp);
+            Collection<EdifCellInstance> iobInstances = iob.getAllInstances();
+            List<Object> iobObjects = new ArrayList<Object>();
+            iobObjects.add(esbp);
+            iobObjects.addAll(iobInstances);
+            List<Object> iobSuccessors = new ArrayList<Object>();
+            for (Object iobObject : iobObjects) {
+                iobSuccessors.addAll(graph.getSuccessors(iobObject));                                
+            }
+            for (Object iobSuccessor : iobSuccessors) {
+                if (iobSuccessor instanceof EdifCellInstance) {
+                    EdifCellInstance successorInstance = (EdifCellInstance) iobSuccessor;
+                    ReplicationType successorType = rDesc.getReplicationType(successorInstance);
+                    if (successorType == replicationType) {
+                        rDesc.addPort(port, replicationType);
+                    }
+                }
+            }            
+        }
+        
+        // look for outputs connected to replicated instances and tag them for replication
+        for (EdifPort port : topCell.getOutputPorts()) {
+            // skip multi-bit ports -- for now we only support bit blasted ports
+            if (port.getWidth() > 1) {
+                continue;
+            }
+            EdifSingleBitPort esbp = port.getSingleBitPort(0);
+            AbstractIOB iob = iobAnalyzer.getIOB(esbp);
+            Collection<EdifCellInstance> iobInstances = iob.getAllInstances();
+            List<Object> iobObjects = new ArrayList<Object>();
+            iobObjects.add(esbp);
+            iobObjects.addAll(iobInstances);
+            List<Object> iobPredecessors = new ArrayList<Object>();
+            for (Object iobObject : iobObjects) {
+                iobPredecessors.addAll(graph.getPredecessors(iobObject));                                
+            }
+            for (Object iobPredecessor : iobPredecessors) {
+                if (iobPredecessor instanceof EdifCellInstance) {
+                    EdifCellInstance predecessorInstance = (EdifCellInstance) iobPredecessor;
+                    ReplicationType predecessorType = rDesc.getReplicationType(predecessorInstance);
+                    if (predecessorType == replicationType) {
+                        rDesc.addPort(port, replicationType);
+                    }
                 }
             }
         }
