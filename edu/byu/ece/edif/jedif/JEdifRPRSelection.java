@@ -173,6 +173,7 @@ public class JEdifRPRSelection extends EDIFMain {
                     ReplicationType successorType = rDesc.getReplicationType(successorInstance);
                     if (successorType == replicationType) {
                         rDesc.addPort(port, replicationType);
+                        rDesc.addInstances(iobInstances, replicationType);
                     }
                 }
             }            
@@ -200,6 +201,7 @@ public class JEdifRPRSelection extends EDIFMain {
                     ReplicationType predecessorType = rDesc.getReplicationType(predecessorInstance);
                     if (predecessorType == replicationType) {
                         rDesc.addPort(port, replicationType);
+                        rDesc.addInstances(iobInstances, replicationType);
                     }
                 }
             }

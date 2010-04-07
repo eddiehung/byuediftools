@@ -15,6 +15,7 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.NamedObject;
+import edu.byu.ece.edif.core.RenamedObject;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopy;
 
 public class EdifEnvironmentBitBlast extends EdifEnvironmentCopy {
@@ -32,7 +33,8 @@ public class EdifEnvironmentBitBlast extends EdifEnvironmentCopy {
         	if (_bitBlastPorts.contains(oldPort) && width > 1) {
         		for (int i = 0; i < width; i++) {
         			String nameString = oldPort.getName() + "_" + i;
-        			EdifNameable name = NamedObject.createValidEdifNameable(nameString);
+        			EdifNameable singleName = NamedObject.createValidEdifNameable(nameString);
+        			EdifNameable name = new RenamedObject(singleName, oldPort.getName() + "(" + i + ")");        			
         			EdifPort newPort = newCell.addPort(name, 1, oldPort.getDirection());
         			newPort.copyProperties(oldPort);
         			_esbpMap.put(oldPort.getSingleBitPort(i), newPort.getSingleBitPort(0));
