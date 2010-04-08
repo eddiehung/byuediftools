@@ -1,5 +1,3 @@
-Change Log for BYU EDIF Tools
-
 -------------------------------------------------------------------
 Proton Release - Version 0.5.2 (30 September 2009)
 -------------------------------------------------------------------
@@ -74,10 +72,10 @@ Bug Fixes:
 Enhancements / Other:
 
     * New replication toolflow
-	* Half-latch removal tool is rewritten for maintainability
-	* Flattening code now preserves net hierarchy name references
-	  (previously only instance hierarchy was actually preserved)
-	* Speed improvements for replication step (JEdifNMR)
+    * Half-latch removal tool is rewritten for maintainability
+    * Flattening code now preserves net hierarchy name references
+      (previously only instance hierarchy was actually preserved)
+    * Speed improvements for replication step (JEdifNMR)
 	
 	
 -------------------------------------------------------------------
@@ -91,9 +89,9 @@ New Features:
 
 Bug Fixes:
 
-	* Fixed --tmr_p option. --tmr_p will now include the listed ports
-	* Tool now handles case-insensitive matches of *.ngc files
-	* Fixed bug related to tying of DCM ports with half-latch safe constants
+    * Fixed --tmr_p option. --tmr_p will now include the listed ports
+    * Tool now handles case-insensitive matches of *.ngc files
+    * Fixed bug related to tying of DCM ports with half-latch safe constants
 
 Enhancements / Other:
 
@@ -104,19 +102,19 @@ Electron Release - Version 0.4.0 (30 May 2008)
 
 New Features:
 
-  * Added new file format for specifying black-box usage
-  * Added support for finding *.ndf files
-  * Added options to ignore hard and soft resource utilization limits
+    * Added new file format for specifying black-box usage
+    * Added support for finding *.ndf files
+    * Added options to ignore hard and soft resource utilization limits
 
 Bug Fixes:
 
-  * Fixed bug in JEdifTMRAnalysis in which the –tmr_p and –no_tmr_p 
-    command line options were functionally switched
+    * Fixed bug in JEdifTMRAnalysis in which the –tmr_p and –no_tmr_p 
+      command line options were functionally switched
 
 Enhancements / Other:
 
-  * Further re-organization of package structure and class names
-  * Completed re-formatting of source code
+    * Further re-organization of package structure and class names
+    * Completed re-formatting of source code
 
 -------------------------------------------------------------------
 Pre-Electron Release (16 April 2008)
@@ -124,24 +122,209 @@ Pre-Electron Release (16 April 2008)
 
 New Features:
 
-  * None
+    * None
 
 Bug Fixes:
 
-  * None
+    * None
 
 Enhancements / Other:
 
-  * Released code under the GNU Public License (GPL) version 2
-  * Significant modifications to the Java package organization
-  * Migrated from CVS repository to staging SVN repository
-  * Posted latest code to
-    https://sourceforge.net/projects/byuediftools/
-  * Created coding style Eclipse configuration file
-  * Removed retiming code (moved to edu.byu.ece.retiming)
-  * Removed VHDL parser code from Dr. Grimm (moved to
-    de.uni_frankfurt.grimm.vhdl)
-  * Formatted much of the source code
+    * Released code under the GNU Public License (GPL) version 2
+    * Significant modifications to the Java package organization
+    * Migrated from CVS repository to staging SVN repository
+    * Posted latest code to
+      https://sourceforge.net/projects/byuediftools/
+    * Created coding style Eclipse configuration file
+    * Removed retiming code (moved to edu.byu.ece.retiming)
+    * Removed VHDL parser code from Dr. Grimm (moved to
+      de.uni_frankfurt.grimm.vhdl)
+    * Formatted much of the source code
 
- $Id$
+-------------------------------------------------------------------
+Version 0.3.4 - No official release date
+-------------------------------------------------------------------
 
+    * Fixed --hl_use_port option on JEdifSterilize (was --hl_port_name)
+    * Rearranged and added sections of this document
+    * Made –remove_fmaps option to default to false
+    * Fixed bug in EdifCell.deleteSubCell(EdifCellInstance, boolean) in 
+      which referenced EdifNets were not removed when requested
+
+-------------------------------------------------------------------
+Version 0.3.3 - 15 Jan 2008
+-------------------------------------------------------------------
+
+    * Fixed bug involving source-to-source edges in
+      EdifCellInstanceConnectivity. This had caused IOB registers to not be recognized
+      correctly.
+    * Fixed bug in which Virtex II parts were incorrectly rejected by the tool
+    * Added SRL Replacement to JEdifBuild
+    * BLDWC now has the option to separate detection between persistent and
+      non-persistent
+
+-------------------------------------------------------------------
+Version 0.3.2 - 24 Aug 2007
+-------------------------------------------------------------------
+
+    * Various minor bug fixes
+
+-------------------------------------------------------------------
+Version 0.3.1 - 14 Aug 2007
+-------------------------------------------------------------------
+
+    * Fixed issues with BRAM and DSP blocks
+    * BLTMR can now extract the part number if included in the input EDIF file.
+    * Fixed bug in which a triplicated clock line could be voted on.
+    * Fixed bug in which DLLs were not recognized.
+
+-------------------------------------------------------------------
+Version 0.3.0 - 16 Jul 2007
+-------------------------------------------------------------------
+
+    * Split TMR into several tools
+    * TMR tool flow now uses jedif files
+    * Added clock domain analysis tools
+    * Added more frequent voting tool
+
+-------------------------------------------------------------------
+Version 0.2.4 - 16 Feb 2007
+-------------------------------------------------------------------
+
+    * Fixed bugs in EdifHalfLatchRemover: 
+        * Added support for BlackBox modules
+        * Removed addition of "_hl" suffix to replaced primitives
+    * Added option to allow user to specify suffixes for triplicated design
+      elements
+    * Design name in output file now matches top-level Cell
+    * Fixed bug in SCCUtilities
+    * created new HalfLatchFlattenedEdifCell class, tool now flattens before HL
+      removal
+    * HL removal now recognizes IOB registers
+    * Added option to ignore feedback through IOBs
+    * Port components are automatically triplicated/not triplicated with the port
+
+-------------------------------------------------------------------
+Version 0.2.3 - 12 Oct 2006
+-------------------------------------------------------------------
+
+    * Fixed bug when writing config files
+    * Fixed bug in SCC code that could cause a ConcurrentModificationException
+    * Fixed bug in which BL-TMR could produce an invalid design due to too many
+      connections to a MUXF6 input
+
+-------------------------------------------------------------------
+Version 0.2.2 - 25 Sep 2006
+-------------------------------------------------------------------
+
+    * User may now specify hierarchical instance names for forced inclusion
+      in/exclusion from TMR
+    * Added Half-Latch Removal as a command-line option
+    * Now using NMREdifCell instead of TMREdifCell, which slightly changed the
+      naming policy for triplicated elements
+    * Added fmap removal (fixes the use of inputAdditionType=1)
+    * Added Multiple EDIF Creation
+        * Removed the DUF, UEF, and ASUF command-line parameters
+        * Added factor_type and factor_value command-line parameters
+
+-------------------------------------------------------------------
+Version 0.2.1 - 28 Jul 2006
+-------------------------------------------------------------------
+
+    * Now disallows voting between MUXF5, MUXF6, MUXF7, MUXF8
+    * Added unused cell trimming
+
+-------------------------------------------------------------------
+Version 0.2.0 - 25 Jul 2006
+-------------------------------------------------------------------
+
+    * New command-line parser (the BL-TMR tool uses JSAP: the 
+      Java-based Simple Argument Parser by Martian Software, Inc. for parsing 
+      command-line arguments. JSAP and its source code can be found at 
+      http://www.martiansoftware.com/jsap/index.html.)
+        * Not backwards compatible
+    * Added half-latch removal option
+    * Added configuration files support
+    * Some command-line parameters have been renamed
+    * Added recursive black box merging
+    * Fixed bug which caused some nets to lose their original name
+
+-------------------------------------------------------------------
+Version 0.1.9 - 3 Jul 2006
+-------------------------------------------------------------------
+
+    * Fixed bug in which output EDIF file could be invalid and crash in the map 
+      stage (voters were inserted in the carry chain).
+
+-------------------------------------------------------------------
+Version 0.1.8 - 13 Jun 2006
+-------------------------------------------------------------------
+
+    * Added triplication status to reports
+    * Added available space utilization factor
+    * Added force triplicate options
+    * Fixed bug in SCCUtilities that could cause a class cast exception
+
+-------------------------------------------------------------------
+Version 0.1.7 - 23 May 2006
+-------------------------------------------------------------------
+
+    * Added DLLs to resources tracked for Virtex parts
+    * Added options for ordering of SCC additions (-SCCSortType)
+
+-------------------------------------------------------------------
+Version 0.1.6 - 18 May 2006
+-------------------------------------------------------------------
+
+    * Added options to select type of partial Input to Feedback and Feedback 
+      Output addition to TMR (-input and -outputAdditionType)
+    * Added option to ignore INOUT port restriction
+    * Moved to Java 5
+
+-------------------------------------------------------------------
+Version 0.1.5 - 12 May 2006
+-------------------------------------------------------------------
+
+    * Version 0.1.4 contained a left-over debug printout. This was removed.
+
+
+-------------------------------------------------------------------
+Version 0.1.4 - 11 May 2006
+-------------------------------------------------------------------
+
+    * Added option for naming tmr domain report
+    * Added utilization_expansion_factor option
+
+-------------------------------------------------------------------
+Version 0.1.3 - 3 May 2006
+-------------------------------------------------------------------
+
+    * Added options to selectively exclude Feedback, Input to Feedback, 
+      Feedback Output, and Feed-forward sections from TMR.
+    * Complete partial TMR now matches "Full" TMR. (Before this, the 
+      Feed-forward section was not included.)
+
+-------------------------------------------------------------------
+Version 0.1.2 - 17 Apr 2006
+-------------------------------------------------------------------
+
+    * Added automatic IOB handling. The user no longer needs to specifically 
+      include or exclude IBUFs, OBUFs, etc.
+    * Added automatic log file creation. The user may also customize the 
+      filename of the logfile.
+    * Fixed issue in which "rename" directives in the original EDIF were not 
+      preserved. The output EDIF now contains the original "renames".
+
+-------------------------------------------------------------------
+Version 0.1.1 - 9 Mar 2006
+-------------------------------------------------------------------
+
+    * Added version number to the output of the tool for version tracking
+      purposes.
+
+-------------------------------------------------------------------
+Initial Release---Version 0.1.0 - 8 Mar 2006
+-------------------------------------------------------------------
+
+    * Initial release outside of BYU. No version number is contained in
+      the released JAR file.
