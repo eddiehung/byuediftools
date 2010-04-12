@@ -1,8 +1,6 @@
 package edu.byu.ece.edif.jedif;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -27,6 +25,7 @@ import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchCopyReplace;
 import edu.byu.ece.edif.tools.sterilize.halflatch.XilinxHalfLatchArchitecture;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.LUTReplacer;
 import edu.byu.ece.edif.tools.sterilize.lutreplace.RLOCRemove;
+import edu.byu.ece.edif.util.export.serialize.JEdifFileManager;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.iob.IOBAnalyzer;
 import edu.byu.ece.edif.util.iob.XilinxVirtexIOBAnalyzer;
@@ -128,19 +127,16 @@ public class JEdifBuild extends EDIFMain {
         // Serialize output
         // If the circuit got flattened, the preserved hierarchy also goes in
         // the serialized output (after the EdifEnvironment)
-        Collection objects = new ArrayList(2);
-        objects.add(env);
-        if (hierarchy != null)
-            objects.add(hierarchy);
+        String name = null;
         if (!result.userSpecified(OutputFileCommandGroup.OUTPUT_OPTION)) {
-            String name = MergeParserCommandGroup.getInputFileName(result);
-            name = name.substring(0, name.lastIndexOf('.'));     
-            JEdifOutputCommandGroup.serializeObjects(out, name + ".jedif", objects);
+            name = MergeParserCommandGroup.getInputFileName(result);
+            name = name.substring(0, name.lastIndexOf('.')) + ".jedif";
+
         } else {
-            JEdifOutputCommandGroup.serializeObjects(out, result, objects);
+            name = JEdifOutputCommandGroup.getOutputFileName(result);
         }
+        JEdifFileManager.writeJEdifFile(out, name, env, hierarchy);
         out.println();
-        
     }
     
     private static EdifEnvironment flatten(JSAPResult result, EdifEnvironment top) {

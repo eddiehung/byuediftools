@@ -22,109 +22,28 @@
  */
 package edu.byu.ece.edif.util.jsap.commandgroups;
 
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.PrintStream;
-import java.util.List;
 
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifEnvironment;
-import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
+import edu.byu.ece.edif.util.export.serialize.JEdifFileContents;
+import edu.byu.ece.edif.util.export.serialize.JEdifFileManager;
 
 /**
- * A parser command group for JEdif binaries. TODO:
- * <ul>
- * <li> Change output of inherited flags
- * <li> Add options to change summary
- * <li> Should this class be moved to edu.byu.ece.edif.util.jsap? --jcarroll
- * </ul>
- * 
- * @author unknown (dsgib?)
+ * This class calls the JEdifFileManager to get JEdifFileContents or EdifEnvironment
+ * objects from a .jedif file specified on the command-line.
  */
 public class JEdifParserCommandGroup extends InputFileCommandGroup {
 
-    /**
-     * @param result
-     * @param out
-     * @return
-     */
     public static EdifEnvironment getEdifEnvironment(JSAPResult result, PrintStream out) {
-        return getEdifEnvironment(result, out, null);
+        JEdifFileContents jEdifFile = JEdifFileManager.getJEdifFileContents(getInputFileName(result), out);
+        return jEdifFile.getEdifEnvironment();
     }
     
-    public static EdifEnvironment getEdifEnvironment(JSAPResult result, PrintStream out, List<PreservedHierarchyByNames> hierarchyReturn) {
-        FileInputStream fis = null;
-        ObjectInputStream in = null;
-        EdifEnvironment new_top = null;
-        PreservedHierarchyByNames hierarchy = null;
-        String filename = getInputFileName(result);
-        if (!filename.contains("."))
-            filename = filename.concat(".jedif");
-
-        out.print("Loading file " + filename + " . . .");
-        try {
-            fis = new FileInputStream(filename);
-        } catch (FileNotFoundException ex) {
-            out.println("File Not Found: Cannot find the specified file. Make"
-                    + " sure the file is present and you have access to open it.");
-            out.println(ex.getMessage());
-        }
-
-        try {
-            in = new ObjectInputStream(fis);
-            new_top = (EdifEnvironment) in.readObject();
-        } catch (ClassCastException ex) {
-            out.println("The File you tried to load is the wrong type/class");
-
-        } catch (ClassNotFoundException ex) {
-            out.println("Your class file is an old version. Please " + "rerun the program that created this file\n"
-                    + ex);
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            out.println("IOException: Unable to parse objects in file. Make "
-                    + "sure that the file is a valid JEDIF file.");
-            out.println(ex.getMessage());
-            //ex.printStackTrace();
-        }
-        
-        if (hierarchyReturn != null) {
-            try {
-                hierarchy = (PreservedHierarchyByNames) in.readObject();
-            } catch (EOFException e) {
-                // ignore this -- it just means there was no PreservedHierarchyByNames object
-                // saved in the .jedif file. It's optional.
-            } catch (ClassCastException ex) {
-                out.println("The File you tried to load is the wrong type/class");
-
-            } catch (ClassNotFoundException ex) {
-                out.println("Your class file is an old version. Please " + "rerun the program that created this file\n"
-                        + ex);
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                out.println("IOException: Unable to parse objects in file. Make "
-                        + "sure that the file is a valid JEDIF file.");
-                out.println(ex.getMessage());
-                //ex.printStackTrace();
-            }
-            if (hierarchy != null)
-                hierarchyReturn.add(hierarchy);
-        }
-
-        try {
-            in.close();
-        } catch (IOException e) {
-            out.println("IOException: error while trying to close input stream.");
-            out.println(e.getMessage());
-        }
-        
-        if (new_top == null)
-            throw new NullPointerException("Returning null top-level cell!");
-        else
-            out.println("Done");
-        return new_top;
+    public static JEdifFileContents getJEdifFileContents(JSAPResult result, PrintStream out) {
+        JEdifFileContents jEdifFile = JEdifFileManager.getJEdifFileContents(getInputFileName(result), out);
+        return jEdifFile;
     }
+    
 }
