@@ -21,7 +21,6 @@ import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
 import edu.byu.ece.edif.tools.replicate.nmr.EdifReplicationPropertyReader;
-import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.tools.sterilize.fmap.FmapRemover;
 import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchArchitecture;
 import edu.byu.ece.edif.tools.sterilize.halflatch.HalfLatchCopyReplace;
@@ -35,13 +34,20 @@ import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.ConfigFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.IOBCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifOutputCommandGroup;
-import edu.byu.ece.edif.util.jsap.commandgroups.JEdifParserCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifSterilizeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.OutputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 
+/**
+ * A main function that generates the .jedif file used for EDIF post processing. This main function performs a
+ * number of optional steps:
+ * - Merging of EDIF files
+ * - Sterilization (RLOC, FMAP removal)
+ * - Half latch removal
+ * 
+ */
 public class JEdifBuild extends EDIFMain {
 
     public static PrintStream out;
@@ -94,7 +100,7 @@ public class JEdifBuild extends EDIFMain {
         // Removing RLOCs modifies the existing EdifEnvironment
         if (JEdifSterilizeCommandGroup.getRemoveRLOCs(result)) {
             out.print("Removing RLOCs... ");
-            RLOCRemove rlocRemover = new RLOCRemove(env);
+            new RLOCRemove(env);
             out.println("Done.");
         }
         
