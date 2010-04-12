@@ -34,6 +34,11 @@ import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
+/**
+ * A main method class that analyzes the flattened EDIF cell in preparation for future TMR steps.
+ * It creates a circuit description file which is a serialized version of a CircuitDescription object.
+ * 
+ */
 public class JEdifAnalyze extends EDIFMain {
     
 	public static PrintStream out;
@@ -82,9 +87,12 @@ public class JEdifAnalyze extends EDIFMain {
 		
 		EdifCellInstanceGraph instanceGraph = new EdifCellInstanceGraph(topCell, true, true);
 		
+		// TODO: is this hard coded for Virtex? Does this need to be modified for other architectures?
 		IOBAnalyzer iobAnalyzer = new XilinxVirtexIOBAnalyzer(topCell, instanceGraph, packInputRegs, packOutputRegs);
 		
-		// We don't need source to source edges after the analyer is done with the graph
+		// We don't need source to source edges after the analyer is done with the graph.
+		// Once we have completed IOB analysis, we no longer need the source to source edges (it is needed
+		// for IOB analysis)
 		instanceGraph.removeSourceToSourceEdges();
 		
 		badCutGroupings = null;
