@@ -1,7 +1,6 @@
 package edu.byu.ece.edif.jedif;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;

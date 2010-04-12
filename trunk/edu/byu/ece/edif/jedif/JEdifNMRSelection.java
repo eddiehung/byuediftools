@@ -40,6 +40,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.UnsupportedResourceTypeException;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedDummyTrimmer;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
+import edu.byu.ece.edif.util.export.serialize.JEdifFileContents;
 import edu.byu.ece.edif.util.graph.EdifCellBadCutGroupings;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceCollection;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -106,18 +107,18 @@ public class JEdifNMRSelection extends EDIFMain {
         printProgramExecutableString(LogFile.log());
         
         // Step 1: Get EdifEnvironment and hierarchy information from JEdif File
-        List<PreservedHierarchyByNames> hierarchyReturn = new ArrayList<PreservedHierarchyByNames>();
-        EdifEnvironment env = JEdifParserCommandGroup.getEdifEnvironment(result, out, hierarchyReturn);
+        JEdifFileContents jEdifFile = JEdifParserCommandGroup.getJEdifFileContents(result, out);
+        EdifEnvironment env = jEdifFile.getEdifEnvironment();
         if (env == null) {
             err.println("Invalid .jedif file.");
             System.exit(1);
         }
-        if (hierarchyReturn.size() < 1) {
+        if (!jEdifFile.hasHierarchy()) {
             // Report error and exit
             err.println("ERROR: The design in the .jedif file has not been flattened.");
             System.exit(1);
         }
-        PreservedHierarchyByNames hierarchy = hierarchyReturn.iterator().next();
+        PreservedHierarchyByNames hierarchy = jEdifFile.getHierarchy();
         
         JEdifQuery.printEdifStats(env, out);
         

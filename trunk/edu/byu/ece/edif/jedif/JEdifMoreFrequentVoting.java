@@ -47,6 +47,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.tools.replicate.nmr.OrganSpecification;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.nmr.RestoringOrganSpecification;
+import edu.byu.ece.edif.util.export.serialize.JEdifFileContents;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefEdge;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
@@ -125,8 +126,9 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         	voterNetLocations.addAll(Arrays.asList(voterLocationNetArray));
         
         // Create EdifEnvironment data structure and get hierarchy (if present in .jedif)
-        ArrayList<PreservedHierarchyByNames> hierarchyReturn = new ArrayList<PreservedHierarchyByNames>(1);
-        EdifEnvironment top = JEdifParserCommandGroup.getEdifEnvironment(result, out, hierarchyReturn);
+        
+        JEdifFileContents jEdifFile = JEdifParserCommandGroup.getJEdifFileContents(result, out);
+        EdifEnvironment top = jEdifFile.getEdifEnvironment();
         if (top == null) {
             // Report error and exit
             err.println("ERROR: Could not read JEdif file.");
@@ -134,12 +136,12 @@ public class JEdifMoreFrequentVoting extends EDIFMain {
         }
         TechnologyCommandGroup.getPartFromEDIF(result, top);
 
-        if (hierarchyReturn.size() < 1) {
+        if (!jEdifFile.hasHierarchy()) {
          // Report error and exit
             err.println("ERROR: The design in the .jedif file has not been flattened.");
             System.exit(1);
         }
-        PreservedHierarchyByNames hierarchy = hierarchyReturn.iterator().next();
+        PreservedHierarchyByNames hierarchy = jEdifFile.getHierarchy();
         EdifCell topCell = top.getTopCell();
         
         // Create graph
