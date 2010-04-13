@@ -194,8 +194,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                         while (portIt.hasNext() && mpcIt.hasNext()) { // the two collections have the same number of elements
                             EdifPort connectionPort = portIt.next();
                             MultiPortConnection mpc = (MultiPortConnection) mpcIt.next();
-                            mpc.addConnection(newInstance, connectionPort.getSingleBitPort(origDriver.getBusMember()));
-                            //mpc.addConnection(newInstance, new EdifSingleBitPort(connectionPort, origDriver.getBusMember()));                        
+                            mpc.addConnection(newInstance, connectionPort.getSingleBitPort(origDriver.getBusMember()));                       
                         }
                     }
                 }
@@ -260,11 +259,20 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 if (wiringPolicy == null)
                 	wiringPolicy = ModuloIterationWiringPolicy.getInstance();
                 wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
-                
             }
+            
+            // When the net is composed only of drivers, they need to be wired together
+            // (this happens when the net connects INOUT ports to each other)
+            if (origSinks.size() == 0) {
+                for (PortConnection driverConnection : driverConnections) {
+                    // Calling getNet creates a net that binds all of the drivers for
+                    // the given domain together. (driverConnection is really an instance
+                    // of MultiPortConnection where the multiple connections in each instance
+                    // are the multiple drivers for each domain).
+                    _netManager.getNet(driverConnection);
+                }
+            }            
         }
-
-        
 
         return null; // this works because EdifEnvironmentCopy never uses the return value
     }
