@@ -28,7 +28,6 @@ import edu.byu.ece.edif.tools.replicate.nmr.EdifReplicationPropertyReader;
 import edu.byu.ece.edif.tools.replicate.nmr.FullNMRSelectionStrategy;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRSelectionStrategy;
-import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationEstimatedStopException;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationException;
 import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationHardStopException;
@@ -37,7 +36,6 @@ import edu.byu.ece.edif.tools.replicate.nmr.ReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationType;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.UnsupportedResourceTypeException;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedDummyTrimmer;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
 import edu.byu.ece.edif.util.export.serialize.JEdifFileContents;
@@ -57,6 +55,11 @@ import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationTypeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
+/**
+ * A main class used to select the instances in a EDIF file for replication. The JEdifAnalyze and JEdifBuild functions
+ * should have been called before calling this executable.
+ *
+ */
 public class JEdifNMRSelection extends EDIFMain {
 
     protected static PrintStream out;
@@ -126,48 +129,82 @@ public class JEdifNMRSelection extends EDIFMain {
                 + JEdifNMRSelectionCommandGroup.getFactorValue(result));
         EdifCell topCell = env.getTopCell();
         
+        // Determine the part and get the NMRArchitecture object associated with this part
         TechnologyCommandGroup.getPartFromEDIF(result, env);
         NMRArchitecture arch = TechnologyCommandGroup.getArch(result);
+        // Determine what type of replication is being performed
         replicationType = ReplicationTypeCommandGroup.getReplicationType(result, arch);
+        // This supports the ability to run the command more than once. Determines whether a subsequent run
+        // overrides previous settings.
         _override = JEdifNMRSelectionCommandGroup.overrideSelection(result);
+        // Get the CircuitDescription object (the result of the JEdifAnalyze executable)
         CircuitDescription cDesc = CircuitDescriptionCommandGroup.getCircuitDescription(result, env, out);
-        
+
+        // Create a new ReplicationDescription object or obtain the ReplicatinDescription object from a
+        // a previous run.
         ReplicationDescription rDesc = null;
         if (JEdifNMRSelectionCommandGroup.continueSelection(result)) {
+        	// If this is not the first call for NMRSelection, get the object associated with the previous
+        	// NMR selection result.
         	rDesc = ReplicationDescriptionCommandGroup.getReplicationDescription(result, env, out);
-        }
-        
+        }      
         if (rDesc == null)
+        	// This is the first time call of ReplicationDescription. Create a new, empty object
             rDesc = new ReplicationDescription();
 
+        /*
+         * Any cell in the environment may have "port group" properties on its ports. This information
+         * needs to be parsed and added to the ReplicationDescription data structure. This only has
+         * to be done once so subsequent calls to this executable do not need to repeat this 
+         * activity. 
+         */
         
         // Make sure port group information has been added to the ReplicationDescription
-        // This will be needed for JEdifVoterSelectoin, JEdifDetectionSelection, and JEdifNMR
+        // This will be needed for JEdifVoterSelection, JEdifDetectionSelection, and JEdifNMR
         if (!rDesc.alreadySetPortGroups()) {
+
+        	// This is the call to get the portGroups from the properties
             Collection<PreMitigatedPortGroup> portGroups = EdifReplicationPropertyReader.getPreMitigatedPortGroups(topCell, arch);
             
+            /* In some cases, the user manually creates a triplicated port for the outputs but does
+             * not hook anything up to the replicated outputs (i.e., the design is untriplicated but
+             * the outputs are manually triplicated). Pre mitigated ports without the premitigated
+             * contents.
+             * 
+             * In this case, some synthesis tools will tie constants to these output ports that have
+             * no drivers. This method will tag these connections so the logic behind these dummy
+             * ports can be ignored.
+             * 
+             * This method will add additional information to the ReplicationDescription object.
+             */
             // this is necessary because of synthesis tool limitations
             // (you can't generate a circuit that has a pre-mitigated instance with
             //  some ports left completely open--they always get wired to ground. This
             //  bit of code marks these connections so they can be ignored later).
             PreMitigatedDummyTrimmer.markDummyConnectionsToIgnore(topCell, portGroups, cDesc, rDesc);            
+
             rDesc.setPortGroups(portGroups);
         }
-            
+
+        // Adds the replication information to the ReplicationDescription object
         ReplicationDescription newRDesc = nmr(env, topCell, result, cDesc, rDesc, arch, hierarchy);
-        
+
+        // Write the object to a file.
         ReplicationDescriptionCommandGroup.writeReplicationDescription(result, env, newRDesc, out);
         
         out.println();
         
     }
     
+    /**
+     * Determines what will be replicated based on resource usage.
+     */
     public static ReplicationDescription nmr(EdifEnvironment env, EdifCell topCell, JSAPResult result, CircuitDescription cDesc, ReplicationDescription rDesc, NMRArchitecture arch, PreservedHierarchyByNames hierarchy) {
   
         out.println("Using part " + env.getTopDesign().getProperty("PART").getValue());
 
-        //Step 2: Make resource tracker & add the flattened top cell to it
-
+        // Create object to track the utilization of a particular device. This object will estimate the size of
+        // the design within the device only.
         DeviceUtilizationTracker duTracker = null;
         
         try {
@@ -183,6 +220,8 @@ public class JEdifNMRSelection extends EDIFMain {
             System.exit(1);
         }
         
+        // This object has a DeviceUtilizationTracker but filters calls to this utilization tracker based
+        // on the type of replication that is being performed.
         ReplicationUtilizationTracker rTracker = new ReplicationUtilizationTracker(duTracker);
         
         // if there was a previous replication description, add the ReplicationType instance assignments to the tracker
@@ -238,7 +277,7 @@ public class JEdifNMRSelection extends EDIFMain {
         	}
         }
 
-        // Unify the bad cut groupings
+        // Unify the bad cut groupings. Make sure all instances in a bad cut groupings have the same replication type.
         try {
             unifyBadCutGroups(badCutGroupings, rTracker);
         } catch (IllegalArgumentException e4) {
@@ -256,6 +295,7 @@ public class JEdifNMRSelection extends EDIFMain {
         	selectionStrategy = PartialNMRSelectionStrategy.getInstance();
         
         if (selectionStrategy != null) {
+        	// Make a call to the instance selection
         	boolean success = selectionStrategy.selectNMR(rTracker, topCell, eciConnectivityGraph, badCutGroupings, sccDFS, arch, out, err, result, replicationType, _override);
         	if (!success)
         		System.exit(1);
@@ -274,8 +314,7 @@ public class JEdifNMRSelection extends EDIFMain {
     
     
     /**
-	 * @param topCell
-	 * @param duTracker
+     * Exclude 
 	 */
 	protected static void excludeFromReplication(EdifCell topCell, ReplicationUtilizationTracker rTracker, EdifEnvironment env, PreservedHierarchyByNames hierarchy) {
 	    Collection<EdifCellInstance> excludeInstances = new ArrayList<EdifCellInstance>();
@@ -495,24 +534,6 @@ public class JEdifNMRSelection extends EDIFMain {
 	    }
 	}
 
-	/**
-     * Return a NMRArchitecture object for the specified technology.
-     * 
-     * @param technologyString The specified technology
-     * @return A NMRArchtecture object
-     */
-    protected static XilinxNMRArchitecture getArchitecture(String technologyString) {
-        if (technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX)
-                || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2PRO)
-                || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX2)
-                || technologyString.equalsIgnoreCase(NMRUtilities.VIRTEX4))
-            return new XilinxNMRArchitecture();
-
-        throw new EdifRuntimeException("Invalid Technology: " + technologyString + ". Valid technologies include "
-                + NMRUtilities.VIRTEX + ", " + NMRUtilities.VIRTEX2 + ", and " + NMRUtilities.VIRTEX2PRO + ", and "
-                + NMRUtilities.VIRTEX4 + ".");
-    }
-    
     /**
 	 * Prints out useful statistics about the projected NMR to be done
 	 */
