@@ -16,6 +16,10 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  */
 public interface NMRSelectionStrategy {
 
+	/**
+	 * This is called once per call to NMR Selection. It identifies instances to replicate and updates
+	 * the ReplicationUtilizationTracker.
+	 */
 	public boolean selectNMR(ReplicationUtilizationTracker rTracker, EdifCell topCell, EdifCellInstanceGraph eciConnectivityGraph, EdifCellBadCutGroupings badCutGroupings, SCCDepthFirstSearch sccDFS, NMRArchitecture nmrArch, PrintStream out, PrintStream err, JSAPResult result, ReplicationType replicationType, boolean override);
 	
 }
