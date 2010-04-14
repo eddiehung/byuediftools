@@ -12,8 +12,16 @@ import java.io.PrintStream;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
 
+/**
+ * Manages the reading from and writing to .jedif files. All the code for managing this file format
+ * is contained here.
+ */
 public class JEdifFileManager {
 
+	/**
+	 * Performs the deserialization of a .jedif file and creates a JEdifFileContents object.
+	 * 
+	 */
     public static JEdifFileContents getJEdifFileContents(String filename, PrintStream out) {
         FileInputStream fis = null;
         ObjectInputStream in = null;
@@ -83,10 +91,16 @@ public class JEdifFileManager {
         return new JEdifFileContents(env, hierarchy);
     }
     
+    /**
+     * Serialization method (without the PreservedHierarchyByNames
+     */
     public static void writeJEdifFile(PrintStream out, String filename, EdifEnvironment env) {
         writeJEdifFile(out, filename, env, null);
     }
     
+    /**
+     * Serialization method.
+     */
     public static void writeJEdifFile(PrintStream out, String filename, EdifEnvironment env, PreservedHierarchyByNames hierarchy) {
         out.println("Creating file " + filename + " . . .");
         FileOutputStream fos = null;
