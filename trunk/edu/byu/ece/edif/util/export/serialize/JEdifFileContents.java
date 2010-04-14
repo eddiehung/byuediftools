@@ -11,6 +11,10 @@ import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
  * 
  * A JEdifFileContents object must have an EdifEnvironment object but may or
  * may not include a PreservedHierarchyByNames object.
+ * 
+ * This is a simple container object used to pass around an EdifEnvironment
+ * and an optional PreservedHierarchyBYNames object with a single object.
+ * 
  */
 public class JEdifFileContents {
 
