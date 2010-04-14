@@ -31,6 +31,10 @@ import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationDescriptionCommandGro
 
 public class JEdifVoterSelection extends EDIFMain {
 	
+	/**
+	 * A static executable that determines where the voters are inserted. This executable will update
+	 * an existing ReplicationDescription object.
+	 */
 	public static void main(String[] args) {
 		
 		PrintStream out = System.out;
@@ -81,8 +85,16 @@ public class JEdifVoterSelection extends EDIFMain {
 		
 		NMRArchitecture arch = cDesc.getNMRArchitecture();
 		
+		// TODO: We need to make this an option and provide some clock handling.
 		boolean skipClockNets = true;
 		
+		/*
+		 * Iterates through every net in the design. It determines what the replication type
+		 * of the driver is. It checks to see if there are any properties (Do not restore : ie do
+		 * not stick a voter here). Then it checks for a force restore property. 
+		 * 
+		 * This is setting intial, forced conditions.
+		 */
 		for (EdifNet net : topCell.getNetList()) {
 		    if (rDesc.shouldIgnoreNet(net) || (arch.isClockNet(net) && skipClockNets))
 		        continue;
@@ -100,6 +112,9 @@ public class JEdifVoterSelection extends EDIFMain {
                 }
             }
             
+            // Check to see if there is a property to prevent restore. It adds a 
+            // special replication type for preventing this restore. In most cases, nothing
+            // is returned.
 			if (EdifReplicationPropertyReader.isDoNotRestoreLocation(net)) {
 				rDesc.addOrganSpecifications(net, replicationType.antiRestore(net, rDesc));
 			}
@@ -107,13 +122,15 @@ public class JEdifVoterSelection extends EDIFMain {
 				rDesc.addOrganSpecifications(net, replicationType.forceRestore(net, null, rDesc));
 			}
 			else {
+				// Adds voters for reduction, etc. Depends on the repcliation tpye of the driver.
 				rDesc.addOrganSpecifications(net, replicationType.defaultRestore(net, rDesc));
 			}
 		}
 
-		// compute cutset
+		// Compute cutset. The actual algorithm used is determined by the command line arguement.
 		// TODO: later, the cutset algorithm should take advantage of the voters already added up to this point
 		Collection<EdifPortRef> cuts = CutsetComputation.getValidCutset(result, topCell, cDesc, out);
+
 		// save the cutset so it doesn't need to be recomputed later if using JEdifDetectionSelection with persistence detection or JEdifMoreFrequentVoting
 		rDesc.setCutsetReference(cuts);
 		
