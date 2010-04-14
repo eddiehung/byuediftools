@@ -27,6 +27,10 @@ import edu.byu.ece.edif.util.jsap.commandgroups.OutputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationDescriptionCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 
+/**
+ * This static executable will perform the NMR operation on an Edif file. This executable needs an EdifEnvironment
+ * and a replication description object.
+ */
 public class JEdifNMR extends EDIFMain {
 
 	public static String GENERATE_EDIF_FLAG = "edif";
@@ -103,12 +107,15 @@ public class JEdifNMR extends EDIFMain {
 		out = LogFile.out();
 		err = LogFile.err();
 		
+		// Get the Edif Environment
 		EdifEnvironment env = JEdifParserCommandGroup.getEdifEnvironment(result, out);
+		// Get the replication description
 		ReplicationDescription rdesc = ReplicationDescriptionCommandGroup.getReplicationDescription(result, env, out);
 
 		TechnologyCommandGroup.getPartFromEDIF(result, env);
 		NMRArchitecture arch = TechnologyCommandGroup.getArch(result);
 		
+		// Create a new name for the top level cell and call replicate
 		EdifEnvironmentReplicate replicator = null;
 		EdifEnvironment newEnv = null;
 		try {
@@ -125,6 +132,7 @@ public class JEdifNMR extends EDIFMain {
 			throw new EdifRuntimeException("Unexpected EDIF name conflict");
 		}
 
+		// Determine output filename
 		String outputFileName = OutputFileCommandGroup.getOutputFileName(result);
 		boolean generateEdif = result.getBoolean(GENERATE_EDIF_FLAG);
 		if (!result.userSpecified(OutputFileCommandGroup.OUTPUT_OPTION)) {
@@ -140,7 +148,8 @@ public class JEdifNMR extends EDIFMain {
 			if (outputFileName.endsWith(".edf"))
 				generateEdif = true;			
 		}
-		
+
+		// Generate EDIF or .jedif
 		if (generateEdif) {
 			// Generate EDIF output
 			LogFile.out().println("Generating .edf file " + outputFileName);
