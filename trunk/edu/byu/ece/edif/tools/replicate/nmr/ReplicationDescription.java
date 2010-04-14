@@ -28,6 +28,8 @@ import edu.byu.ece.edif.tools.replicate.wiring.WiringPolicy;
  * contains information about what types of replication to perform, where to insert voters,
  * where to insert detectors, what do to with detection error signal outputs, a feedback cutset,
  * etc.
+ * 
+ * This is primarily a container class and has little if any functionality.
  */
 public class ReplicationDescription implements Serializable {
 
@@ -405,28 +407,75 @@ public class ReplicationDescription implements Serializable {
     	return _cutsetReference;
     }
     
+    /**
+     * Indicates the instances in the design to be replicated. Only one type of replication is allowed
+     * for each instance. Not all instances need to be in this map. This member is usually filled in by
+     * the JEdifNMRSelection step (other tools can manipulate this if necessary).
+     */
     protected Map<EdifCellInstance, ReplicationType> _instancesToReplicate;
 
+    /**
+     * Indicates the ports in the design to be replicated. Only one type of replication is allowed
+     * for each port. Not all ports need to be in this map. This member is usually filled in by
+     * the JEdifNMRSelection step.
+     */
     protected Map<EdifPort, ReplicationType> _portsToReplicate;
 
+    /**
+     * Determines what voter/detection organs to insert on nets. Multiple organs can
+     * be added to each net (i.e. a voter and a detector). Not all nets need to be in this
+     * Map. This field is usually filled in during the JEdifVoterSelection and JEdifDetectionSelection
+     * steps.
+     */
     protected Map<EdifNet, Set<OrganSpecification>> _organsToInsert;
+
+    /**
+     * Determines the WiringPolicy for sinks on a net. If the wiring policy needs to differ for a 
+     * sink, the wiring policy should be added here. None of hte selection tools currently use anything
+     * but the default. The default will be used if nothing is specified.
+     */
+    protected Map<EdifPortRef, WiringPolicy>  _wiringPolicies; 
     
-    protected Map<EdifPortRef, WiringPolicy>  _wiringPolicies; // wiring policy for each sink (default if unspecified)
-    
+    /**
+     * Manages the various detection domains in the circuit.
+     */
     protected Set<DetectionDomain> _detectionDomains;
-    
-    protected Map<List<SinglePortConnection>, DetectionOutputSpecification> _detectionOutputSpecifications0;
-    
+
+    /**
+     * Detection output signals need to be clearly specified by the user. There are two ways of 
+     * creating this specification. 
+     * 
+     * The user will provide a name for the detection output ports. If they don't exist, they will be created.
+     * If they exit, they will be used. However, the circuit is not changed until the end. So we need to
+     * 
+     * _detectionOutputSpecification0: We map the connections to existing outputs (for ports that exist)
+     * 
+     * _detectionOutputSpecification1: We map the connections to future outputs (for ports that do not exits)
+     */
+    protected Map<List<SinglePortConnection>, DetectionOutputSpecification> _detectionOutputSpecifications0;    
     protected Map<String, DetectionOutputSpecification> _detectionOutputSpecifications1;
     
+    /** Indicates if the port groups has been set yet*/
     protected boolean _alreadySetPortGroups;
     
+    /** Mapping between a port and a premitigated port group. Tells you which ports are part of a 
+     * premitigated port group.
+     **/
     protected Map<EdifPort, PreMitigatedPortGroup> _portGroups;
     
+    /** Instances to ignore for replication. Dummy connections to ignore (i.e., synthesis tool creates dummy
+     * instances that should not be reprlicated).
+     */
     protected Set<EdifCellInstance> _instancesToIgnore;
     
+    /** Nets to ignore for replication. Dummy connections to ignore (i.e., synthesis tool creates dummy
+     * nets that should not be reprlicated).
+     */   
     protected Set<EdifNet> _netsToIgnore;
     
+    /** PortRefs to ignore for replication. Dummy connections to ignore (i.e., synthesis tool creates dummy
+     * port refs that should not be reprlicated).
+     */   
     protected Map<EdifNet, Set<EdifPortRef>> _portRefsToIgnore;
     
     /**
