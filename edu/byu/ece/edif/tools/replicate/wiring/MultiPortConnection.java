@@ -11,6 +11,14 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 
+/**
+ * A container for an EdifCellInstance and a EdifPortRef. The EdifCellInstance can be null in which
+ * case this is a top-level port connection. This is a lot like the EdifPortRef. This class is created
+ * to help manage the connections before the net has been created. 
+ * 
+ * A list of net connections without the net along with a method to perform the net connections once the
+ * net has been created.
+ */
 public class MultiPortConnection extends PortConnection {
 
     public MultiPortConnection() {
