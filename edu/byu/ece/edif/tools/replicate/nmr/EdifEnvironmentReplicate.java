@@ -37,7 +37,7 @@ import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopy;
 
 /**
  * This class extends the EdifEnvironmentCopy to provide design replication. An entire
- * EdifEnvironment is copied, but replicated copies are made where appropriate. Just as
+ * EdifEnvironment is copied, but replicated copies of various Edif objectsare made where appropriate. Just as
  * the EdifEnvironmentCopy class, the EdifEnvironmentReplicate class performs the replication/copy starting
  * with the createEdifEnvironment() method (called from the replicate() method in this case).
  * This starts a recursive call tree including calls to createTopCell, copyEdifCell, addEdifPorts,
@@ -45,7 +45,9 @@ import edu.byu.ece.edif.tools.sterilize.lutreplace.EdifEnvironmentCopy;
  * 
  * A design that is replicated using this class may or may not be completely flattened. In any
  * case, replication will occur only at the top-level. That is, cells that contain hierarchy will
- * be replicated as an atomic unit. To make this work, the EdifEnvironmentReplicate class overrides the addEdifPorts,
+ * be replicated as an atomic unit. 
+ * 
+ * To make this work, the EdifEnvironmentReplicate class overrides the addEdifPorts,
  * addChildEdifCellInstance, and addNet methods to do port, instance, and net replication if the cell
  * being operated on is the top cell but call the super (EdifEnvironmentCopy) methods otherwise. The
  * copyEdifCell method is also overridden to do what the super method would do then additionally maintain a port
@@ -66,42 +68,123 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         _desc = desc;
         _instanceMap = new LinkedHashMap<EdifCellInstance, List<EdifCellInstance>>();
         _netMap = new LinkedHashMap<EdifNet, List<EdifNet>>();
-        _portMap = new LinkedHashMap<EdifPort, List<EdifPort>>();
+        _replicatedPortMap = new LinkedHashMap<EdifPort, List<EdifPort>>();
         _arch = arch;
         _topCellName = topCellName;
     }
     
     /**
      * Perform the replication specified by the ReplicationDescription given in the
-     * constructor.
+     * constructor. This is the public method that must be called to perform the
+     * replication.
      * 
      * @return
      * @throws EdifNameConflictException
      */
     public EdifEnvironment replicate() throws EdifNameConflictException {
-       createEdifEnvironment();       
+    	// Call the super.createEdifEnvironment
+    	createEdifEnvironment();       
        return _newEnv;
     }
 
     /**
+	 * Do the same things as the super (EdifEnvironmentCopy) method but also maintain a replicated
+	 * port
+	 * mapping of old to new ports. Create the NetManager that will be used in the wiring
+	 * algorithm if this is the top cell. Also, call the addOrgans method if operating
+	 * on the top cell.
+	 */
+	public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name) throws EdifNameConflictException {
+	    
+	    EdifNameable topCellName = name;
+	    if (origCell == _origTopCell && _topCellName != null) {
+	        topCellName = _topCellName;
+	    }
+	    EdifCell newCell = new EdifCell(destLibrary, topCellName);
+	    _cellMap.put(origCell, newCell);
+	    // copy properties
+	    newCell.copyProperties(origCell);
+	    // copy primitive status
+	    if (origCell.isPrimitive())
+	        newCell.setPrimitive();
+	    if (origCell == _origTopCell) {
+	        EdifDesign oldDesign = _origEnv.getTopDesign();
+	        EdifCellInstance newTopInstance = new EdifCellInstance(newCell.getEdifNameable(), null, newCell);
+	        EdifDesign newDesign = new EdifDesign(newCell.getEdifNameable());
+	        newDesign.setTopCellInstance(newTopInstance);
+	        // copy design properties
+	        newDesign.copyProperties(oldDesign);
+	        _newEnv.setTopDesign(newDesign);
+	    }
+	    
+	    // Call the local version of addEdifPorts
+	    addEdifPorts(origCell, newCell);
+	
+	    // maintain port mapping form old environment to new environment/new copies
+	    if (origCell != _origTopCell) {
+	    	for (EdifPort oldPort : origCell.getPortList()) {
+	    		List<EdifPort> newPorts = new ArrayList<EdifPort>();
+	    		PreMitigatedPortGroup portGroup = _desc.getPortGroup(oldPort);
+	    		if (portGroup != null) { // pre-mitigated port
+	    			if (oldPort == portGroup.getFirstPort()) { // only take action on the first port in the group
+	    				for (EdifPort port : portGroup.getPorts()) {
+	    					EdifPort newPort = newCell.getMatchingPort(port);
+	    					if (newPort == null)
+	    						throw new EdifRuntimeException("Unexpected: port names of cell do not match after copy");
+	    					newPorts.add(newPort);
+	    				}
+	    			}
+	    		}
+	    		else { // just a regular port
+	    			EdifPort newPort = newCell.getMatchingPort(oldPort);
+	    			if (newPort == null) {
+	    				throw new EdifRuntimeException("Unexpected: port names of cell do not match after copy");
+	    			}
+	    			newPorts.add(newPort);
+	    		}
+	    		_replicatedPortMap.put(oldPort, newPorts);            
+	    	}
+	    }
+	
+	    // This method is part of the super class. It calls addChildEdifCellInstance which is overloaded.
+	    addChildEdifCellInstances(origCell, newCell);
+	
+	    if (origCell == _origTopCell) {
+	        _netManager = new NetManager(newCell);
+	        addOrgans(newCell);
+	    }
+	    addNets(origCell, newCell);
+	    if (origCell == _origTopCell) {
+	        // at this point everything else should be done and we can start wiring up any detector nets
+	        addDetectionWiring(newCell);
+	    }
+	    return newCell;
+	}
+
+	/**
      * Either replicate the given instance in the new design (if operating in the top cell) or copy it over exactly.
      */
     protected void addChildEdifCellInstance(EdifCell origCell, EdifCell newCell, EdifCellInstance oldInstance) throws EdifNameConflictException {
         if (_desc.shouldIgnoreInstance(oldInstance))
+        	// Some instances should not be copied. This will not copy instances that have been tagged as ignore
             return;
         if (origCell != _origTopCell)
+        	// if it is not the top cell, call super
             super.addChildEdifCellInstance(origCell, newCell, oldInstance);
         else {
+        	// Process the top cell
             EdifCell newCellDefinition = getNewEdifCell(oldInstance.getCellType());
             List<EdifCellInstance> newInstances = null;
             ReplicationType replicationType = _desc.getReplicationType(oldInstance);
             if (replicationType != null) { // marked for replication
-                newInstances = replicationType.replicate(oldInstance, newCellDefinition,  newCell);
+                // If instance was tagged for replication, call the replicate method of the replication type.
+            	newInstances = replicationType.replicate(oldInstance, newCellDefinition,  newCell);
             }
             else if (EdifReplicationPropertyReader.isPreMitigatedInstance(oldInstance)) { // pre-mitigated instance
+            	// Perform a single instance copy
             	newInstances = UnityReplicationType.getInstance().replicate(oldInstance, newCellDefinition, newCell);
             }
-            else
+            else // not premitigated or not tagged for replication: perform a single instance copy
             	newInstances = UnityReplicationType.getInstance().replicate(oldInstance, newCellDefinition, newCell);
             _instanceMap.put(oldInstance, newInstances);
         }
@@ -113,14 +196,18 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
      */
     protected void addEdifPorts(EdifCell origCell, EdifCell newCell) throws EdifNameConflictException {
         if (origCell != _origTopCell) {
+        	// If it is not the top cell, use the default port adding code (i.e., super).
             super.addEdifPorts(origCell, newCell);
         }
         else {
+        	// Custom port replication for the top cell
             for (EdifPort oldPort : origCell.getPortList()) {
                 List<EdifPort> newPorts = null;
                 ReplicationType portRepType = _desc.getReplicationType(oldPort);
                 PreMitigatedPortGroup portGroup = _desc.getPortGroup(oldPort);
                 if (portRepType != null) {
+                	// For this port, a replication type was specified. Call the custom
+                	// replication type code to  do the port replication
                     newPorts = portRepType.replicate(oldPort, newCell);
                 }
                 else if (portGroup != null) { // pre-mitigated port
@@ -137,32 +224,41 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 	newPorts.add(UnityReplicationType.getInstance().replicate(oldPort, newCell).iterator().next());
                 }
                 if (newPorts != null && newPorts.size() != 0) {
-                    _portMap.put(oldPort, newPorts);
+                    _replicatedPortMap.put(oldPort, newPorts);
                 }
             }
         }
     }
 
     /**
+     * Called by copyEdifCell->addNets
+     * 
      * Either wire replicated instances according to the wiring algorithm and WiringPolicies specified in
      * the ReplicationDescription (if working in the top cell) or copy nets exactly.
      */
     protected EdifNet addNet(EdifCell origCell, EdifCell newCell, EdifNet oldNet) throws EdifNameConflictException {
-        if (_desc.shouldIgnoreNet(oldNet))
-            return null;
+
+    	if (_desc.shouldIgnoreNet(oldNet))
+    		// Net has been tagged as ignore. Do not copy (for example, the net between a GND and a pretriplicated port)
+    		return null;
         if (origCell != _origTopCell)
+        	// If this is not the top cell, call the super.addNet
             return super.addNet(origCell, newCell, oldNet);
         else {
-            //////////////// wiring algorithm ////////////////
+
+        	//////////////// wiring algorithm ////////////////
             
             // separate portRefs into drivers (including INOUT) and sinks
             Collection<EdifPortRef> origDrivers = oldNet.getSourcePortRefs(true, true);
             Collection<EdifPortRef> origSinks = oldNet.getSinkPortRefs(false, true);
             
             if (_desc.shouldIgnorePortRefsInNet(oldNet)) {
-                origSinks.removeAll(_desc.getPortRefsToIgnore(oldNet));
+            	// Some nets need to have some of their port refs ignored but not all of them. This
+            	// has a list of these port refs to ignore.
+            	origSinks.removeAll(_desc.getPortRefsToIgnore(oldNet));
             }
             
+            // 1. Determine the replication type of the net (based on the replication type of the drivers)
             ReplicationType replicationType = null;
             for (EdifPortRef driver : origDrivers) {
                 ReplicationType driverType = _desc.getReplicationType(driver);
@@ -175,53 +271,75 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 }
             }
             
+            // 2. Determine driver connections
+            
+            // A list of port connections for the drivers. These port connections will not include connections for sinks.
             List<PortConnection> driverConnections = new ArrayList<PortConnection>();
             for (int i = 0; i < replicationType.getReplicationFactor(); i++) {
                 // create MultiPortConnections and give them net names derived from the replication type and domain
+            	// At this point, we don't have a net. We just have an empty list of connections for each domain of the new net.
                 driverConnections.add(new MultiPortConnection(replicationType.getReplicationNetNameable(oldNet.getEdifNameable(), i)));
             }
             
-            // setup driver connections
+            // setup driver connections. We will fill in the PortConnections for the list created above.
             for (EdifPortRef origDriver : origDrivers) {
                 EdifCellInstance instance = origDriver.getCellInstance();
                 EdifPort port = origDriver.getPort();
                                 
                 if (instance == null || EdifReplicationPropertyReader.isPreMitigatedInstance(instance)) { // either a top-level or a pre-mitigated instance
-                    EdifCellInstance newInstance = (instance == null) ? null : _instanceMap.get(instance).get(0);
-                    if (_portMap.get(port) != null) {
-                        Iterator<EdifPort> portIt = _portMap.get(port).iterator();
+                	// If the instance associated with the driver of this net is null, it is a top-level port. This means
+                	// that there are no instances to iterate over (i.e. there is only one instance. Instead, you need to iterate
+                	// over the replicated ports.
+                	//
+                	// If the instance is premitigated, again, you don't iterate over instance. Instead, like a top-level instance,
+                	// you need to iterate over the replicated ports of the premitigated instance.
+                	EdifCellInstance newInstance = (instance == null) ? null : _instanceMap.get(instance).get(0);
+                    if (_replicatedPortMap.get(port) != null) {
+                    	// get the replicated ports in the top-level or premitigated instance
+                        Iterator<EdifPort> portIt = _replicatedPortMap.get(port).iterator();
+                        // There should be the same number of ports as driver connections
                         Iterator<PortConnection> mpcIt = driverConnections.iterator();
                         while (portIt.hasNext() && mpcIt.hasNext()) { // the two collections have the same number of elements
                             EdifPort connectionPort = portIt.next();
                             MultiPortConnection mpc = (MultiPortConnection) mpcIt.next();
+                            // Add a connection to the multiport connection.
                             mpc.addConnection(newInstance, connectionPort.getSingleBitPort(origDriver.getBusMember()));                       
                         }
                     }
                 }
                 else { // not a top-level port and not a pre-mitigated instance
-                    EdifPort newPort = _portMap.get(port).get(0);
+                	// In this case, the instance of the driver is replicated. Iterate over the replicated instances, not the ports.
+                	EdifPort newPort = _replicatedPortMap.get(port).get(0);
                     Iterator<EdifCellInstance> instanceIt = _instanceMap.get(instance).iterator();
                     Iterator<PortConnection> mpcIt = driverConnections.iterator();
                     while (instanceIt.hasNext() && mpcIt.hasNext()) { // the two collections have the same number of elements
                         EdifCellInstance connectionInstance = instanceIt.next();
                         MultiPortConnection mpc = (MultiPortConnection) mpcIt.next();
-                        //mpc.addConnection(connectionInstance, new EdifSingleBitPort(newPort, origDriver.getBusMember()));
                         mpc.addConnection(connectionInstance, newPort.getSingleBitPort(origDriver.getBusMember()));
                     }
                 }
             }
             
+            // 3. Organ insertion
+
             // Now we need to see if there were any organs created for this net and wire their inputs appropriately. In the process
             // we will also see which of the sinks need organ outputs in preparation for wiring up the sinks
+            //
+            // Some of the sinks will be getting organ outputs and some will be getting the outputs straight from the drivers.
+            // This map indicates for each original sink port ref which PortConnections it will be connected to.
             Map<EdifPortRef, List<PortConnection>> sinkConnectionSources = new LinkedHashMap<EdifPortRef, List<PortConnection>>();
             Collection<OrganSpecification> organSpecifications = _desc.getOrganSpecifications(oldNet);
-            if (organSpecifications != null) {
-                for (OrganSpecification organSpecification : organSpecifications) {
+            if (organSpecifications != null) { // if there is an organ associated with this net.
+                for (OrganSpecification organSpecification : organSpecifications) { // can have multiple organs in a net
                     Organ organType = organSpecification.getOrganType();
+                    // The organs have already been created and PortConnection objects for their outputs have been created.
+                    // Wire the inputs to the organ from the driver connections. The wires are actually created here.
                     organType.wireInputs(organSpecification, oldNet, driverConnections, _netManager, replicationType);
                     
                     List<PortConnection> organOutputs = organType.getOutputs(organSpecification);
                     List<EdifPortRef> sinksGettingOrganOutputs = organSpecification.getSinksGettingOrganOutputs();
+                    // Deciding whether the sinks should get the organ outputs (i.e. voter) or the inputs to the voter
+                    // (which are driver connections, i.e. bypass the organ).
                     for (EdifPortRef origSink : origSinks) {
                         if (sinksGettingOrganOutputs != null &&sinksGettingOrganOutputs.contains(origSink)) {
                             sinkConnectionSources.put(origSink, organOutputs);
@@ -230,21 +348,26 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 }
                 
             }
+            // This loop will iterate over all sinks of the given driver and make the connections.
             for (EdifPortRef origSink : origSinks) {
-                if (sinkConnectionSources.get(origSink) == null)
+
+            	// check to see if sink is already being driven by a driver (this could only be an organ output at this point).
+            	if (sinkConnectionSources.get(origSink) == null)
                     sinkConnectionSources.put(origSink, driverConnections);
                 List<PortConnection> sinkConnectionSinks = new ArrayList<PortConnection>();
                 EdifCellInstance instance = origSink.getCellInstance();
                 EdifPort port = origSink.getPort();
                 if (instance == null || EdifReplicationPropertyReader.isPreMitigatedInstance(instance)) { // top-level port or pre-mitigated instance
-                    EdifCellInstance newInstance = (instance == null) ? null : _instanceMap.get(instance).get(0);
-                    for (EdifPort newPort : _portMap.get(port)) {
+                	// For top-level ports or pre-mitiaged instances, iterate over replicated ports.
+                	EdifCellInstance newInstance = (instance == null) ? null : _instanceMap.get(instance).get(0);
+                    for (EdifPort newPort : _replicatedPortMap.get(port)) {
                         PortConnection sinkConnectionSink = new SinglePortConnection(newPort.getSingleBitPort(origSink.getBusMember()), newInstance);
                         sinkConnectionSinks.add(sinkConnectionSink);
                     }
                 }
                 else { // not a top-level port and not a pre-mitigated instance
-                    List<EdifPort> newPortList = _portMap.get(port);
+                	// For replicated instances, iterate over the instances
+                    List<EdifPort> newPortList = _replicatedPortMap.get(port);
                     if (newPortList == null)
                     	throw new EdifRuntimeException("Unexpected: nothing in _portMap for " + port);
                     EdifPort newPort = newPortList.get(0);
@@ -258,6 +381,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 // default wiring policy where unspecified is ModuloIterationWiringPolicy
                 if (wiringPolicy == null)
                 	wiringPolicy = ModuloIterationWiringPolicy.getInstance();
+                // Do the actual wiring
                 wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
             }
             
@@ -339,7 +463,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     				EdifCellInstance oldInstance = pc.getInstance();
     				EdifPort oldPort = oldEsbp.getParent();
     				int bitNum = oldEsbp.bitPosition();
-    				List<EdifPort> newPorts = _portMap.get(oldPort);
+    				List<EdifPort> newPorts = _replicatedPortMap.get(oldPort);
     				EdifPort newPort = null;
     				if (newPorts != null)
     					newPort = newPorts.get(0); // there should only be one!
@@ -380,77 +504,6 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 }
             }
         }
-    }
-
-    /**
-     * Do the same things as the super (EdifEnvironmentCopy) method but also maintain a port
-     * mapping of old to new ports. Create the NetManager that will be used in the wiring
-     * algorithm if this is the top cell. Also, call the addOrgans method if operating
-     * on the top cell.
-     */
-    public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name) throws EdifNameConflictException {
-        
-        EdifNameable topCellName = name;
-        if (origCell == _origTopCell && _topCellName != null) {
-            topCellName = _topCellName;
-        }
-        EdifCell newCell = new EdifCell(destLibrary, topCellName);
-        _cellMap.put(origCell, newCell);
-        // copy properties
-        newCell.copyProperties(origCell);
-        // copy primitive status
-        if (origCell.isPrimitive())
-            newCell.setPrimitive();
-        if (origCell == _origTopCell) {
-            EdifDesign oldDesign = _origEnv.getTopDesign();
-            EdifCellInstance newTopInstance = new EdifCellInstance(newCell.getEdifNameable(), null, newCell);
-            EdifDesign newDesign = new EdifDesign(newCell.getEdifNameable());
-            newDesign.setTopCellInstance(newTopInstance);
-            // copy design properties
-            newDesign.copyProperties(oldDesign);
-            _newEnv.setTopDesign(newDesign);
-        }
-        
-        addEdifPorts(origCell, newCell);
-
-        // maintain port mapping form old environment to new environment/new copies
-        if (origCell != _origTopCell) {
-        	for (EdifPort oldPort : origCell.getPortList()) {
-        		List<EdifPort> newPorts = new ArrayList<EdifPort>();
-        		PreMitigatedPortGroup portGroup = _desc.getPortGroup(oldPort);
-        		if (portGroup != null) { // pre-mitigated port
-        			if (oldPort == portGroup.getFirstPort()) { // only take action on the first port in the group
-        				for (EdifPort port : portGroup.getPorts()) {
-        					EdifPort newPort = newCell.getMatchingPort(port);
-        					if (newPort == null)
-        						throw new EdifRuntimeException("Unexpected: port names of cell do not match after copy");
-        					newPorts.add(newPort);
-        				}
-        			}
-        		}
-        		else { // just a regular port
-        			EdifPort newPort = newCell.getMatchingPort(oldPort);
-        			if (newPort == null) {
-        				throw new EdifRuntimeException("Unexpected: port names of cell do not match after copy");
-        			}
-        			newPorts.add(newPort);
-        		}
-        		_portMap.put(oldPort, newPorts);            
-        	}
-        }
-
-        addChildEdifCellInstances(origCell, newCell);
-
-        if (origCell == _origTopCell) {
-            _netManager = new NetManager(newCell);
-            addOrgans(newCell);
-        }
-        addNets(origCell, newCell);
-        if (origCell == _origTopCell) {
-            // at this point everything else should be done and we can start wiring up any detector nets
-            addDetectionWiring(newCell);
-        }
-        return newCell;
     }
 
     /**
@@ -497,7 +550,9 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     protected EdifCell _origTopCell;
     protected Map<EdifCellInstance, List<EdifCellInstance>> _instanceMap;
     protected Map<EdifNet, List<EdifNet>> _netMap;
-    protected Map<EdifPort, List<EdifPort>> _portMap;
+
+    /** Map between original EdifPort and a List of replicated EdifPort objects. **/
+    protected Map<EdifPort, List<EdifPort>> _replicatedPortMap;
     protected NetManager _netManager;
     protected EdifNameable _topCellName;
 }
