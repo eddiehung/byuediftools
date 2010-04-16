@@ -6,8 +6,17 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 
+/**
+ * A container for an EdifCellInstance and a EdifPortRef. The EdifCellInstance can be null in which
+ * case this is a top-level port connection. This is a lot like the EdifPortRef. This class is created
+ * to help manage the connections before the net has been created. 
+ * 
+ */
 public class SinglePortConnection extends PortConnection {
 
+	/**
+	 * Atomic class. All elements set at construction.
+	 */
     public SinglePortConnection(EdifSingleBitPort esbp, EdifCellInstance instance, EdifNameable name) {
         super(name);
         _singleBitPort = esbp;
@@ -26,6 +35,10 @@ public class SinglePortConnection extends PortConnection {
         this(epr, null);
     }
     
+    /**
+     * Uses the information in this class to actually make the connection. This is done
+     * after the container elements have been populated.
+     */
     public void connectToNet(EdifNet net) {
         net.addPortConnection(new EdifPortRef(net, _singleBitPort, _instance));
     }
