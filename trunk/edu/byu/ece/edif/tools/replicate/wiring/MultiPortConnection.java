@@ -19,6 +19,7 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
  * A list of net connections without the net along with a method to perform the net connections once the
  * net has been created.
  */
+@SuppressWarnings("serial")
 public class MultiPortConnection extends PortConnection {
 
     public MultiPortConnection() {

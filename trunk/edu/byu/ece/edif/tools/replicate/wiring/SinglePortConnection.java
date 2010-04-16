@@ -12,6 +12,7 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
  * to help manage the connections before the net has been created. 
  * 
  */
+@SuppressWarnings("serial")
 public class SinglePortConnection extends PortConnection {
 
 	/**
