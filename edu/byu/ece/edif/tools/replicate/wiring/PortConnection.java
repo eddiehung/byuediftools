@@ -8,6 +8,7 @@ import edu.byu.ece.edif.core.EdifNet;
 /**
  * A container for a single port connection or multiple port connections.
  */
+@SuppressWarnings("serial")
 public abstract class PortConnection implements Serializable {
 
     public PortConnection() {
