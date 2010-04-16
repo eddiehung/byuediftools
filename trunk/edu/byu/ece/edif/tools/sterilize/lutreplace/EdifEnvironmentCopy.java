@@ -40,23 +40,53 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
 /**
  * This class copies an EdifEnvironment and maintains an association between the
  * objects in the old EdifEnvironment and the objects in the new
- * EdifEnvironment.
+ * EdifEnvironment. This class does NOT extend EdifEnvironment but is a container
+ * that keeps a copy of the old and new environment as well as all the mapping
+ * between the envirionments.
  * <p>
  * This class was intended to be extended by overriding some of the methods.
  * Custom "copy" classes can be created that actually copy and modify.
  * 
- * @author Mike Wirthlin
+ * Here is the hierarchy of calls for copying:
+ *   createEdifEnvironment
+ *     - Create empty environment
+ *     - Copy properties of the environment
+ *     setEdifEnvironmentDateAuthorProgramVersion
+ *     createTopDesign
+ *       - Creates a new empty top design
+ *       createTopCell
+ *         copyEdifCell
+ *           copyEdifLibrary
+ *           copyProperties
+ *           - set primitive
+ *           - set top design if necessary
+ *           addEdifPorts
+ *             - copies ports to new cell
+ *           addChildEdifCellInstances
+ *             - iterates over instances
+ *             addChildCellInstance
+ *               - If the cell type has not been copied yet, call:
+ *               copyEdifCell
+ *           addNets
+ *             - Iterates over the ntes
+ *             addNet
+ *               - Iterates over EdifPortRefs
+ *               addEdifPortRef
+ *               
  */
+
+
 public class EdifEnvironmentCopy {
 
     /**
-     * This constructor will create a copy of the EdifEnvironmentCopy object.
+     * This constructor initializes the object with the old environment. This
+     * method does NOT actually perform the copy. To perform the copy,
+     * the createEdifEnvironment must be called.
      * 
      * @param env Environment to copy
      */
     public EdifEnvironmentCopy(EdifEnvironment env) throws EdifNameConflictException {
         _origEnv = env;
-        // createEdifEnvironment();
     }
 
     /**
@@ -338,18 +368,25 @@ public class EdifEnvironmentCopy {
         newNet.addPortConnection(newEpr);
     }
 
+    /** A map between the old EdifCellInstance objects to the corresponding new EdifCellInstance objects. */
     protected HashMap<EdifCellInstance, EdifCellInstance> _instanceMap = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
 
+    /** A map between the old EdifPort objects to the corresponding new EdifPort objects. */
     protected HashMap<EdifPort, EdifPort> _portMap = new LinkedHashMap<EdifPort, EdifPort>();
 
+    /** A map between the old EdifNet objects to the corresponding new EdifNet objects. */
     protected HashMap<EdifNet, EdifNet> _netMap = new LinkedHashMap<EdifNet, EdifNet>();
 
+    /** A map between the old EdifCell objects to the corresponding new EdifCell objects. */
     protected HashMap<EdifCell, EdifCell> _cellMap = new LinkedHashMap<EdifCell, EdifCell>();
 
+    /** A map between the old EdifLibrary objects to the corresponding new EdifLIbray objects. */
     protected HashMap<EdifLibrary, EdifLibrary> _libMap = new LinkedHashMap<EdifLibrary, EdifLibrary>();
 
+    /** The new environment that was created. **/
     protected EdifEnvironment _newEnv;
 
+    /** The old EdifEnvironment that was copied. **/
     protected EdifEnvironment _origEnv;
 
 }
