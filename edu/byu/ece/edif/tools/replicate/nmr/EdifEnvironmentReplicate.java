@@ -402,15 +402,35 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     }
 
     /**
-     * Add the circuitry for merging the detection signals into the specified output(s).
+     * Add the circuitry for merging the detection signals into the specified output(s). 
      */
     protected void addDetectionWiring(EdifCell newCell) {
+
+    	/* A single detection domain could be used to create more than one top-level output. Because
+    	 * of this, multiple DetectionOutputMergers may be needed for each DetectionDomain. (for example,
+    	 * you may want to handle the detection domain in more than one way: 'or' for standard merging,
+    	 * and some other application specific merging function (even, all, etc.). The following map
+    	 * links detectionoutputmerges with each detection domain.
+    	 *  
+    	 * The point of the map is that each unique pair of detection domain and detection output merger
+    	 * gets its own unique list of PortConnections. 
+    	 * 
+    	 * The purpose of the cache is to prevent multiple mergers from being created for each DetectionDomain
+    	 */    	
     	Map<DetectionDomain, Map<DetectionOutputMerger, List<PortConnection>>> domainOutputsCache =
     		new LinkedHashMap<DetectionDomain, Map<DetectionOutputMerger, List<PortConnection>>>();
 
     	for (DetectionOutputSpecification os : _desc.getDetectionOutputSpecifications()) {
+    		// Iterate over each top-level detection output and create an enplty list of port connections
+    		// (a single list of multi-bit connections).
+    		//
+    		// Each DetectionOutputSpecification may merge more than one DetectionDomain. Iterate over
+    		// all detection domains that are associated with this DetectionOutputSpecification.
     		List<List<PortConnection>> domainOutputs = new ArrayList<List<PortConnection>>();
     		for (DetectionDomain detectionDomain : os.getDetectionDomains()) {
+    			// check to see if the domain has been merged with the correct merger. If it has,
+    			// get the merged outputs from the chache. If not, create the merging circuitry and add
+    			// it to the cache.
     			List<PortConnection> cachedDomainOutput = null;
     			Map<DetectionOutputMerger, List<PortConnection>> cacheMap = domainOutputsCache.get(detectionDomain);
     			if (cacheMap != null) {
@@ -421,6 +441,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     				domainOutputsCache.put(detectionDomain, cacheMap);
     			}
     			if (cachedDomainOutput == null) {
+    				// domain has not been merged, perform the merge
     				List<List<PortConnection>> domainConnections = new ArrayList<List<PortConnection>>();
     				List<List<PortConnection>> inputConnections = detectionDomain.getInputConnections();
     				if (inputConnections != null)
@@ -428,11 +449,14 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     				for (OrganSpecification dOrganSpec : detectionDomain.getDetectorSpecifications()) {
     					domainConnections.add(dOrganSpec.getOrganType().getOutputs(dOrganSpec));
     				}
+    				// Merge a single domain and cache it
     				cachedDomainOutput = os.getMerger().mergeOutputs(domainConnections, newCell, _netManager);
     				cacheMap.put(os.getMerger(), cachedDomainOutput);
     			}
     			domainOutputs.add(cachedDomainOutput);
     		}
+    		// We are still iterating over output specifications. This line merges all of the domains in
+    		// a single output specification.
     		List<PortConnection> specificationOutput = os.getMerger().mergeOutputs(domainOutputs, newCell, _netManager);
     		
     		// check to see if an EdifPort needs to be created for this DetectionOutputSpecification.
@@ -456,6 +480,8 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     		}
     		else {
     			// convert references in old PortConnections to references in the new EdifEnvironment
+    			// 
+    			// Get new version of port that was copied in hte new edif environment
     			outputConnection = new ArrayList<SinglePortConnection>();
     			List<SinglePortConnection> oldCellOutputConnection = os.getOutputConnection();
     			for (SinglePortConnection pc : oldCellOutputConnection) {
