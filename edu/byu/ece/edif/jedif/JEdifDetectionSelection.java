@@ -49,7 +49,12 @@ import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationDescriptionCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationTypeCommandGroup;
 
-
+/**
+ * This static executable class is used to select locations for detectors. The inputs
+ * to this executable include a .jedif file, a replication description file, a circuit
+ * description file, a replication type, and a top-level portname for the detection
+ * output.
+ */
 public class JEdifDetectionSelection extends EDIFMain {
     
 	public static void main(String[] args) {
@@ -102,6 +107,7 @@ public class JEdifDetectionSelection extends EDIFMain {
 		
 		EdifCell topCell = env.getTopCell();
 		
+		// Determine from command line whether you want to insert obufs or oregs for the outputs
 		boolean insertObufs = !JEdifDetectionSelectionCommandGroup.noObufs(result);
 		boolean insertOregs = !JEdifDetectionSelectionCommandGroup.noOregs(result);
 		String clockNetName = null;
@@ -161,36 +167,49 @@ public class JEdifDetectionSelection extends EDIFMain {
 
 		int numSpecs = 0;
 		
-		// first find out where the outputs are (we should detect at the end of the circuit)
+		// first find out where the circuit outputs are 
+		// (we should detect at the output of the circuit but beforethe output buffer and
+		// any output registers)
 		IOBAnalyzer iobAnalyzer = cDesc.getIOBAnalyzer();
 		EdifCellInstanceGraph instanceGraph = cDesc.getInstanceGraph();
+		// This Set includes the nets that we will detect on based on the following analysis
 		Set<EdifNet> outputNets = new LinkedHashSet<EdifNet>();
 		if (!JEdifDetectionSelectionCommandGroup.noOutputDetection(result)) {
+			// We want to detect at the outputs. Iterate over all top-level ports
 			for (EdifPort outPort : topCell.getPortList()) {
 				int direction = outPort.getDirection();
 				if (!(direction == EdifPort.OUT || direction == EdifPort.INOUT))
+					// ignore input ports
 					continue;
 
 				for (EdifSingleBitPort esbp : outPort.getSingleBitPortList()) {
+					// iterate over each bit of the port
 					AbstractIOB iob = iobAnalyzer.getIOB(esbp);
 					if (iob == null)
 						continue;
+					// find OBUFs and output registers
 					Object bufObject = iob.getOBUF();
 					Object regObject = iob.getOutputReg();
+					// check to see if there is an obuf object
 					if (bufObject != null && (bufObject instanceof EdifCellInstance)) {
 						EdifCellInstance buf = (EdifCellInstance) bufObject;
+						// if there is an obuf, check to see if there is an output register
 						if (regObject != null && (regObject instanceof EdifCellInstance)) {
 							EdifCellInstance reg = (EdifCellInstance) regObject;
 							if (iobAnalyzer.packOutputRegs()) {
+								// There is a register, provide the input of the register as the detect location.
+								// The pack IOB option must be set for this to occur.
 								Collection<EdifCellInstanceEdge> edges = instanceGraph.getInputEdges(reg, "D");
 								if (edges.size() == 1) {
 									outputNets.add(edges.iterator().next().getNet());
 								}
 							} else {
+								// There is a register but we are not packing so get the output of the register for the detection
 								outputNets.add(((EdifCellInstanceEdge) instanceGraph.getEdge(reg, buf)).getNet());
 							}
 
 						} else {
+							// There is no ouput register but there is a buffer. Select the input to the buffer
 							Collection<EdifCellInstanceEdge> edges = instanceGraph.getInputEdges(buf, "I");
 							if (edges.size() == 1) {
 								outputNets.add(edges.iterator().next().getNet());
@@ -201,13 +220,22 @@ public class JEdifDetectionSelection extends EDIFMain {
 			}		
 		}
 		
+		// At this point, the output detection locations have been determined
+		
 		detectionType.setUseComparatorForDownscale(!JEdifDetectionSelectionCommandGroup.noDownscaleDetection(result));
 		detectionType.setUseComparatorForUpscale(!JEdifDetectionSelectionCommandGroup.noUpscaleDetection(result));
 		
 		boolean skipClockNets = true;
+		// Iterate through all nets and look for various detection location posibilites
 		for (EdifNet net : topCell.getNetList()) {
-		    if (rDesc.shouldIgnoreNet(net) || (arch.isClockNet(net) && skipClockNets))
+
+			// Ignore the following nets for detection locations:
+			// - ignore nets specified during the premitigated block tagging
+			// - ignore clock nets
+			if (rDesc.shouldIgnoreNet(net) || (arch.isClockNet(net) && skipClockNets))
 		        continue;
+
+			// Determine the replication type of the driver
 			Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
 			ReplicationType replicationType = null;
             for (EdifPortRef driver : drivers) {
@@ -221,10 +249,14 @@ public class JEdifDetectionSelection extends EDIFMain {
                 }
             }
             
-            // skip nets that aren't the replication type we're working on
+            // skip nets that aren't the replication type we're working on. This only works on
+            // one replication type at a time (i.e., per pass)
             if (replicationType.getClass() != userReplicationTypeClass)
             	continue;
+            
+            
 			if (EdifReplicationPropertyReader.isDoNotDetectLocation(net)) {
+				// If there is an edif property that says don't detect here, add an antiDetector to the net (usually nothing)
 				List<OrganSpecification> detectors = detectionType.antiDetect(net, rDesc);
 				if (detectors != null) {
 					numSpecs += detectors.size();
@@ -232,6 +264,8 @@ public class JEdifDetectionSelection extends EDIFMain {
 				}
 			}
 			else if (EdifReplicationPropertyReader.isForceDetectLocation(net) || outputNets.contains(net)) {
+				// If there is a force detection properly on the net or if it is one of the output nets,
+				// add a forcced detector at this location
 				List<OrganSpecification> detectors = detectionType.forceDetect(net, rDesc);
 				if (detectors != null) {
 					numSpecs += detectors.size();
@@ -239,6 +273,8 @@ public class JEdifDetectionSelection extends EDIFMain {
 				}
 			}
 			else {
+				// Apply default detection at this net. It depends on the detection type. This usually
+				// determines whether you want to detect at an upscale or downscale location
 				List<OrganSpecification> detectors = detectionType.defaultDetect(net, rDesc);
 				if (detectors != null) {
 					numSpecs += detectors.size();
