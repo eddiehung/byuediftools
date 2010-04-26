@@ -319,12 +319,18 @@ public class JEdifNMRSelection extends EDIFMain {
 	protected static void excludeFromReplication(EdifCell topCell, ReplicationUtilizationTracker rTracker, EdifEnvironment env, PreservedHierarchyByNames hierarchy) {
 	    Collection<EdifCellInstance> excludeInstances = new ArrayList<EdifCellInstance>();
 	    
-	    // exlcude all instances of cell types with pre_mitigated property
+	    // exlcude all instances of cell types with pre_mitigated property and instances with
+	    // do_not_replicate property
 	    for (EdifCellInstance eci : topCell.getSubCellList()) {
 	        if (EdifReplicationPropertyReader.isPreMitigatedInstance(eci)) {
 	            excludeInstances.add(eci);
 	            LogFile.log().println("Excluding instance " + eci + " from NMR because it is an instance" +
 	        		" of a pre-mitigated cell type.");
+	        }
+	        else if (EdifReplicationPropertyReader.isDoNotReplicateInstance(eci)) {
+	        	excludeInstances.add(eci);
+	        	LogFile.log().println("Excluding instance " + eci + " from NMR because it is tagged with a" +
+	        			" \"" + EdifReplicationPropertyReader.DO_NOT_REPLICATE + "\" property.");
 	        }
 	    }
 	    

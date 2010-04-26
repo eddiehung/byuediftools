@@ -209,12 +209,17 @@ public class JEdifDetectionSelection extends EDIFMain {
 							}
 
 						} else {
-							// There is no ouput register but there is a buffer. Select the input to the buffer
+							// There is no output register but there is a buffer. Select the input to the buffer
 							Collection<EdifCellInstanceEdge> edges = instanceGraph.getInputEdges(buf, "I");
 							if (edges.size() == 1) {
 								outputNets.add(edges.iterator().next().getNet());
 							}
 						}
+					}
+					else {
+						// There is no output buffer. Select the net directly connected to the port.
+						EdifCellInstanceEdge edge = (EdifCellInstanceEdge) instanceGraph.getInputEdges(esbp).iterator().next();
+						outputNets.add(edge.getNet());
 					}
 				}
 			}		
