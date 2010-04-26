@@ -21,14 +21,47 @@ import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
 
 public class EdifReplicationPropertyReader {
 
+	/* Do not add a restoring organ (i.e. voters) on nets with this property */
 	public static String DO_NOT_RESTORE = "do_not_restore";
+	
+	/* Force the addition of a restoring organ (i.e. a voter) on nets with this property */
 	public static String FORCE_RESTORE = "force_restore";
+	
+	/* Do not add a detecting organ on nets with this property */
 	public static String DO_NOT_DETECT = "do_not_detect";
+	
+	/* Force the addition of a detecting organ on nets with this property */
 	public static String FORCE_DETECT = "force_detect";
+	
+	/* Do not flatten instances of cell types that have this property (the property
+	 * goes on the cell, not the instance) */
 	public static String DO_NOT_FLATTEN = "do_not_flatten";
+	
+	/* This property goes on ports and is used to specify pre-mitigated port groups
+	 * according to the following format: "<replication type>:<port group name>:<port index>"
+	 * where <replication type> is one of "triplication" or "duplication", <port group name> is 
+	 * a name used to group ports together, and <port index> is the index of the port in question
+	 * within the group.
+	 */
 	public static String PORT_GROUP = "port_group";
+	
+	/* This is the delimeter used in port_group property strings */
 	public static String PORT_GROUP_DELIMETER = ":";
+	
+	/* This property is put on half latch constant instances so that they can
+	 * be automatically replicated. They will be replicated with the highest replication
+	 * factor possible. (i.e. if the user runs JEdifNMRSelection twice, once with duplication
+	 * and once with triplication, the half latch constants will be triplicated. If the user
+	 * only runs JEdifNMRSelection once and with duplication, the constants will be duplicated.)
+	 */
 	public static String HALF_LATCH_CONSTANT = "half_latch_constant";
+
+	/* This property goes on instances to indicate that the instances should not be replicated. The
+	 * effect is the same as if the user had specified not to replicate the instance on the command line.
+	 * The code that checks for this property is in the excludeFromReplication method of the JEdifNMRSelection
+	 * class.
+	 */
+	public static String DO_NOT_REPLICATE = "do_not_replicate";
 	
 	public static BooleanTypedValue TRUE_VALUE = new BooleanTypedValue(true);
 	
@@ -43,6 +76,10 @@ public class EdifReplicationPropertyReader {
 	        }
 	    }
 	    return isPreMitigated;
+	}
+	
+	public static boolean isDoNotReplicateInstance(EdifCellInstance eci) {
+		return hasTrueBooleanValue(eci.getProperty(DO_NOT_REPLICATE));
 	}
 	
 	public static boolean hasPortGroup(EdifPort port) {
