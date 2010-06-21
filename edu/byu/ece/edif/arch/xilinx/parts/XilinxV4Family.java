@@ -1,42 +1,243 @@
+/*
+ * This file was auto-generated on Mon Jun 14 09:50:12 MDT 2010
+ * by edu.byu.ece.edif.arch.xilinx.parts.XilinxV4DeviceClassGenerator.
+ * See the source code to make changes.
+ *
+ * Do not modify this file directly.
+ */
+
+
 package edu.byu.ece.edif.arch.xilinx.parts;
 
-// Auto generate this for all parts
-public class XilinxV4Family implements XilinxFamily {
+public class XilinxV4Family extends XilinxFamily {
 
-	// XCVLX15
-	public static String XC4VLX15_NAME = "LX15";
-	public static XilinxPackage XC4VLX15_PACKAGES[] = new XilinxPackage[] {
-		XilinxValidPackages.SF363, XilinxValidPackages.FF668
-	};
-	public static XilinxSpeedGrade XC4VLX15_SPEEDGRADES[] = new XilinxSpeedGrade[] {
-		XilinxValidSpeedGrades.SPEED_1, XilinxValidSpeedGrades.SPEED_2
-	};
-	public static XilinxDevice XC4VLX15 = new XilinxDevice(this, XC4VLX15_NAME, XC4VLX15_PACKAGES, XC4VLX15_SPEEDGRADES);
-	
-	// From old code:
-    String archName = "xc4v";
-    String[] devNames = { "lx15", "lx25", "lx40", "lx60", "lx80", "lx100", "lx160", "lx200", "sx25", "sx35",
-            "sx55", "fx12", "fx20", "fx40", "fx60", "fx100", "fx140" };
+	private XilinxV4Family() {
+		super("Virtex4", "XC4V");
+	}
 
-    String[] xc4vlx15Package = { "SF363", "FF668" };
-    String[] xc4vlx25Package = { "SF363", "FF668" };
-    String[] xc4vlx40Package = { "FF668", "FF1148" };
-    String[] xc4vlx60Package = { "FF668", "FF1148" };
-    String[] xc4vlx80Package = { "FF1148" };
-    String[] xc4vlx100Package = { "FF1148", "FF1513" };
-    String[] xc4vlx160Package = { "FF1148", "FF1513" };
-    String[] xc4vlx200Package = { "FF1513" };
+	protected void addDevices() {
+		if(!_initialized) {
+			_initialized = true;
+			addDevice(new XC4VFX12(this));
+			addDevice(new XC4VLX15(this));
+			addDevice(new XC4VFX20(this));
+			addDevice(new XC4VLX25(this));
+			addDevice(new XC4VSX25(this));
+			addDevice(new XC4VSX35(this));
+			addDevice(new XC4VFX40(this));
+			addDevice(new XC4VLX40(this));
+			addDevice(new XC4VSX55(this));
+			addDevice(new XC4VFX60(this));
+			addDevice(new XC4VLX60(this));
+			addDevice(new XC4VLX80(this));
+			addDevice(new XC4VFX100(this));
+			addDevice(new XC4VLX100(this));
+			addDevice(new XC4VFX140(this));
+			addDevice(new XC4VLX160(this));
+			addDevice(new XC4VLX200(this));
+		}
+	}
 
-    String[] xc4vsx25Package = { "FF668" };
-    String[] xc4vsx35Package = { "FF668" };
-    String[] xc4vsx55Package = { "FF1148" };
+	class XC4VFX12 extends XilinxDevice {
 
-    String[] xc4vfx12Package = { "SF363", "FF668" };
-    String[] xc4vfx20Package = { "FF672" };
-    String[] xc4vfx40Package = { "FF672", "FF1152" };
-    String[] xc4vfx60Package = { "FF672", "FF1152" };
-    String[] xc4vfx100Package = { "FF1152", "FF1517" };
-    String[] xc4vfx140Package = { "FF1517", "FF1760" };
+		public XC4VFX12(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX12";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("SF363"), new XilinxPackage("FF668"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
 
-	
+	class XC4VLX15 extends XilinxDevice {
+
+		public XC4VLX15(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX15";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("SF363"), new XilinxPackage("FF668"), new XilinxPackage("FF676"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VFX20 extends XilinxDevice {
+
+		public XC4VFX20(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX20";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF672"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX25 extends XilinxDevice {
+
+		public XC4VLX25(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX25";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("SF363"), new XilinxPackage("FF668"), new XilinxPackage("FF676"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VSX25 extends XilinxDevice {
+
+		public XC4VSX25(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VSX25";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF668"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VSX35 extends XilinxDevice {
+
+		public XC4VSX35(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VSX35";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF668"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VFX40 extends XilinxDevice {
+
+		public XC4VFX40(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX40";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF672"), new XilinxPackage("FF1152"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX40 extends XilinxDevice {
+
+		public XC4VLX40(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX40";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF668"), new XilinxPackage("FF1148"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VSX55 extends XilinxDevice {
+
+		public XC4VSX55(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VSX55";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1148"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VFX60 extends XilinxDevice {
+
+		public XC4VFX60(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX60";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF672"), new XilinxPackage("FF1152"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX60 extends XilinxDevice {
+
+		public XC4VLX60(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX60";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF668"), new XilinxPackage("FF1148"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX80 extends XilinxDevice {
+
+		public XC4VLX80(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX80";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1148"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VFX100 extends XilinxDevice {
+
+		public XC4VFX100(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX100";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1152"), new XilinxPackage("FF1517"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX100 extends XilinxDevice {
+
+		public XC4VLX100(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX100";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1148"), new XilinxPackage("FF1513"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VFX140 extends XilinxDevice {
+
+		public XC4VFX140(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VFX140";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1517"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX160 extends XilinxDevice {
+
+		public XC4VLX160(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX160";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1148"), new XilinxPackage("FF1513"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-12"), new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	class XC4VLX200 extends XilinxDevice {
+
+		public XC4VLX200(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC4VLX200";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1513"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-11"), new XilinxSpeedGrade("-10"), };
+		}
+	}
+
+	public static synchronized XilinxV4Family getSingletonObject() {
+		if (!_singletonCreated) {
+			_singletonCreated = true;
+			_singletonObject = new XilinxV4Family();
+		}
+		return _singletonObject;
+	}
+
+	public static void initializeFamily() {
+		getSingletonObject();
+	}
+
+	private static boolean _initialized = false;
+	private static boolean _singletonCreated = false;
+	private static XilinxV4Family _singletonObject;
 }
