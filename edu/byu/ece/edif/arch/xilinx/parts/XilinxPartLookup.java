@@ -5,7 +5,15 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.util.parse.EdifParser;
 
+/**
+ * Performs Xilinx partname string lookup. The primary method of this class is a static method
+ * that returns a XilinxPart object from a String.
+ */
 public class XilinxPartLookup {
+
+	/**
+	 * Parses a String that contains a valid Xilnx partname and returns a XilinxPart object.
+	 */
 	public static XilinxPart getPartFromPartName(String name) {
 		XilinxFamily fam;
 		XilinxDevice dev;
