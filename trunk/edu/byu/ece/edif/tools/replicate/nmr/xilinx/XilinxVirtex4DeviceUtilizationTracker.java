@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
+import edu.byu.ece.edif.arch.xilinx.parts.XilinxPartLookup;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
@@ -95,9 +96,10 @@ public class XilinxVirtex4DeviceUtilizationTracker extends XilinxDeviceUtilizati
                 xc4vsx35Package, xc4vsx55Package, xc4vfx12Package, xc4vfx20Package, xc4vfx40Package, xc4vfx60Package,
                 xc4vfx100Package, xc4vfx140Package };
 
-        XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
-        part = validator.validate(part);
-
+        //XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
+        //part = validator.validate(part);
+        part = XilinxPartLookup.getPartFromPartName(part).getPartNameNoSpeedGrade();
+        
         if (part.compareToIgnoreCase("XC4VLX15SF363") == 0)
             _init(cell, 12288, 12288, 48, 4, 4, 240, 32);
         else if (part.compareToIgnoreCase("XC4VLX15FF668") == 0)

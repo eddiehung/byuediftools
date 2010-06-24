@@ -24,6 +24,7 @@ package edu.byu.ece.edif.tools.replicate.nmr;
 
 import java.security.InvalidParameterException;
 
+import edu.byu.ece.edif.arch.xilinx.parts.XilinxPartLookup;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
@@ -95,8 +96,9 @@ public class DeviceParser {
             double mergeFactor, double optimizationFactor, double desiredUtilizationFactor)
             throws OverutilizationException, OverutilizationEstimatedStopException, OverutilizationHardStopException {
 
-        String xilinxFamily = parseXilinxFamily(XilinxPartValidator.getTechnologyFromPart(part));
-        if (xilinxFamily.equals(VIRTEX))
+        //String xilinxFamily = parseXilinxFamily(XilinxPartValidator.getTechnologyFromPart(part));
+        String xilinxFamily = parseXilinxFamily(XilinxPartLookup.getFamilyFromPartName(part).getFamilyName());
+    	if (xilinxFamily.equals(VIRTEX))
             return new XilinxVirtexDeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
         else if (xilinxFamily.equals(VIRTEX2))

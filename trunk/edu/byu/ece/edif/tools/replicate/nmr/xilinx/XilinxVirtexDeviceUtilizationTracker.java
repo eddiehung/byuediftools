@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
+import edu.byu.ece.edif.arch.xilinx.parts.XilinxPartLookup;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
@@ -81,9 +82,10 @@ public class XilinxVirtexDeviceUtilizationTracker extends XilinxDeviceUtilizatio
         String[][] packageNames = { xcv50Package, xcv100Package, xcv150Package, xcv200Package, xcv300Package,
                 xcv400Package, xcv600Package, xcv800Package, xcv1000Package };
 
-        XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
-        part = validator.validate(part);
-
+        //XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
+        //part = validator.validate(part);
+        part = XilinxPartLookup.getPartFromPartName(part).getPartNameNoSpeedGrade();
+        
         if (part.compareToIgnoreCase("XCV50CS144") == 0)
             _init(cell, 1536, 1536, 8, 94, 4);
         else if (part.compareToIgnoreCase("XCV50TQ144") == 0)
