@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
+import edu.byu.ece.edif.arch.xilinx.parts.XilinxPartLookup;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifRuntimeException;
@@ -84,9 +85,11 @@ public class XilinxVirtexIIDeviceUtilizationTracker extends XilinxDeviceUtilizat
         String[][] packageNames = { xc2v40Package, xc2v80Package, xc2v250Package, xc2v500Package, xc2v1000Package,
                 xc2v1500Package, xc2v2000Package, xc2v3000Package, xc2v4000Package, xc2v6000Package, xc2v8000Package };
 
-        XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
-        part = validator.validate(part);
-
+        //XilinxPartValidator validator = new XilinxPartValidator(archName, devNames, packageNames);
+        //part = validator.validate(part);
+        part = XilinxPartLookup.getPartFromPartName(part).getPartNameNoSpeedGrade();
+        
+        
         if (part.compareToIgnoreCase("XC2V40CS144") == 0)
             _init(cell, 512, 512, 4, 4, 4, 88);
         else if (part.compareToIgnoreCase("XC2V40FG256") == 0)
