@@ -26,6 +26,7 @@ import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 
+import edu.byu.ece.edif.arch.xilinx.parts.XilinxPartLookup;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
@@ -98,8 +99,9 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
                 part_str = part.getValue().toString();
                 //_part.setDefault(p);
 
-                tech_str = XilinxPartValidator.getTechnologyFromPart(part.getValue().toString());
-                //XilinxPartValidator  xpv =  new XilinxPartValidator(part.getValue().toString());
+                //tech_str = XilinxPartValidator.getTechnologyFromPart(part.getValue().toString());
+                tech_str = XilinxPartLookup.getPartFromPartName(part.getValue().toString()).getPartName();
+
                 //_tech.setDefault(t);
                 //System.out.println("got part "+ p	+ " and tech "+ t	+" from edif file");
                 //System.out.println("got part "+ _part.getDefault()[0] + " and tech "+_tech.getDefault()[0]+" from edif file");
@@ -111,7 +113,8 @@ public class TechnologyCommandGroup extends AbstractCommandGroup {
             //String partstr=getPart(result);
             part_str = result.getString(PART);
             env.getTopDesign().addProperty(new Property("PART", part_str));
-            tech_str = XilinxPartValidator.getTechnologyFromPart(part_str);
+            //tech_str = XilinxPartValidator.getTechnologyFromPart(part_str);
+            tech_str = XilinxPartLookup.getPartFromPartName(part_str).getPartName();
             //System.out.println("got part "+ _part.getDefault() + " and tech "+_tech.getDefault()+" from command line");
         }
 
