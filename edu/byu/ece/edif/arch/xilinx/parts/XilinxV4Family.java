@@ -1,6 +1,6 @@
 /*
- * This file was auto-generated on Mon Jun 14 09:50:12 MDT 2010
- * by edu.byu.ece.edif.arch.xilinx.parts.XilinxV4DeviceClassGenerator.
+ * This file was auto-generated on Thu Jun 24 08:52:01 MDT 2010
+ * by edu.byu.ece.edif.arch.xilinx.parts.XilinxDeviceClassGenerator.
  * See the source code to make changes.
  *
  * Do not modify this file directly.

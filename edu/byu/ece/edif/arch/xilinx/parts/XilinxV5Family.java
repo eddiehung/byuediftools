@@ -1,6 +1,6 @@
 /*
- * This file was auto-generated on Mon Jun 14 09:49:11 MDT 2010
- * by edu.byu.ece.edif.arch.xilinx.parts.XilinxV5DeviceClassGenerator.
+ * This file was auto-generated on Thu Jun 24 08:52:02 MDT 2010
+ * by edu.byu.ece.edif.arch.xilinx.parts.XilinxDeviceClassGenerator.
  * See the source code to make changes.
  *
  * Do not modify this file directly.
@@ -34,11 +34,14 @@ public class XilinxV5Family extends XilinxFamily {
 			addDevice(new XC5VLX110(this));
 			addDevice(new XC5VLX110T(this));
 			addDevice(new XC5VFX130T(this));
+			addDevice(new XC5VTX150T(this));
 			addDevice(new XC5VLX155(this));
 			addDevice(new XC5VLX155T(this));
 			addDevice(new XC5VFX200T(this));
 			addDevice(new XC5VLX220(this));
 			addDevice(new XC5VLX220T(this));
+			addDevice(new XC5VSX240T(this));
+			addDevice(new XC5VTX240T(this));
 			addDevice(new XC5VLX330(this));
 			addDevice(new XC5VLX330T(this));
 		}
@@ -220,6 +223,17 @@ public class XilinxV5Family extends XilinxFamily {
 		}
 	}
 
+	class XC5VTX150T extends XilinxDevice {
+
+		public XC5VTX150T(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC5VTX150T";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1156"), new XilinxPackage("FF1759"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-2"), new XilinxSpeedGrade("-1"), };
+		}
+	}
+
 	class XC5VLX155 extends XilinxDevice {
 
 		public XC5VLX155(XilinxFamily family) {
@@ -271,6 +285,28 @@ public class XilinxV5Family extends XilinxFamily {
 			_family = family;
 			_deviceName = "XC5VLX220T";
 			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1738"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-2"), new XilinxSpeedGrade("-1"), };
+		}
+	}
+
+	class XC5VSX240T extends XilinxDevice {
+
+		public XC5VSX240T(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC5VSX240T";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1738"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-2"), new XilinxSpeedGrade("-1"), };
+		}
+	}
+
+	class XC5VTX240T extends XilinxDevice {
+
+		public XC5VTX240T(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XC5VTX240T";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FF1759"), };
 			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-2"), new XilinxSpeedGrade("-1"), };
 		}
 	}

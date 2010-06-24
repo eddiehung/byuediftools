@@ -12,7 +12,7 @@ import edu.byu.ece.edif.util.parse.EdifParser;
 public class XilinxPartLookup {
 
 	/**
-	 * Parses a String that contains a valid Xilnx partname and returns a XilinxPart object.
+	 * Parses a String that contains a valid Xilinx partname and returns a XilinxPart object.
 	 */
 	public static XilinxPart getPartFromPartName(String name) {
 		XilinxFamily fam;
@@ -20,31 +20,12 @@ public class XilinxPartLookup {
 		XilinxPackage pkg;
 		XilinxSpeedGrade sg;
 		XilinxPart part;
-		
-		//first initialize the families
-		if (!_initialized) {
-			_initialized = true;
-			initializeFamilies();
-		}		
-		List<XilinxFamily> allFamilies = XilinxFamily.getAllFamilies();
-		
-		name = name.toUpperCase();
-        //handle non-commercial parts by changing the q or qr to c.
-        name = name.replace("qr", "c");
-        name = name.replace("q", "c");
-		
-        /*System.out.println("There are " + allFamilies.size() + 
-        		" device families.");*/
-        
-        //First, find the family and the device
-        fam = findFamily(name, allFamilies);
-        dev = findDevice(name, fam);
-        //parse out the package and speed grade strings
-        XilinxPartNameTokens tokens = 
-        	XilinxPartNameTokens.getTokensFromPartNameAndDevice(name, dev);
-        //Finally, the package and speed grade
-        pkg = findPackage(tokens.getPackageName(), dev);
-        sg = findSpeedGrade(tokens.getSpeedGradeName(), dev);
+				        
+        //get all pieces necessary to construct the part
+        dev = getDeviceFromPartName(name);
+        fam = dev.getFamily();
+        pkg = getPackageFromPartName(name);
+        sg = getSpeedGradeFromPartName(name);
         
 		//construct the part with whatever information we have so far
 		//if components are null, that's ok for now
@@ -52,7 +33,9 @@ public class XilinxPartLookup {
 		return part;
 	}
 	
-	private static XilinxFamily findFamily(String name, List<XilinxFamily> allFamilies) {
+	public static XilinxFamily getFamilyFromPartName(String name) {
+		name = formatPartName(name);
+		List<XilinxFamily> allFamilies = XilinxFamily.getAllFamilies();
 		XilinxFamily fam = null;
 		for(XilinxFamily f : allFamilies) {
 			if (name.indexOf(f.getPartNamePrefix()) > -1) {
@@ -66,7 +49,9 @@ public class XilinxPartLookup {
 		return fam;
 	}
 
-	private static XilinxDevice findDevice(String name, XilinxFamily fam) {
+	public static XilinxDevice getDeviceFromPartName(String name) {
+		name = formatPartName(name);
+		XilinxFamily fam = getFamilyFromPartName(name);
 		XilinxDevice dev = null;
 		if (fam != null) {
 			for(XilinxDevice d : fam.getDevices()) {
@@ -82,14 +67,16 @@ public class XilinxPartLookup {
 		return dev;
 	}
 	
-	private static XilinxPackage findPackage(String name, XilinxDevice dev) {
-			XilinxPackage pkg = null;
+	public static XilinxPackage getPackageFromPartName(String name) {
+		name = formatPartName(name);
+		XilinxDevice dev = getDeviceFromPartName(name);
+		XilinxPackage pkg = null;
 		if (dev != null) {
 			for(XilinxPackage p : dev.getValidPackages()) {
-				if (name.indexOf(p.getPackageString().toUpperCase()) > -1) {
+				if (name.indexOf(p.getPackageName().toUpperCase()) > -1) {
 					//just in case a package name is contained within another
 					if (pkg == null || 
-							p.getPackageString().length() > pkg.getPackageString().length())
+							p.getPackageName().length() > pkg.getPackageName().length())
 						pkg = p;
 				}
 			}
@@ -97,14 +84,16 @@ public class XilinxPartLookup {
 		return pkg;
 	}
 	
-	private static XilinxSpeedGrade findSpeedGrade(String name, XilinxDevice dev) {
+	public static XilinxSpeedGrade getSpeedGradeFromPartName(String name) {
+		name = formatPartName(name);
+		XilinxDevice dev = getDeviceFromPartName(name);
 		XilinxSpeedGrade sg = null;
 		if (dev != null) {
 			for(XilinxSpeedGrade s : dev.getValidSpeedGrades()) {
-				if (name.indexOf(s.getSpeedGradeString().toUpperCase()) > -1) {
+				if (name.indexOf(s.getSpeedGradeName().toUpperCase()) > -1) {
 					//just in case a speed grade name is contained within another (like -1 and -12)
 					if (sg == null || 
-							s.getSpeedGradeString().length() > sg.getSpeedGradeString().length())
+							s.getSpeedGradeName().length() > sg.getSpeedGradeName().length())
 						sg = s;
 				}
 			}
@@ -112,15 +101,30 @@ public class XilinxPartLookup {
 		return sg;
 	}
 	
-	private static void initializeFamilies() {
+	private static String formatPartName(String name) {
+		name = name.toUpperCase();
+        //handle non-commercial parts by changing the q or qr to c.
+        name = name.replace("qr", "c");
+        name = name.replace("q", "c");
+        return name;
+	}
+	
+	static {
 		//TODO: may want a separate class to collect the XilinxFamilies
 		//right now, there's a static List in XilinxFamily that holds them
 		//all after this step. There is possibly a better approach.
 		
 		//initialize all device families here:
+		//is there a way to determine which ones need to be done at runtime?
+		XilinxSpartan2Family.initializeFamily();
+		XilinxSpartan3Family.initializeFamily();
+		XilinxSpartan6Family.initializeFamily();
 		XilinxVirtexFamily.initializeFamily();
+		XilinxV2Family.initializeFamily();
+		XilinxV2ProFamily.initializeFamily();		
 		XilinxV4Family.initializeFamily();
 		XilinxV5Family.initializeFamily();
+		XilinxV6Family.initializeFamily();		
 	}
 	
 	public static void main(String[] args) {
@@ -146,8 +150,5 @@ public class XilinxPartLookup {
 	        System.out.println("Part found:\n----------------------");
 	        System.out.println(part);
         }
-	}
-	
-	private static boolean _initialized = false;
-	
+	}	
 }

@@ -2,14 +2,14 @@ package edu.byu.ece.edif.arch.xilinx.parts;
 
 public class XilinxSpeedGrade {
 
-	public XilinxSpeedGrade(String speedGradeString) {
-		_speedGradeString = speedGradeString;
+	public XilinxSpeedGrade(String speedGradeName) {
+		_speedGradeName = speedGradeName;
 	}
 
-	public String getSpeedGradeString() {
-		return _speedGradeString;
+	public String getSpeedGradeName() {
+		return _speedGradeName;
 	}
 	
-	String _speedGradeString;
+	String _speedGradeName;
 	
 }

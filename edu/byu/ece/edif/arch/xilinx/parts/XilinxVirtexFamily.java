@@ -1,6 +1,6 @@
 /*
- * This file was auto-generated on Mon Jun 14 10:00:48 MDT 2010
- * by edu.byu.ece.edif.arch.xilinx.parts.XilinxVirtexDeviceClassGenerator.
+ * This file was auto-generated on Thu Jun 24 08:47:53 MDT 2010
+ * by edu.byu.ece.edif.arch.xilinx.parts.XilinxDeviceClassGenerator.
  * See the source code to make changes.
  *
  * Do not modify this file directly.
@@ -27,6 +27,19 @@ public class XilinxVirtexFamily extends XilinxFamily {
 			addDevice(new XCV600(this));
 			addDevice(new XCV800(this));
 			addDevice(new XCV1000(this));
+			addDevice(new XCV50E(this));
+			addDevice(new XCV100E(this));
+			addDevice(new XCV200E(this));
+			addDevice(new XCV300E(this));
+			addDevice(new XCV400E(this));
+			addDevice(new XCV405E(this));
+			addDevice(new XCV600E(this));
+			addDevice(new XCV812E(this));
+			addDevice(new XCV1000E(this));
+			addDevice(new XCV1600E(this));
+			addDevice(new XCV2000E(this));
+			addDevice(new XCV2600E(this));
+			addDevice(new XCV3200E(this));
 		}
 	}
 
@@ -126,6 +139,149 @@ public class XilinxVirtexFamily extends XilinxFamily {
 			_deviceName = "XCV1000";
 			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG680"), };
 			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-6"), new XilinxSpeedGrade("-5"), new XilinxSpeedGrade("-4"), };
+		}
+	}
+
+	class XCV50E extends XilinxDevice {
+
+		public XCV50E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV50E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("CS144"), new XilinxPackage("PQ240"), new XilinxPackage("FG256"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV100E extends XilinxDevice {
+
+		public XCV100E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV100E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG352"), new XilinxPackage("CS144"), new XilinxPackage("FG256"), new XilinxPackage("PQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV200E extends XilinxDevice {
+
+		public XCV200E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV200E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG352"), new XilinxPackage("CS144"), new XilinxPackage("FG256"), new XilinxPackage("FG456"), new XilinxPackage("PQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV300E extends XilinxDevice {
+
+		public XCV300E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV300E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG352"), new XilinxPackage("BG432"), new XilinxPackage("FG256"), new XilinxPackage("FG456"), new XilinxPackage("PQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV400E extends XilinxDevice {
+
+		public XCV400E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV400E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG432"), new XilinxPackage("BG560"), new XilinxPackage("FG676"), new XilinxPackage("PQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV405E extends XilinxDevice {
+
+		public XCV405E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV405E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG676"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV600E extends XilinxDevice {
+
+		public XCV600E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV600E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG432"), new XilinxPackage("BG560"), new XilinxPackage("FG676"), new XilinxPackage("FG680"), new XilinxPackage("FG900"), new XilinxPackage("HQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV812E extends XilinxDevice {
+
+		public XCV812E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV812E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG900"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV1000E extends XilinxDevice {
+
+		public XCV1000E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV1000E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG680"), new XilinxPackage("FG860"), new XilinxPackage("FG900"), new XilinxPackage("FG1156"), new XilinxPackage("HQ240"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV1600E extends XilinxDevice {
+
+		public XCV1600E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV1600E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG680"), new XilinxPackage("FG860"), new XilinxPackage("FG900"), new XilinxPackage("FG1156"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV2000E extends XilinxDevice {
+
+		public XCV2000E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV2000E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("BG560"), new XilinxPackage("FG680"), new XilinxPackage("FG860"), new XilinxPackage("FG1156"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV2600E extends XilinxDevice {
+
+		public XCV2600E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV2600E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FG1156"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
+		}
+	}
+
+	class XCV3200E extends XilinxDevice {
+
+		public XCV3200E(XilinxFamily family) {
+			super();
+			_family = family;
+			_deviceName = "XCV3200E";
+			_validPackages = new XilinxPackage[] {new XilinxPackage("FG1156"), };
+			_validSpeedGrades = new XilinxSpeedGrade[] {new XilinxSpeedGrade("-8"), new XilinxSpeedGrade("-7"), new XilinxSpeedGrade("-6"), };
 		}
 	}
 

@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Shared code for all the XilinxDeviceClass generators. This is based on some code
+ * Shared code to generate XilinxFamily classes. This is based on some code
  * Chris Lavin wrote.
  */
 public class XilinxDeviceClassGenerator {
@@ -22,9 +22,11 @@ public class XilinxDeviceClassGenerator {
      * using the Xilinx partgen tool.
      * @param architecture
      */
-    protected XilinxDeviceClassGenerator(String family, String partNamePrefix) {
+    protected XilinxDeviceClassGenerator(String family, String[] partgenPrefixes, String partNamePrefix, String javaFamilyPrefix) {
     	_partNamePrefix = partNamePrefix;
     	_family = family;
+    	_partgenPrefixes = partgenPrefixes;
+    	_javaFamilyPrefix = javaFamilyPrefix;
         _partGenOutput = new ArrayList<String>();
         _partNames = new ArrayList<String>();
         _validPackages = new ArrayList<List<String>>();
@@ -33,17 +35,17 @@ public class XilinxDeviceClassGenerator {
         collectData();
     }
 
-    protected void createJavaSourceFile(String familyPrefix) {
-        String fileName = "edu/byu/ece/edif/arch/xilinx/parts/Xilinx" + familyPrefix + "Family.java";
+    protected void createJavaSourceFile() {
+        String fileName = "edu/byu/ece/edif/arch/xilinx/parts/Xilinx" + _javaFamilyPrefix + "Family.java";
             
         try {
             BufferedWriter buf = new BufferedWriter(new FileWriter(fileName));
             createFileHeader(buf);
             buf.write("package edu.byu.ece.edif.arch.xilinx.parts;\n\n");            
-            buf.write("public class Xilinx" + familyPrefix + "Family extends XilinxFamily {\n\n");
+            buf.write("public class Xilinx" + _javaFamilyPrefix + "Family extends XilinxFamily {\n\n");
             
             // constructor
-            buf.write("\tprivate Xilinx" + familyPrefix + "Family() {\n");
+            buf.write("\tprivate Xilinx" + _javaFamilyPrefix + "Family() {\n");
             buf.write("\t\tsuper(\"" + _family + "\", \"" + _partNamePrefix + "\");\n");
             buf.write("\t}\n\n");
             
@@ -85,10 +87,10 @@ public class XilinxDeviceClassGenerator {
             }
             
             // singleton instance method
-            buf.write("\tpublic static synchronized Xilinx" + familyPrefix + "Family getSingletonObject() {\n");
+            buf.write("\tpublic static synchronized Xilinx" + _javaFamilyPrefix + "Family getSingletonObject() {\n");
             buf.write("\t\tif (!_singletonCreated) {\n");
             buf.write("\t\t\t_singletonCreated = true;\n");
-            buf.write("\t\t\t_singletonObject = new Xilinx" + familyPrefix + "Family();\n\t\t}\n");
+            buf.write("\t\t\t_singletonObject = new Xilinx" + _javaFamilyPrefix + "Family();\n\t\t}\n");
             buf.write("\t\treturn _singletonObject;\n");
             buf.write("\t}\n\n");
             
@@ -97,7 +99,7 @@ public class XilinxDeviceClassGenerator {
             	
         	buf.write("\tprivate static boolean _initialized = false;\n");
         	buf.write("\tprivate static boolean _singletonCreated = false;\n");
-        	buf.write("\tprivate static Xilinx" + familyPrefix + "Family _singletonObject;\n");
+        	buf.write("\tprivate static Xilinx" + _javaFamilyPrefix + "Family _singletonObject;\n");
             buf.write("}\n");
             buf.flush();
     
@@ -122,8 +124,10 @@ public class XilinxDeviceClassGenerator {
      * Method that starts all of the work.
      */
     protected void collectData() {
-        List<String> partGenOutput = generatePartgenOutput(_family);
-        parseParts(partGenOutput);
+    	for (String partgenPrefix : _partgenPrefixes) {
+    		List<String> partGenOutput = generatePartgenOutput(partgenPrefix);
+    		parseParts(partGenOutput);
+    	}
     }
 
     /**
@@ -208,9 +212,54 @@ public class XilinxDeviceClassGenerator {
         return output;
     }
 
+    public static void main(String args[]){
+    	//TODO: determine the user's version of the tools automatically
+    	if (args.length < 2 || args[1] == null) {
+    		System.out.println("Usage: XilinxDeviceClassGenerator toolMajorVersion");
+    		System.exit(0);
+    	}
+    	String toolMajorVersion = args[1];
+    	
+    	//TODO: generate these automatically from partgen?
+    	//would need to do some additional parsing and use multiple
+    	//versions of the tools
+    	String[][] prefixes = {{"Spartan2", "XC2S", "Spartan2", "10"},
+    						   {"Spartan3", "XC3S", "Spartan3", "12"},
+    						   {"Spartan6", "XC6S", "Spartan6", "12"},
+    						   {"Virtex", "XCV", "Virtex", "10"},
+    						   {"Virtex2", "XC2V", "V2", "10"},
+    						   {"Virtex2Pro", "XC2VP", "V2Pro", "10"},
+    						   {"Virtex4", "XC4V", "V4", "12"}, 
+    						   {"Virtex5", "XC5V", "V5", "12"},
+    						   {"Virtex6", "XC6V", "V6", "12"}};
+    	//this does not include parts with q, qr, or a 
+    	//instead of c in the prefix 
+    	String[][] partgenPrefixes = {{"spartan2", "aspartan2e"},
+    								  {"spartan3", "spartan3a", "spartan3adsp", "spartan3e"},
+    								  {"spartan6", "spartan6l"},	
+    								  {"virtex", "virtexe"},
+    								  {"virtex2"},
+    								  {"virtex2p"},
+    								  {"virtex4"},
+    								  {"virtex5"},
+    								  {"virtex6", "virtex6l"}};
+    	
+    	for(int i=0; i<prefixes.length; i++) {
+    		String[] famArray = prefixes[i];
+    		String[] pgPrefixes = partgenPrefixes[i];
+    		if (famArray[3].equals(toolMajorVersion)) {
+    			XilinxDeviceClassGenerator famGen = new XilinxDeviceClassGenerator(famArray[0], pgPrefixes, famArray[1], famArray[2]);
+    			famGen.createJavaSourceFile();
+    			System.out.println("Generated file Xilinx" + famArray[2] + "Family.java.");
+    		}
+    	}    	
+    }
+    
     
     protected String _partNamePrefix;
     protected String _family;
+    protected String[] _partgenPrefixes;
+    protected String _javaFamilyPrefix;
     protected List<String> _partGenOutput;
     protected List<String> _partNames;
     protected List<List<String>> _validPackages;
