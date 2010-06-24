@@ -5,7 +5,7 @@ public class XilinxPackage {
 	public XilinxPackage(String pack) {
 		_package = pack;
 	}
-	public String getPackageString() {
+	public String getPackageName() {
 		return _package;
 	}
 
