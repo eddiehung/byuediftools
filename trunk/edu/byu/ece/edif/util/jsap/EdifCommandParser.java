@@ -134,6 +134,9 @@ public class EdifCommandParser extends JSAP {
         return "BYU EDIF Tools version " + EDIFMain.getExtendedVersionString() + ", " + EDIFMain.VERSION_DATE;
     }
 
+    /**
+     * Add a group of commands to the command parser.
+     */
     public void addCommands(CommandGroup group) {
 
         for (Parameter p : group.getCommands()) {
@@ -146,6 +149,19 @@ public class EdifCommandParser extends JSAP {
         }
     }
 
+    /**
+     * Add a single command to the command parser.
+     */
+    public void addCommand(Parameter p) {
+
+    	try {
+    		this.registerParameter(p);
+    		_commands.add(p);
+        } catch (JSAPException e) {
+        	System.err.println("Error while registering parameter " + p + ":\n" + e);
+        }
+    }
+    
     public Set<Parameter> getCommands() {
         return _commands;
     }
