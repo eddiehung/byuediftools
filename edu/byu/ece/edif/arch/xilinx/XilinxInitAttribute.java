@@ -26,6 +26,7 @@ public class XilinxInitAttribute {
 		_initString = initStr.toUpperCase();
 		_initValue = new BigInteger(_initString, HEX_RADIX);
 		//make sure that the number of bits is a power of 2
+		//assume that all bits explicitly there (4 per character) matter
 		_numBits = (int)Math.pow(2, (double)intLog2(_initString.length()*4));
 		_numInputs = calcMinNumberOfInputPins();
 		initLookupTable();
@@ -44,6 +45,61 @@ public class XilinxInitAttribute {
 	}
 	
 	/**
+	 * Returns a XilinxInitAttribute object that forces certain inputs
+	 * at certain values. The number of input pins of the new object is
+	 * reduced by the number of pins in the passed-in Lists, and the
+	 * new number of lookup-table elements is 2^(new # of pins).
+	 * 
+	 * @param pins List of pins to force
+	 * @param values List of values at which to force the pins
+	 * @return new XilinxInitAttribute with less inputs and lookup table entries
+	 */
+	public XilinxInitAttribute getInitAttributeWithForcedInputs(List<Integer> pins, List<Integer> values) {
+		if (pins.size() != values.size()) {
+			throw new IllegalArgumentException("Lists of pins and values must have the same number of elements");
+		}
+
+		String pinRegex = "";
+		for(int i=0; i<_numBits; i++) {
+			int idx = pins.indexOf(i);
+			if (idx > -1) { //we are forcing this one
+				pinRegex = values.get(idx) + pinRegex;
+			}
+			else { //can be either 0 or 1
+				pinRegex = "[01]" + pinRegex;
+			}
+		}
+		
+		//determine which lookup table entries can be discarded
+		boolean[] toDiscard = new boolean[_numBits];
+		for (int i=0; i<_numBits; i++) {
+			String entryString = Integer.toBinaryString(i);
+			int entryStringLen = entryString.length();
+			//pad with zeros
+			for(int j=0; j<(_numBits-entryStringLen); j++) {
+				entryString = "0" + entryString;
+			}
+			if (!entryString.matches(pinRegex)) {
+				toDiscard[i] = true;
+			}
+			else {
+				toDiscard[i] = false;
+			}
+		}
+		
+		//for those not discarded, add their value to a String representing
+		//the binary value of the Xilinx INIT string
+		String reducedBinaryInitString = "";
+		for (int i=0; i<_numBits; i++) {
+			if (!toDiscard[i]) { //we're forcing this value
+				reducedBinaryInitString = _lookupTable[i] + reducedBinaryInitString;
+			}
+		}
+		String reducedHexInitString = (new BigInteger(reducedBinaryInitString, BINARY_RADIX)).toString(HEX_RADIX);
+		return new XilinxInitAttribute(reducedHexInitString, _numInputs-pins.size());
+	}
+	
+	/**
 	 * This method returns the lookup table value for a given address
 	 * 
 	 * @param address
@@ -52,7 +108,7 @@ public class XilinxInitAttribute {
 	public int getValueFromAddress(int address) {
 		int retVal;
 		if ((address > _numBits-1) || (address < 0)) {
-			retVal = -1;
+			throw new IllegalArgumentException("Address out of range");
 		}
 		else {
 			retVal = _lookupTable[address];
@@ -70,14 +126,14 @@ public class XilinxInitAttribute {
 		ArrayList<Integer> dontCares = new ArrayList<Integer>();
 		int numPairsToCheck = 1;
 		int numInGroup = _numBits/2;
-		for(int i=_numInputs-1; i>=0; i--) {
+		for (int i=_numInputs-1; i>=0; i--) {
 			boolean isDontCare = true;
 			int idx1 = 0;
 			int idx2 = numInGroup;
 			pairFor : for (int g=0; g<=numPairsToCheck-1; g++) {
 				//check the pair - all corresponding elements of the
 				//pair MUST be equal for this input to be a don't care
-				for(int j=0; j<numInGroup; j++) {
+				for (int j=0; j<numInGroup; j++) {
 					if (_lookupTable[idx1+j] != _lookupTable[idx2+j]) {
 						isDontCare = false;
 						break pairFor;
@@ -181,7 +237,7 @@ public class XilinxInitAttribute {
 		byte[] byteArrayOne = new byte[1];
 		byteArrayOne[0] = 1;
 		BigInteger bigIntOne = new BigInteger(byteArrayOne);
-		for(int i=0; i<_numBits; i++) {
+		for (int i=0; i<_numBits; i++) {
 			_lookupTable[i] = (byte)(_initValue.shiftRight(i)).and(bigIntOne).intValue();
 		}
 	}
@@ -197,7 +253,7 @@ public class XilinxInitAttribute {
 		if(num<=0) 
 			return -1;
 		num--;
-		for(cnt=0; num>0; cnt++,num>>=1);
+		for (cnt=0; num>0; cnt++,num>>=1);
 			return cnt;
 	}
 	
@@ -210,6 +266,7 @@ public class XilinxInitAttribute {
 	
 	//constants
 	public static final int HEX_RADIX = 16;
+	public static final int BINARY_RADIX = 2;
 	public static final int NUM_RANDOM_TESTS = 10000000;
 	
 	public static void main(String[] args) {
@@ -229,12 +286,12 @@ public class XilinxInitAttribute {
 		vals.add(new XilinxInitAttribute("CC"));
 		
 		//also do some random inits
-		for(int i=0; i<500000; i++) {
+		for (int i=0; i<500000; i++) {
 			Random gen = new Random();
 			vals.add(new XilinxInitAttribute(Integer.toHexString(gen.nextInt(Integer.MAX_VALUE))));
 		}
 		
-		for(XilinxInitAttribute val : vals) {
+		for (XilinxInitAttribute val : vals) {
 			List<Integer> dontCares = val.getDontCareInputs();
 			if(dontCares.size() > 0) {
 				System.out.println("----------------------------------------");			
@@ -243,17 +300,28 @@ public class XilinxInitAttribute {
 				System.out.println("Number of bits: " + val.getNumberOfBits());
 				System.out.println("Number of inputs: " + val.getNumberOfInputPins());
 				System.out.print("Don't Care Inputs: ");
-				for(Integer dontCare : dontCares) {
+				for (Integer dontCare : dontCares) {
 					System.out.print(dontCare + " ");
 				}
 				System.out.println();
 				System.out.print("Randomly Found Don't Care Inputs: ");
-				for(int i=0; i<val.getNumberOfInputPins(); i++) {
+				for (int i=0; i<val.getNumberOfInputPins(); i++) {
 					if (val.randomTestDontCare(i)) {
 						System.out.print(i + " ");
 					}
 				}
+				//force all don't cares to 1
+				List<Integer> forceVals = new ArrayList<Integer>();
+				for (int i=0; i<dontCares.size(); i++) {
+					forceVals.add(1);
+				}
 				System.out.println();
+				
+				XilinxInitAttribute reduced = val.getInitAttributeWithForcedInputs(dontCares, forceVals);
+				System.out.print("Don't cares reduced INIT to " + reduced.getInitString());
+				System.out.println(" (has " + reduced.getNumberOfBits() + " bits, " + reduced.getNumberOfInputPins() + " inputs)");
+				
+
 				/*for (int i=0; i<val.getNumberOfBits(); i++) {
 					System.out.println("value["+i+"]: " + val.getValueFromAddress(i));
 				}*/
