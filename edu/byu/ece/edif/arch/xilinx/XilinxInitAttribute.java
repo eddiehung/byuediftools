@@ -233,7 +233,7 @@ public class XilinxInitAttribute {
 			}
 			System.out.println();
 			System.out.print("Randomly Found Don't Care Inputs: ");
-			for(int i=val.getNumberOfInputPins()-1; i>=0; i--) {
+			for(int i=0; i<val.getNumberOfInputPins(); i++) {
 				if (val.randomTestDontCare(i)) {
 					System.out.print(i + " ");
 				}
