@@ -25,7 +25,8 @@ public class XilinxInitAttribute {
 	public XilinxInitAttribute(String initStr) {
 		_initString = initStr.toUpperCase();
 		_initValue = new BigInteger(_initString, HEX_RADIX);
-		_numBits = _initString.length()*4;
+		//make sure that the number of bits is a power of 2
+		_numBits = (int)Math.pow(2, (double)intLog2(_initString.length()*4));
 		_numInputs = calcMinNumberOfInputPins();
 		initLookupTable();
 	}
@@ -90,6 +91,8 @@ public class XilinxInitAttribute {
 			}
 			numPairsToCheck *= 2;
 			numInGroup /= 2;
+			//System.out.println("Pairs to check: " + numPairsToCheck);
+			//System.out.println("Number per group: " + numInGroup);
 		}
 		//this isn't really that necessary...
 		Collections.sort(dontCares);
@@ -107,8 +110,13 @@ public class XilinxInitAttribute {
 	public boolean randomTestDontCare(int dc) {
 		Random generator = new Random();
 		for (int i=0; i<NUM_RANDOM_TESTS; i++) {
-			int indexOrig = generator.nextInt(_numBits);
-			int indexFlipped = indexOrig ^ (1 << dc);
+			int indexOrig = 0;
+			int indexFlipped = Integer.MAX_VALUE;
+			while(indexFlipped > _numBits-1 || indexFlipped < 0) {
+				indexOrig = generator.nextInt(_numBits);
+				indexFlipped = indexOrig ^ (1 << dc);
+			}
+
 			if (_lookupTable[indexOrig] != _lookupTable[indexFlipped]) {
 				return false;
 			}
@@ -220,28 +228,36 @@ public class XilinxInitAttribute {
 		vals.add(new XilinxInitAttribute("FFFF"));
 		vals.add(new XilinxInitAttribute("CC"));
 		
+		//also do some random inits
+		for(int i=0; i<500000; i++) {
+			Random gen = new Random();
+			vals.add(new XilinxInitAttribute(Integer.toHexString(gen.nextInt(Integer.MAX_VALUE))));
+		}
+		
 		for(XilinxInitAttribute val : vals) {
 			List<Integer> dontCares = val.getDontCareInputs();
-			System.out.println("----------------------------------------");			
-			System.out.println("- Init String: \"" + val.getInitString() + "\"");
-			System.out.println("----------------------------------------");
-			System.out.println("Number of bits: " + val.getNumberOfBits());
-			System.out.println("Number of inputs: " + val.getNumberOfInputPins());
-			System.out.print("Don't Care Inputs: ");
-			for(Integer dontCare : dontCares) {
-				System.out.print(dontCare + " ");
-			}
-			System.out.println();
-			System.out.print("Randomly Found Don't Care Inputs: ");
-			for(int i=0; i<val.getNumberOfInputPins(); i++) {
-				if (val.randomTestDontCare(i)) {
-					System.out.print(i + " ");
+			if(dontCares.size() > 0) {
+				System.out.println("----------------------------------------");			
+				System.out.println("- Init String: \"" + val.getInitString() + "\"");
+				System.out.println("----------------------------------------");
+				System.out.println("Number of bits: " + val.getNumberOfBits());
+				System.out.println("Number of inputs: " + val.getNumberOfInputPins());
+				System.out.print("Don't Care Inputs: ");
+				for(Integer dontCare : dontCares) {
+					System.out.print(dontCare + " ");
 				}
+				System.out.println();
+				System.out.print("Randomly Found Don't Care Inputs: ");
+				for(int i=0; i<val.getNumberOfInputPins(); i++) {
+					if (val.randomTestDontCare(i)) {
+						System.out.print(i + " ");
+					}
+				}
+				System.out.println();
+				/*for (int i=0; i<val.getNumberOfBits(); i++) {
+					System.out.println("value["+i+"]: " + val.getValueFromAddress(i));
+				}*/
 			}
-			System.out.println();
-			/*for (int i=0; i<val.getNumberOfBits(); i++) {
-				System.out.println("value["+i+"]: " + val.getValueFromAddress(i));
-			}*/
 		}
 	}	
 }
