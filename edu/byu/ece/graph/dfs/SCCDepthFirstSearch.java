@@ -175,6 +175,19 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
         }
     }
 
+    public String createSCCString() {
+        String retVal = getTopologicallySortedTreeList().size() + " trees\n";
+        int j = 1;
+        for (Iterator i = getTopologicallySortedTreeList().iterator(); i.hasNext();) {
+            BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) i.next();
+            retVal = retVal + "Tree " + j++ + "\n";
+            for (Iterator k = tree.getNodes().iterator(); k.hasNext();) {
+                retVal += "\t" + k.next() + "\n";
+            }
+        }
+        return retVal;
+    }
+    
     boolean localDEBUG = false;
 
     Collection _singleNodes;
