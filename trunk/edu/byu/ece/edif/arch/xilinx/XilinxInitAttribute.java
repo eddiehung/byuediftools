@@ -73,17 +73,18 @@ public class XilinxInitAttribute {
 		//determine which lookup table entries can be discarded
 		boolean[] toDiscard = new boolean[_numBits];
 		for (int i=0; i<_numBits; i++) {
+			//create a String for the binary value of this address
 			String entryString = Integer.toBinaryString(i);
 			int entryStringLen = entryString.length();
-			//pad with zeros
+			//pad the address string with zeros so we can match the regex
 			for(int j=0; j<(_numBits-entryStringLen); j++) {
 				entryString = "0" + entryString;
 			}
-			if (!entryString.matches(pinRegex)) {
-				toDiscard[i] = true;
+			if (entryString.matches(pinRegex)) {
+				toDiscard[i] = false;
 			}
 			else {
-				toDiscard[i] = false;
+				toDiscard[i] = true;
 			}
 		}
 		
@@ -91,7 +92,7 @@ public class XilinxInitAttribute {
 		//the binary value of the Xilinx INIT string
 		String reducedBinaryInitString = "";
 		for (int i=0; i<_numBits; i++) {
-			if (!toDiscard[i]) { //we're forcing this value
+			if (!toDiscard[i]) { //we're keeping this value
 				reducedBinaryInitString = _lookupTable[i] + reducedBinaryInitString;
 			}
 		}
