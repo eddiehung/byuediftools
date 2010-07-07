@@ -593,10 +593,10 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 		//add all EPR/node relationships to the map of EPRs to nodes
 		for(EdifPortRef epr : eci.getAllEPRs()) {
 			//DEBUG: verify no duplicates
-			if (_eprToGroupMap.containsKey(epr)) {
+			/*if (_eprToGroupMap.containsKey(epr)) {
 				System.out.println("duplicate epr!");
 				System.exit(-1);
-			}
+			}*/
 			_eprToGroupMap.put(epr, node);
 		}
 		
@@ -643,10 +643,10 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                 	srcNode = sourceEPR.getSingleBitPort();
                 else {
                 	srcNode = _eprToGroupMap.get(sourceEPR);
-                	if (srcNode == null) {
+                	/*if (srcNode == null) {
                 		System.out.println("source EPR not in map!");
                 		System.exit(-1);
-                	}
+                	}*/
                 }
                                 
                 // Normal Edges: Source to sink
@@ -668,10 +668,10 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                     }
                     else {
                     	sinkNode = _eprToGroupMap.get(sinkEPR);
-                    	if (sinkNode == null) {
+                    	/*if (sinkNode == null) {
                     		System.out.println("sink EPR not in map!");
                     		System.exit(-1);
-                    	}
+                    	}*/
                     }
                 
                     EdifPortRefGroupEdge edge = new EdifPortRefGroupEdge(sourceEPR, srcNode, sinkEPR, sinkNode);
