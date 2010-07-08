@@ -37,7 +37,7 @@ import java.util.TreeMap;
 ////EdifCell
 /**
  * Represents an EDIF cell definition. This class is not tied to any target
- * language or implementation (i.e. VHDL, JHDL, etc).
+ * language, tool, or implementation.
  * <p>
  * This implementation of EdifCell contains Lists of all {@link
  * EdifCellInstance}, {@link EdifNet}, and {@link EdifPort} objects associated
@@ -320,8 +320,8 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * within this EdifCell Object
      */
     public boolean contains(EdifCellInstance contain) {
-        for (Iterator i = getSubCellList().iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
+        for (Iterator<EdifCellInstance> i = getSubCellList().iterator(); i.hasNext();) {
+            EdifCellInstance eci = i.next();
 
             if (eci == contain)
                 return true;
@@ -523,10 +523,10 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * @return A Collection of EdifNet Objects that have no outputs (they are
      * dangling)
      */
-    public Collection getDanglingNets(boolean inputNoOutput, boolean outputsOnly) {
-        Collection dang = new ArrayList();
-        for (Iterator i = netListIterator(); i.hasNext();) {
-            EdifNet net = (EdifNet) i.next();
+    public Collection<EdifNet> getDanglingNets(boolean inputNoOutput, boolean outputsOnly) {
+        Collection<EdifNet> dang = new ArrayList<EdifNet>();
+        for (Iterator<EdifNet> i = netListIterator(); i.hasNext();) {
+            EdifNet net = i.next();
 
             boolean hasOutput = false;
             boolean hasInput = false;
@@ -568,7 +568,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * dangling)
      * @see #getDanglingNets(boolean,boolean)
      */
-    public Collection getDanglingNets() {
+    public Collection<EdifNet> getDanglingNets() {
         return getDanglingNets(false, false);
     }
 
@@ -631,8 +631,8 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
 
         // 2. Iterate over each EdifCellInstance in the cell. 
         //System.out.println("Begin "+getName());
-        for (Iterator i = cellInstanceIterator(); i.hasNext();) {
-            EdifCellInstance inst = (EdifCellInstance) i.next();
+        for (Iterator<EdifCellInstance> i = cellInstanceIterator(); i.hasNext();) {
+            EdifCellInstance inst = i.next();
             EdifCell instType = inst.getCellType();
 
             //System.out.println(inst.getName()+"-"instType.getName());
@@ -684,7 +684,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * @return A Collection of all the different EdifCell "types" instanced as
      * sub-cells within the current EdifCell
      */
-    public Collection getInnerCells() {
+    public Collection<EdifCellInstance> getInnerCells() {
         Set set = new LinkedHashSet();
         for (Iterator i = _cellInstanceList.values().iterator(); i.hasNext();) {
             EdifCellInstance eci = (EdifCellInstance) i.next();
@@ -752,8 +752,8 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * EdifCellInstance Object
      */
     public EdifNet getInstancePortNet(EdifCellInstance instance, EdifPort port) {
-        for (Iterator i = netListIterator(); i.hasNext();) {
-            EdifNet net = (EdifNet) i.next();
+        for (Iterator<EdifNet> i = netListIterator(); i.hasNext();) {
+            EdifNet net = i.next();
             if (net.isAttached(instance, port))
                 return net;
         }
@@ -1119,7 +1119,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * 
      * @return An Iterator Object of all the EdifNets contained in this EdifCell
      */
-    public Iterator netListIterator() {
+    public Iterator<EdifNet> netListIterator() {
         if (_netList != null)
             return _netList.iterator();
         return (new ArrayList(0)).iterator();
