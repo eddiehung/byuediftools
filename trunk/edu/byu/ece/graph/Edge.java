@@ -30,7 +30,6 @@ import java.io.Serializable;
  * An edge object contains a source object and a sink object. The actual
  * implementation of this interface can return an object of any type.
  * 
- * @author Brian Pratt
  */
 public interface Edge extends Serializable {
 
