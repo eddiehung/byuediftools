@@ -252,15 +252,6 @@ public class DepthFirstSearchForest implements GraphForest {
                 System.out.println("New Tree Node " + node);
 
             DepthFirstTree tree = null;
-            /*
-             * Decide what type of tree to create. If the tree has successors,
-             * create a DFSTree2. If not, create a SingleNodeDepthFirstTree.
-             */
-
-            //            if (_invert && _graph.hasPredecessors(node) || !_invert && _graph.hasSuccessors(node))
-            //                tree = new DFSTree2(this, _graph, _invert, node);
-            //            else
-            //                tree = new SingleNodeDepthFirstTree(this, node);
             tree = new BasicDepthFirstSearchTree(this, _graph, node);
             _trees.add(tree);
 
