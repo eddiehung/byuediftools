@@ -390,14 +390,16 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
             if (outputEdges != null)
                 for (Iterator i = outputEdges.iterator(); i.hasNext();) {
                     Edge edge = (Edge) i.next();
-                    _nodeSinkMap.removeEdge(edge);
+                    //_nodeSinkMap.removeEdge(edge);
+                    removeEdge(edge);
                 }
             // Input Edges of "node" may be referenced by another node as
             //   a source of that Edge.
             if (inputEdges != null)
                 for (Iterator i = inputEdges.iterator(); i.hasNext();) {
                     Edge edge = (Edge) i.next();
-                    _nodeSinkMap.removeEdge(edge);
+                    //_nodeSinkMap.removeEdge(edge);
+                    removeEdge(edge);
                 }
         }
         _nodes.remove(node);
