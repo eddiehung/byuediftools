@@ -17,11 +17,12 @@ import edu.byu.ece.edif.util.export.serialize.NameReferenceObjectInputStream;
 import edu.byu.ece.edif.util.export.serialize.NameReferenceObjectOutputStream;
 
 public class CircuitDescriptionCommandGroup extends AbstractCommandGroup {
+
 	public CircuitDescriptionCommandGroup() {
 		super();
 
 		// Input filename flag
-		FlaggedOption input_file_option = new FlaggedOption(INPUT_OPTION);
+		input_file_option = new FlaggedOption(INPUT_OPTION);
 		input_file_option.setStringParser(JSAP.STRING_PARSER);
 		input_file_option.setRequired(JSAP.REQUIRED);
 		input_file_option.setShortFlag('c');
@@ -119,5 +120,5 @@ public class CircuitDescriptionCommandGroup extends AbstractCommandGroup {
 	}
 
 	public static final String INPUT_OPTION = "c_desc";
-
+	public FlaggedOption input_file_option;
 }
