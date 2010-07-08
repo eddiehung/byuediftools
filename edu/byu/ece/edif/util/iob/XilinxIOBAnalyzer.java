@@ -48,7 +48,9 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
         //				
         //      Input Procedure:
         //      - Create new XilinxIOB object
-        //      - Grab all successors of ESBP
+    	//         After creating the object, the procedure will look at the graph to find all nodes that preceed or
+    	//         succeed the ESBP and check to see if they are associated with an IOB. 
+        //      - Grab all 'graph' successors of ESBP (things attached to the ESBP that will be mapped to the IOB)
         //        - If there is a single successor and it is of type IO or IBUFG, add as inBUF
         //        -  Else if there is a single successor and it is a FF, add as InputReg
         //        -  Else if there are multiple successors and only one FF, add it as InputReg
@@ -121,10 +123,12 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 }
             }
 
-            // Check for clock port (If so, can't pack registers in the IOB)
+            // Try to find registers and pack them if possible: If you can pack and the user asks for it, try to do it.
+            //   Check for clock port (If so, can't pack registers in the IOB). xiob.canPack checks to see if it is a clock port
             if (xiob.canPack() && packInputRegisters) { // Only pack if user specified so
                 // Check for input Reg (using inBuf if it exists or port otherwise)
                 Object source = null;
+                // If there was an IBUF, continue from the output of the IBUF, otherwise continue from the ESBP
                 EdifCellInstance ibuf = xiob.getIBUF();
                 if (ibuf != null)
                     source = ibuf;
@@ -236,9 +240,11 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 continue;
             // See if this neighbor is a register
             EdifCellInstance eci = (EdifCellInstance) successor;
+            // This resource mapper will map the various types of flip-flops to an FF
             if (XilinxResourceMapper.FF.equals(XilinxResourceMapper.getInstance().getResourceType(eci))) {
                 // If any registers have already been found, there is not a valid
-                //   IOB register (there can only be one)
+                //   IOB register (there can only be one). If the port goes to multple registers,
+            	//   you can't pack them all - choose the first one.
                 if (iobReg != null)
                     return null;
                 // Check for IOB property. If IOB=FALSE, don't pack this register
@@ -344,6 +350,7 @@ public abstract class XilinxIOBAnalyzer extends AbstractIOBAnalyzer {
                 _iobMap.put(esbp, xiob);
 
                 // If port is Inout, Get IOB feedback cut location(s)
+                // (find appropriate locations to cut if cutting is necessary).
                 if (esbp.getParent().isInOut()) {
                     // Type 1: IOBUF instance. Cut output ('O' port) connection.
                     // Type 2: IBUF and OBUF. Cut input ('I' port) connection on IBUF.
