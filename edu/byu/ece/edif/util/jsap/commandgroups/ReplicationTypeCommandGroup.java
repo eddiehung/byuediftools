@@ -10,6 +10,9 @@ import edu.byu.ece.edif.tools.replicate.nmr.ReplicationType;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationTypeMapper;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationTypeMapper.ReplicationTypes;
 
+/**
+ * Adds a command for specifying triplication or duplication.
+ */
 public class ReplicationTypeCommandGroup extends AbstractCommandGroup {
 
     public static String REPLICATION_TYPE = "replication_type";
