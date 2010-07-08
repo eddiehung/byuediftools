@@ -31,8 +31,11 @@ import java.util.List;
 import edu.byu.ece.graph.DirectedGraph;
 
 /**
- * A depth first search that is composed of strongly connected component (SCC)
+ * A depth first search object that is composed of strongly connected component (SCC)
  * trees.
+ * 
+ * This object creates the SCCs by performing two depth-first searches as described by
+ * the Tarjan's SCC decomposition algorithm.
  * 
  * @author Mike Wirthlin
  */
