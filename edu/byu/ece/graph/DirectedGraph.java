@@ -26,14 +26,16 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * Specifies a directed graph data structure.
- * <p>
+ * Specifies a set of methods for a directed graph data structure. This data structure
+ * maintains a Collection of Objects (the type is not specified) that represent graph nodes
+ * and a Collection of Edge objects that represent the edges between the nodes. Methods
+ * are available for obtaining the nodes and edges.
+ * 
  * TODO:
- * <ul>
- * <li> Create a new sub-interface ModifiableDirectedGraph
- * <li> Methods to change graph (addEdge, addNode, removeEdge, removeNode)
- * <li> Sort methods
- * </ul>
+ * - Create a new sub-interface ModifiableDirectedGraph
+ * - Create an undirected graph interface (i.e, without direction)
+ * - Methods to change graph (addEdge, addNode, removeEdge, removeNode)
+ * - Sort methods
  */
 
 public interface DirectedGraph extends Serializable {
@@ -51,7 +53,7 @@ public interface DirectedGraph extends Serializable {
      * Return a Collection of all nodes in the graph. The class type of the
      * objects in the Collection are not specified.
      */
-    public Collection getNodes();
+    public Collection<?> getNodes();
 
     /**
      * Return a Collection of all edges in the graph. The objects in this
@@ -64,14 +66,14 @@ public interface DirectedGraph extends Serializable {
      * successors of the node passed in as a parameter. The Collection should be
      * empty if there are no successors.
      */
-    public Collection getSuccessors(Object node);
+    public Collection<?> getSuccessors(Object node);
 
     /**
      * Return a Collection of node objects in the graph that are direct
      * predecessors of the node passed in as a parameter. The Collection should
      * be empty if there are no predecessors.
      */
-    public Collection getPredecessors(Object node);
+    public Collection<?> getPredecessors(Object node);
 
     // public boolean hasSuccessors(Object node);
     // public boolean hasPredecessors(Object node);
@@ -84,7 +86,7 @@ public interface DirectedGraph extends Serializable {
      * <p>
      * This is the same as "reachableNodes" in ptolemy.graph.
      */
-    public Collection getDescendents(Object node);
+    public Collection<?> getDescendents(Object node);
 
     /**
      * Return a new DirectedGraph object that is a sub-graph of this graph. The
@@ -94,7 +96,7 @@ public interface DirectedGraph extends Serializable {
      * @return a new DirectedGraph object that is a sub-graph of this graph. The
      * sub-graph is based on the Collection of nodes passed in as a parameter.
      */
-    public DirectedGraph getSubGraph(Collection nodes);
+    public DirectedGraph getSubGraph(Collection<?> nodes);
 
     /**
      * Return a Collection of node objects in the graph that are ancestors of
@@ -103,7 +105,7 @@ public interface DirectedGraph extends Serializable {
      * <p>
      * This is the same as "backwardReachableNodes" in ptolemy.graph.
      */
-    public Collection getAncestors(Object node);
+    public Collection<?> getAncestors(Object node);
 
     /**
      * Return a Collection of Edge objects that are "inputs" to the given node
