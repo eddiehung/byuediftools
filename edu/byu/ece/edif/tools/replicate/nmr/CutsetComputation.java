@@ -104,8 +104,25 @@ public class CutsetComputation {
             startTime = LogFileCommandGroup.reportTime(startTime, "computing after FFs cutset", out);
             
             SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
-            if (checkSCCDFS.getTrees().size() > 0)
-                throw new EdifRuntimeException("Error: unable to cut all feedback using after FFs cutset");
+            if (checkSCCDFS.getTrees().size() > 0) {
+            	out.println("Warning: unable to cut all feedback using after FFs cutset. " + 
+            			checkSCCDFS.getTrees().size() + " SCCs remaining");
+				/*
+            	int i = 1;
+                // Also see: AbstractGraphToDotty
+            	CustomGraphToDotty cgtd = new CustomGraphToDotty();
+            	for (DepthFirstTree tree : checkSCCDFS.getTrees()) {
+            		out.println("SCC #"+i);
+            		out.println(tree);                    
+            		BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
+            		
+            		String dotty = cgtd.createDottyBody(sccGraph);
+            		String dottyFileName = new String("scc_" + i + ".dot");
+                    CustomGraphToDotty.printFile(dottyFileName, dotty);
+                    i++;
+            	}
+*/
+            }
         }
         
         else if (BeforeFlipFlopsCutset) {
