@@ -6,9 +6,12 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
+import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.LogFile;
@@ -44,6 +47,10 @@ public class JEdifAnalyze extends EDIFMain {
 	public static PrintStream out;
 	public static PrintStream err;
 	
+	public static final String CUT_CELL_STRING = "cut_cell";
+    public static final String CUT_INSTANCE_STRING = "cut_instance";
+
+	
 	public static void main(String[] args) {
 		
 		out = System.out;
@@ -63,7 +70,35 @@ public class JEdifAnalyze extends EDIFMain {
 		parser.addCommands(new TechnologyCommandGroup());
 		parser.addCommands(new LogFileCommandGroup("analyze.log"));
 		parser.addCommands(new ConfigFileCommandGroup(EXECUTABLE_NAME));
-		
+
+		// Additional command for indicating component cutting
+		char LIST_DELIMITER = ',';
+		FlaggedOption cut_component_option = new FlaggedOption(CUT_CELL_STRING);
+        cut_component_option.setStringParser(JSAP.STRING_PARSER);
+        cut_component_option.setRequired(JSAP.NOT_REQUIRED);
+        cut_component_option.setShortFlag(JSAP.NO_SHORTFLAG);
+        cut_component_option.setLongFlag(CUT_CELL_STRING);
+        cut_component_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
+        cut_component_option.setList(JSAP.LIST);
+        cut_component_option.setListSeparator(LIST_DELIMITER);
+        cut_component_option.setUsageName("cell_type");
+        cut_component_option.setHelp("Comma-separated list of cell types that will be cut in circuit graph analysis");
+        parser.addCommand(cut_component_option);
+
+		// Additional command for indicating instance cutting
+        FlaggedOption cut_instance_option = new FlaggedOption(CUT_INSTANCE_STRING);
+        cut_instance_option.setStringParser(JSAP.STRING_PARSER);
+        cut_instance_option.setRequired(JSAP.NOT_REQUIRED);
+        cut_instance_option.setShortFlag(JSAP.NO_SHORTFLAG);
+        cut_instance_option.setLongFlag(CUT_INSTANCE_STRING);
+        cut_instance_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
+        cut_instance_option.setList(JSAP.LIST);
+        cut_instance_option.setListSeparator(LIST_DELIMITER);
+        cut_instance_option.setUsageName("cell_instance");
+        cut_instance_option.setHelp("Comma-separated list of cell instances that will be cut in circuit graph analysis");
+        parser.addCommand(cut_instance_option);
+
+        // Start the parsing
 		JSAPResult result = parser.parse(args, System.err);
 		if (!result.success())
 			System.exit(1);
@@ -106,8 +141,14 @@ public class JEdifAnalyze extends EDIFMain {
 		else {
 			sccDFS = new SCCDepthFirstSearch(instanceGraph);
 		}
-		
+
+		// Perform IOB feedback analysis
 		List<EdifPortRefEdge> iobFeedbackEdges = iobFeedbackAnalysis(iobAnalyzer, instanceGraph, use_bad_cut_conn, remove_iob_feedback, arch, topCell);
+
+		// Perform instance and cell cutting
+		instanceConnectivityAnalysis(result, instanceGraph, use_bad_cut_conn, arch, topCell);
+		
+		// the circuit description is final - save to a file
 		CircuitDescription cDesc = new CircuitDescription(iobAnalyzer, badCutGroupings, instanceGraph, sccDFS, arch);
 		cDesc.setIOBFeedbackEdges(iobFeedbackEdges);
 		cDesc.setRemoveIOBFeedback(remove_iob_feedback);
@@ -116,7 +157,73 @@ public class JEdifAnalyze extends EDIFMain {
 		out.println();
 	}
 
+	/**
+	 * This method is used to modify the connectivity graph of the circuit based on user parameters
+	 * regarding instance connectivity. To help manage the connectivity of the circuit graph, some
+	 * instances may be tagged as not fully connected. This method will take these parameters to modify
+	 * the connectivity graph. Specifically, this method will remove edges based on the user input.
+	 */
+	private static void instanceConnectivityAnalysis(JSAPResult result, EdifCellInstanceGraph eciConnectivityGraph,
+			 boolean useBadCutConn, NMRArchitecture nmrArch, EdifCell topCell) {
+		
+		String[] cells_to_cut = result.getStringArray(CUT_CELL_STRING);
+		String[] instances_to_cut = result.getStringArray(CUT_INSTANCE_STRING);
 
+		if (cells_to_cut == null && instances_to_cut == null)
+			return;
+		
+		ArrayList<EdifCellInstance> instancesToCut = new ArrayList<EdifCellInstance>();
+		// Iterate over all instances in the graph to see if any instance matches a
+		// cut instance name or a cut cell type name
+		for (Object node : eciConnectivityGraph.getNodes() ) {
+			if (node instanceof EdifCellInstance) {
+				EdifCellInstance eci = (EdifCellInstance) node;
+				String cellType = eci.getCellType().getName();
+				String cellName = eci.getName();
+				// Check the cell type of the instance against the list of 
+				// cell types that should be cut
+				if (cells_to_cut != null)
+					for (String s : cells_to_cut) {
+						if (s.compareToIgnoreCase(cellType) == 0)
+							instancesToCut.add(eci);
+					}
+				// Check the cell instance name against the list of instances to cut
+				if (instances_to_cut != null)
+					for (String s : instances_to_cut) {
+						if (s.compareToIgnoreCase(cellName) == 0)
+							instancesToCut.add(eci);
+					}					
+			}
+		}
+
+		if (instancesToCut.size() > 0) {
+			int edgeCutCount = 0;
+			int initialEdgeCout = eciConnectivityGraph.getEdges().size();
+			for (EdifCellInstance eci : instancesToCut) {
+				Collection<?> edgesToCut = eciConnectivityGraph.getOutputEdges(eci);
+				eciConnectivityGraph.removeEdges(edgesToCut);
+				out.println("Cutting output "+edgesToCut.size() + " edges from instance "+eci+"  from graph");
+				edgeCutCount += edgesToCut.size();
+			}
+			if (useBadCutConn) {
+				// Re-create BadCutGroupings
+				badCutGroupings = new EdifCellBadCutGroupings(topCell, nmrArch, eciConnectivityGraph);
+				// Re-create Group Connectivity (include top level ports)
+				bad_cut_conn = new EdifCellInstanceCollectionGraph(eciConnectivityGraph, badCutGroupings, true);
+				sccDFS = new SCCDepthFirstSearch(bad_cut_conn);
+			} else {
+				sccDFS = new SCCDepthFirstSearch(eciConnectivityGraph);
+			}			
+			out.println(edgeCutCount + " Edges cut from graph. "+initialEdgeCout + " Edges in original graph. "
+					+ eciConnectivityGraph.getEdges().size() + " edges in final graph");
+		}		
+	}
+	
+	/**
+	 * This method looks at the SCCs to see if there are any IOBs in any of the feedback paths.
+	 * If there are feedback paths through the IOBs it will warn the user. If they select
+	 *   the removeIOBFeeback option, it will modify the graph and recompute the SCCs.
+	 */
 	private static List<EdifPortRefEdge> iobFeedbackAnalysis(IOBAnalyzer iobAnalyzer, EdifCellInstanceGraph eciConnectivityGraph, boolean useBadCutConn, boolean removeIOBFeedback, NMRArchitecture nmrArch, EdifCell topCell) {
 
 		List<EdifPortRefEdge> iobFeedbackEdges = new ArrayList<EdifPortRefEdge>();
@@ -136,6 +243,7 @@ public class JEdifAnalyze extends EDIFMain {
 		Collection<EdifCellInstanceEdge> esslsInFeedback = new LinkedHashSet<EdifCellInstanceEdge>();
 		for (DepthFirstTree scc : sccs) {
 			for (Edge edge : scc.getEdges()) {
+				// Handle both types of graphs?
 				if (edge instanceof EdifCellInstanceEdge) {
 					edgesInFeedback.add(edge);
 					esslsInFeedback.add((EdifCellInstanceEdge) edge);
@@ -191,4 +299,5 @@ public class JEdifAnalyze extends EDIFMain {
 	protected static EdifCellBadCutGroupings badCutGroupings = null;
 	protected static EdifCellInstanceCollectionGraph bad_cut_conn = null;
 	protected static SCCDepthFirstSearch sccDFS = null;
+	
 }
