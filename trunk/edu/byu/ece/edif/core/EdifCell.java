@@ -173,18 +173,6 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
     }
 
     /**
-     * @deprecated Only called by the constructor below.
-     */
-    public EdifCell(EdifLibrary lib, EdifCell cell, String name) throws EdifNameConflictException,
-            InvalidEdifNameException {
-        this(lib, name);
-        // Set the primitive status of cell 
-        _isPrimitive = cell.isPrimitive();
-
-        copyCellInternals(cell);
-    }
-
-    /**
      * @deprecated This method is only used by the old HalfLatchEdifCell
      * constructor and the old lut replacement. This method should be
      * removed once these old methods and classes are removed.
@@ -610,88 +598,6 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
     //
     //        return true;
     //    }
-    /**
-     * Return a Collection with a List object for each primitive instance within
-     * the hierarchy of this cell. Leaf cells will return a null Collection.
-     * 
-     * @return A Collection of List Objects of EdifCellInstance Objects that are
-     * in order of hierarchy down to primitives
-     */
-    public Collection getHierarchicalPrimitiveList() {
-        // exit out of terminal case
-        if (isLeafCell())
-            return null;
-        // 0. Create Collection
-        Collection cellPrimitives = new ArrayList();
-
-        // 1. Create a Map between an EdifCell and a Collection. The
-        // key to the map is a EdifCell and the Value is a Collection
-        // of Lists where each List is the hierarchy list.
-        Map cellListMap = new LinkedHashMap();
-
-        // 2. Iterate over each EdifCellInstance in the cell. 
-        //System.out.println("Begin "+getName());
-        for (Iterator<EdifCellInstance> i = cellInstanceIterator(); i.hasNext();) {
-            EdifCellInstance inst = i.next();
-            EdifCell instType = inst.getCellType();
-
-            //System.out.println(inst.getName()+"-"instType.getName());
-            // Obtain the list of hierarchical primitives for each
-            // cell instance.
-            //System.out.println("\tSub "+inst.getName()+"("+inst.getType()+")");
-            Collection cellPrims = null;
-            if (cellListMap.containsKey(instType)) {
-                cellPrims = (Collection) cellListMap.get(instType);
-            } else {
-                cellPrims = instType.getHierarchicalPrimitiveList();
-                if (cellPrims != null) {
-                    //System.out.println(inst.getName()+"-"+inst.getType());
-                    cellListMap.put(instType, cellPrims);
-                }
-            }
-
-            if (cellPrims == null) {
-                // cell instance is a primitive. Create a new List
-                // with a single element (i.e. the primitive).
-                List newPrim = new ArrayList(1);
-                newPrim.add(inst);
-                // add single member list to Collection of primitives.
-                cellPrimitives.add(newPrim);
-            } else {
-                // cell instance is not a primitive. Get each List
-                // associated with this primitive and append the cell
-                // instance to the list.
-                //System.out.println(inst.getName()+"*"+inst.getType());
-                for (Iterator j = cellPrims.iterator(); j.hasNext();) {
-                    List prim = (List) j.next();
-                    // Copy list
-                    List primCopy = new ArrayList(prim.size() + 1);
-                    primCopy.addAll(prim);
-                    // put inst at top of primitive list
-                    primCopy.add(0, inst);
-                    // add list to list of primitives
-                    cellPrimitives.add(primCopy);
-                }
-            }
-        }
-        return cellPrimitives;
-    }
-
-    /**
-     * Return a Collection of all EdifCells instanced by the EdifCellInstances
-     * contained within this EdifCell Object.
-     * 
-     * @return A Collection of all the different EdifCell "types" instanced as
-     * sub-cells within the current EdifCell
-     */
-    public Collection<EdifCellInstance> getInnerCells() {
-        Set set = new LinkedHashSet();
-        for (Iterator i = _cellInstanceList.values().iterator(); i.hasNext();) {
-            EdifCellInstance eci = (EdifCellInstance) i.next();
-            set.add(eci.getCellType());
-        }
-        return set;
-    }
 
     /**
      * @return A Collection object containing all input ports
@@ -855,11 +761,10 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * EdifPortRef objects owned by each Net.
      * @see EdifNet#getPortRefIterator
      */
-    public Collection getPortRefs() {
-        Collection portRefs = new ArrayList();
+    public Collection<EdifPortRef> getPortRefs() {
+        Collection<EdifPortRef> portRefs = new ArrayList<EdifPortRef>();
         if (getNetList() != null) {
-            for (Iterator i = getNetList().iterator(); i.hasNext();) {
-                EdifNet net = (EdifNet) i.next();
+            for (EdifNet net : getNetList()) {
                 for (EdifPortRef epr : net.getConnectedPortRefs()) {
                     portRefs.add(epr);
                 }
@@ -1168,7 +1073,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * @param epw EdifPrintWriter to which EDIF will be written
      */
     public void toEdif(EdifPrintWriter epw) {
-        Iterator it;
+        Iterator<?> it;
 
         epw.printIndent("(cell ");
         // HOW DO I CHOOSE WHICH super method I call?
@@ -1229,7 +1134,7 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
 
         }
 
-        Map l = getPropertyList();
+        PropertyList l = getPropertyList();
         if (l != null) {
             it = l.values().iterator();
             while (it.hasNext()) {
