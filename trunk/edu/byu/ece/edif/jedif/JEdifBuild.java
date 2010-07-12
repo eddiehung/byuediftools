@@ -114,7 +114,8 @@ public class JEdifBuild extends EDIFMain {
         // Flatten if necessary
         PreservedHierarchyByNames hierarchy = null;
         if (MergeParserCommandGroup.performFlatten(result) || JEdifSterilizeCommandGroup.getRemoveHL(result)) {
-            env = flatten(result, env);
+        	boolean saveOldCells = JEdifOutputCommandGroup.getNoDelete(result);
+        	env = flatten(saveOldCells, env);
             // preserve hierarchy via name references
             hierarchy = new PreservedHierarchyByNames((FlattenedEdifCell) env.getTopCell());
         }
@@ -139,7 +140,7 @@ public class JEdifBuild extends EDIFMain {
         out.println();
     }
     
-    private static EdifEnvironment flatten(JSAPResult result, EdifEnvironment top) {
+    private static EdifEnvironment flatten(boolean saveOldCells, EdifEnvironment top) {
         FlattenedEdifCell flatCell = null;
         EdifCell oldCell = top.getTopCell();
         try {
@@ -187,7 +188,7 @@ public class JEdifBuild extends EDIFMain {
         top.setTopDesign(newDesign);
 
         // Delete old cell(s)
-        if (!JEdifOutputCommandGroup.getNoDelete(result)) {
+        if (!saveOldCells) {
             flatCell.getLibrary().deleteCell(oldCell, true);
             flatCell.getLibrary().getLibraryManager().pruneNonReferencedCells();
         }
