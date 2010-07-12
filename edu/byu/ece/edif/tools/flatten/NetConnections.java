@@ -36,6 +36,10 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
  * Manages net connectivity during cell flattening. Keeps track of which nets
  * connect to nets on a higher level and also of which nets need to be joined.
  * This class operates on PseudoNets rather than real nets.
+ * 
+ * Only one NetConnections data structure is used during the process of
+ * flattening. This NetConnections data structure is associated with the EdifCell
+ * object that is being flattened.
  */
 public class NetConnections {
 
@@ -130,4 +134,5 @@ public class NetConnections {
      * that need to be joined
      */
     List<Collection<PseudoNet>> _joinedNetLists = new ArrayList<Collection<PseudoNet>>();
+    
 }
