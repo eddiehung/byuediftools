@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.core.EdifCell;
@@ -47,9 +45,6 @@ public class JEdifAnalyze extends EDIFMain {
 	public static PrintStream out;
 	public static PrintStream err;
 	
-	public static final String CUT_CELL_STRING = "cut_cell";
-    public static final String CUT_INSTANCE_STRING = "cut_instance";
-
 	
 	public static void main(String[] args) {
 		
@@ -66,37 +61,11 @@ public class JEdifAnalyze extends EDIFMain {
 		// option for input .jedif file
 		parser.addCommands(new JEdifParserCommandGroup());
 		parser.addCommands(new IOBCommandGroup());
-		parser.addCommands(new JEdifAnalyzeCommandGroup());
+		parser.addCommands (new JEdifAnalyzeCommandGroup());
 		parser.addCommands(new TechnologyCommandGroup());
 		parser.addCommands(new LogFileCommandGroup("analyze.log"));
 		parser.addCommands(new ConfigFileCommandGroup(EXECUTABLE_NAME));
 
-		// Additional command for indicating component cutting
-		char LIST_DELIMITER = ',';
-		FlaggedOption cut_component_option = new FlaggedOption(CUT_CELL_STRING);
-        cut_component_option.setStringParser(JSAP.STRING_PARSER);
-        cut_component_option.setRequired(JSAP.NOT_REQUIRED);
-        cut_component_option.setShortFlag(JSAP.NO_SHORTFLAG);
-        cut_component_option.setLongFlag(CUT_CELL_STRING);
-        cut_component_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
-        cut_component_option.setList(JSAP.LIST);
-        cut_component_option.setListSeparator(LIST_DELIMITER);
-        cut_component_option.setUsageName("cell_type");
-        cut_component_option.setHelp("Comma-separated list of cell types that will be cut in circuit graph analysis");
-        parser.addCommand(cut_component_option);
-
-		// Additional command for indicating instance cutting
-        FlaggedOption cut_instance_option = new FlaggedOption(CUT_INSTANCE_STRING);
-        cut_instance_option.setStringParser(JSAP.STRING_PARSER);
-        cut_instance_option.setRequired(JSAP.NOT_REQUIRED);
-        cut_instance_option.setShortFlag(JSAP.NO_SHORTFLAG);
-        cut_instance_option.setLongFlag(CUT_INSTANCE_STRING);
-        cut_instance_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
-        cut_instance_option.setList(JSAP.LIST);
-        cut_instance_option.setListSeparator(LIST_DELIMITER);
-        cut_instance_option.setUsageName("cell_instance");
-        cut_instance_option.setHelp("Comma-separated list of cell instances that will be cut in circuit graph analysis");
-        parser.addCommand(cut_instance_option);
 
         // Start the parsing
 		JSAPResult result = parser.parse(args, System.err);
@@ -146,7 +115,10 @@ public class JEdifAnalyze extends EDIFMain {
 		List<EdifPortRefEdge> iobFeedbackEdges = iobFeedbackAnalysis(iobAnalyzer, instanceGraph, use_bad_cut_conn, remove_iob_feedback, arch, topCell);
 
 		// Perform instance and cell cutting
-		instanceConnectivityAnalysis(result, instanceGraph, use_bad_cut_conn, arch, topCell);
+		String[] cells_to_cut = JEdifAnalyzeCommandGroup.getCellsToCut(result);
+		String[] instances_to_cut = JEdifAnalyzeCommandGroup.getInstancesToCut(result);
+
+		instanceConnectivityAnalysis(cells_to_cut, instances_to_cut, instanceGraph, use_bad_cut_conn, arch, topCell);
 		
 		// the circuit description is final - save to a file
 		CircuitDescription cDesc = new CircuitDescription(iobAnalyzer, badCutGroupings, instanceGraph, sccDFS, arch);
@@ -163,12 +135,9 @@ public class JEdifAnalyze extends EDIFMain {
 	 * instances may be tagged as not fully connected. This method will take these parameters to modify
 	 * the connectivity graph. Specifically, this method will remove edges based on the user input.
 	 */
-	private static void instanceConnectivityAnalysis(JSAPResult result, EdifCellInstanceGraph eciConnectivityGraph,
+	private static void instanceConnectivityAnalysis(String[] cells_to_cut, String[] instances_to_cut, EdifCellInstanceGraph eciConnectivityGraph,
 			 boolean useBadCutConn, NMRArchitecture nmrArch, EdifCell topCell) {
 		
-		String[] cells_to_cut = result.getStringArray(CUT_CELL_STRING);
-		String[] instances_to_cut = result.getStringArray(CUT_INSTANCE_STRING);
-
 		if (cells_to_cut == null && instances_to_cut == null)
 			return;
 		
