@@ -37,6 +37,10 @@ import java.io.PrintStream;
  */
 public class EDIFMain {
 
+	public static PrintStream out;
+
+	public static PrintStream err;
+	
     public static String EXECUTABLE_NAME = "edifmain";
 
     public static String VERSION_STRING = "v0.5.3";
