@@ -25,13 +25,13 @@ package edu.byu.ece.edif.tools.flatten;
 import java.io.Serializable;
 import java.util.Collection;
 
-import edu.byu.ece.edif.core.EdifCell;
-import edu.byu.ece.edif.core.EdifCellInstance;
-
 //////////////////////////////////////////////////////////////////////////
 //// HierarchicalInstance
 /**
- * An interface for representing a node in a hierarchy of instances.
+ * An interface for representing a node in a hierarchy of instances. This
+ * is a simple tree data structure for retaining naming information of
+ * a flattened circuit.
+ * 
  */
 public interface HierarchicalInstance extends Serializable {
 
