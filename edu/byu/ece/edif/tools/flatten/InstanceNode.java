@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
 
@@ -66,6 +67,17 @@ public class InstanceNode implements HierarchicalInstance {
         _isLeafNode = instance.getCellType().isLeafCell();
         _origInstanceName = instance.getName();
         _origCellTypeName = instance.getCellType().getName();
+    }
+
+    /**
+     * This is a constructor for the top-level cell that has not yet been
+     * 'instanced'
+     */
+    public InstanceNode(InstanceNode parent, EdifCell instance) {
+        _parent = parent;
+        _isLeafNode = instance.isLeafCell();
+        _origInstanceName = null; // not instanced, so has no name
+        _origCellTypeName = instance.getName();
     }
 
     /**
