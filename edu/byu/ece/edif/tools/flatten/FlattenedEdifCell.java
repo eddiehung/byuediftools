@@ -44,7 +44,6 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifPrintWriter;
-import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
@@ -64,6 +63,10 @@ import edu.byu.ece.edif.util.merge.EdifMergeParser;
  * objects which contain information about the hierarchy of the original cell. A
  * map is also maintained from original EdifNets to their corresponding new
  * EdifNets (more than one original net will map to the same new net).
+ * 
+ * For most constructors, the flattened cell is placed in the same library as the
+ * original cell. There are some constructors that allow the flattened cell to be
+ * placed in a different library as the original cell.
  */
 public class FlattenedEdifCell extends EdifCell {
 
@@ -142,12 +145,7 @@ public class FlattenedEdifCell extends EdifCell {
      */
     public FlattenedEdifCell(EdifLibrary lib, EdifCell cell, HierarchyNaming naming, Set<EdifCell> noFlatten)
             throws EdifNameConflictException, InvalidEdifNameException {
-        super(lib, lib.getUniqueEdifCellNameable(new NamedObject(cell.getName() + "_flat")).getName(), cell
-                .getInterface());
-        _originalCell = cell;
-        _naming = naming;
-        _noFlatten = noFlatten;
-        flatten();
+    	this(lib,cell,"_flat",naming, noFlatten);
     }
 
     /**
@@ -392,7 +390,7 @@ public class FlattenedEdifCell extends EdifCell {
         cell.getLibrary().deleteCell(cell, true);
 
         System.out.println("Writing new file . . .");
-        Set outputFile = EdifMergeParser.parseArguments(args, "-o");
+        Set<String> outputFile = EdifMergeParser.parseArguments(args, "-o");
 
         String OutputFileName = null;
         if (outputFile == null || outputFile.size() < 1)
@@ -419,28 +417,32 @@ public class FlattenedEdifCell extends EdifCell {
     }
 
     /**
-     * Execute the flattening process. This method fills in this cell with the
+     * Execute the flattening process. This method fills in this new cell with the
      * flattened contents of the original cell.
      */
     protected void flatten() {
-        // Check to make sure that it is the top cell that is being flattened,
-        // otherwise, the top HierarchicalInstance won't match up right to the
-        // instance of the cell being flattened.
-        EdifCellInstance topInstance = _originalCell.getLibrary().getLibraryManager().getEdifEnvironment()
-                .getTopCellInstance();
-        if (topInstance.getCellType() != _originalCell) {
-            throw new EdifRuntimeException("Error: attempting to flatten a cell that is not the top cell");
-        }
 
-        // This manages the connectivity of the nets
+
+        // This manages the connectivity of the nets (this is a global data structure that
+        // manages all connectivity within the flattened cell)
         NetConnections connections = new NetConnections();
 
         // This list is for breadth first search traversal of the instance
         // hierarchy
         LinkedList<FlatteningNode> bfsTraversalList = new LinkedList<FlatteningNode>();
 
-        // The top level HierarchicalInstance
-        _topFlatteningNode = new FlatteningNode(topInstance);
+    	// Check to see if it is the top-cell that is being flattened
+        // otherwise, the top HierarchicalInstance won't match up right to the
+        // instance of the cell being flattened.
+        _topFlatteningNode = null;
+        EdifCellInstance topInstance = _originalCell.getLibrary().getLibraryManager().getEdifEnvironment()
+        	.getTopCellInstance();
+        if (topInstance.getCellType() == _originalCell) {
+            _topFlatteningNode = new FlatteningNode(topInstance);
+        	
+        } else {
+        	_topFlatteningNode = new FlatteningNode(_originalCell);
+        }
 
         // This is a list of nets that will be created in the flattened cell.
         // They are PseudoNets because some of them may be merged together into
@@ -457,12 +459,15 @@ public class FlattenedEdifCell extends EdifCell {
             // instance traversal and used during net processing. For clarity,
             // new versions of these maps are created for each subcell that is
             // traversed.
+        	//
+        	// Map between the original EdifCellInstance and the FlatteningNode corresponding to this instance
             Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode = new LinkedHashMap<EdifCellInstance, FlatteningNode>();
+        	// Map between the original EdifCellInstance and the new EdifCellInstance
             Map<EdifCellInstance, EdifCellInstance> oldToNewInstances = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
 
+            oldInstanceToFlatteningNode.put(topInstance, _topFlatteningNode);
             // Iterate subCells; create flattened versions of leaf cells and
             // add non-leaf cells to bfsTraversalList
-            oldInstanceToFlatteningNode.put(topInstance, _topFlatteningNode);
             bfsTraversalList.addAll(processSubCells(oldInstanceToFlatteningNode, oldToNewInstances, _topFlatteningNode));
 
             // Process the nets at the top level
@@ -642,9 +647,11 @@ public class FlattenedEdifCell extends EdifCell {
     }
 
     /**
-     * Process the subCells in the current cell being traversed. Clone any leaf
-     * cells encountered and return other cells in a collection to be added to
-     * the traversal list. Add map entries from old instances to InstanceNodes
+     * Iterate through all of the instances of the current cell being traversed.
+     * Clone the leaf cells into the new cell. Add the hierarchical cells to the
+     * bfs list for processing at a later time.
+     * 
+     * Add map entries from old instances to InstanceNodes
      * and from old instances to new instances.
      * 
      * @param oldInstanceToFlatteningNode map for entries from old instances to
@@ -656,14 +663,22 @@ public class FlattenedEdifCell extends EdifCell {
      */
     protected Collection<FlatteningNode> processSubCells(Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode,
             Map<EdifCellInstance, EdifCellInstance> oldToNewInstances, FlatteningNode currentNode) {
-        EdifCell currentCell = currentNode.getOrigInstance().getCellType();
+        EdifCell currentCell = currentNode.getCellType();
         Collection<FlatteningNode> bfsAdditions = new ArrayList<FlatteningNode>();
+
+        // Iterate through all sub-cells of the current cell
         if (currentCell.getSubCellList() != null) {
             for (EdifCellInstance child : currentCell.getSubCellList()) {
             	FlatteningNode childNode = currentNode.addChild(child);
                 oldInstanceToFlatteningNode.put(child, childNode);
+
                 if (child.getCellType().isLeafCell() || (_noFlatten != null && _noFlatten.contains(child.getCellType()))) {
-                    EdifNameable nonUniqueName = null;
+                	// Child is a leaf cell or the child is a EdifCell type that should not
+                	// be traversed during flattening.
+
+                	// 1. Create a new valid name for the new instance that is to be created. Use a naming scheme
+                	//    that preserves the hierarchy.
+                	EdifNameable nonUniqueName = null;
                     try {
                         nonUniqueName = new RenamedObject(childNode.getOrigInstance().getName(), _naming
                                 .getHierarchicalInstanceName(childNode.getInstanceNode()));
@@ -671,10 +686,13 @@ public class FlattenedEdifCell extends EdifCell {
                         e1.toRuntime();
                     }
                     EdifNameable newName = getUniqueInstanceNameable(nonUniqueName);
+                    // 2. Create a new instance.
                     FlattenedEdifCellInstance newInstance = new FlattenedEdifCellInstance(newName, this, child
                             .getCellType(), childNode.getInstanceNode());
+                    // 3. Copy the properties
                     newInstance.copyProperties(child);
                     _nodesToFlatInstances.put(childNode.getInstanceNode(), newInstance);
+                    // 4. Add the instance to the cell
                     try {
                         addSubCell(newInstance);
                     } catch (EdifNameConflictException e) {
@@ -682,7 +700,9 @@ public class FlattenedEdifCell extends EdifCell {
                     }
                     oldToNewInstances.put(child, newInstance);
                 } else {
-                    bfsAdditions.add(childNode);
+                	// Child is NOT a leaf cell and should be traversed at a later time. Nothing is added
+                	// to the EdifCell. Add the node to the list of breadth first search items to perform.
+                	bfsAdditions.add(childNode);
                 }
             }
         }
@@ -722,5 +742,12 @@ public class FlattenedEdifCell extends EdifCell {
      */
     protected FlatteningNode _topFlatteningNode;
     
+    /**
+     * Contains a Set of EdifCell objects that will not be flattened during the flattening process.
+     * When a cell that is in this Set is found during the bread-first search traversal of the netlist,
+     * it is treating like a leaf cell meaning that the recursion will stop at this cell and this given
+     * cell will not be flattened.
+     */
     protected Set<EdifCell> _noFlatten = null;
+
 }
