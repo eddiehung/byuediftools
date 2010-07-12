@@ -198,30 +198,6 @@ public class EdifCellInstance extends NamedPropertyObject implements EdifOut {
         return null;
     }
 
-    /**
-     * Return a Collection with a List object for each primitive instance within
-     * the hierarchy of this cell instance.
-     * 
-     * @return A Collection of hierarchical primitives
-     */
-    public Collection<List<EdifCellInstance>> getHierarchicalPrimitiveList() {
-        Collection<List<EdifCellInstance>> cellPrims = getCellType().getHierarchicalPrimitiveList();
-        if (cellPrims == null) {
-            // cell type is a primitive
-            List<EdifCellInstance> newList = new ArrayList<EdifCellInstance>(1);
-            newList.add(this);
-            Collection<List<EdifCellInstance>> c = new ArrayList<List<EdifCellInstance>>(1);
-            c.add(newList);
-            return c;
-        } else {
-            // iterate over every list and add this
-            for (List<EdifCellInstance> l : cellPrims) {
-                l.add(0, this);
-            }
-            return cellPrims;
-        }
-    }
-
     public Map<EdifSingleBitPort, EdifNet> getInnerNets() {
         EdifCell parentCell = getParent();
         Map<EdifSingleBitPort, EdifNet> innerNets = new LinkedHashMap<EdifSingleBitPort, EdifNet>();
