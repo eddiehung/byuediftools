@@ -5,11 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.byu.ece.edif.arch.xilinx.XilinxMergeParser;
 import edu.byu.ece.edif.core.EdifCell;
@@ -22,17 +20,10 @@ import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifPrintWriter;
-import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.tools.replicate.nmr.DeviceUtilizationTracker;
-import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
-import edu.byu.ece.edif.tools.replicate.nmr.OverutilizationException;
-import edu.byu.ece.edif.tools.replicate.nmr.ReplicationUtilizationTracker;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;
-import edu.byu.ece.graph.AbstractGraphToDotty;
+import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
@@ -447,8 +438,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 	}
 	
     @Override
-    public EdifPortRefGroupGraph getSubGraph(Collection nodeCollection) {
-        return (EdifPortRefGroupGraph) super.getSubGraph(nodeCollection);
+    public BasicGraph getSubGraph(Collection nodeCollection) {
+        return super.getSubGraph(nodeCollection);
     }
     
     /**
