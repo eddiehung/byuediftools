@@ -49,13 +49,23 @@ public abstract class AbstractCommandGroup implements CommandGroup {
         _options = new ArrayList<Parameter>();
     }
 
-    public void addCommand(Parameter o) {
+    public Parameter addCommand(Parameter o) {
         _options.add(o);
+        return o;
     }
 
+    public void addCommandsToParser(EdifCommandParser ecp) {
+    	ecp.addCommands(this);
+    }
+    
+    
     public Collection<Parameter> getCommands() {
         return _options;
     }
+
+    public static final String FALSE = "false";
+	
+	public static final String TRUE = "true";
 
     Collection<Parameter> _options;
 
