@@ -1006,7 +1006,7 @@ edif
   EdifNameable name = null;
   Property p;
   EdifCellInstance inst;
-  EdifCell referenceCell;
+  EdifCell referenceCell = null;
     jj_consume_token(LBR);
     jj_consume_token(INSTANCE);
     objectName = instanceNameDef();
