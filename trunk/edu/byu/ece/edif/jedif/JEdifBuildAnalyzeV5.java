@@ -3,6 +3,7 @@ package edu.byu.ece.edif.jedif;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import com.martiansoftware.jsap.FlaggedOption;
@@ -16,6 +17,7 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
@@ -27,6 +29,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.SparseAllPairsShortestPath;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
+import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
@@ -144,7 +147,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		}
     		
     		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-    		sccSummary(sccDFS, graph, out);
+    		sccSummary(sccDFS, graph, out);		
         }
 
 	}
@@ -244,6 +247,16 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
         return flatCell;
     }
 
+    private static void dottyInstanceSubgraph(EdifCellInstance eci, EdifPortRefGroupGraph graph, String filename) {
+		List<EdifPortRefGroupNode> nodes = graph.getInstanceNodes(eci);
+		HashSet<Object> ancestorsPredecessorsAndNodes = new HashSet<Object>();
+		ancestorsPredecessorsAndNodes.addAll(nodes);
+		for(EdifPortRefGroupNode newnode : nodes) {
+			ancestorsPredecessorsAndNodes.addAll(graph.getSuccessors(newnode));
+			ancestorsPredecessorsAndNodes.addAll(graph.getPredecessors(newnode));
+		}
+		graph.getSubGraph(ancestorsPredecessorsAndNodes).toDotty(filename);
+    }
 		
 	private static void lut6_2ConnectivityAnalysis(EdifCell topCell, EdifPortRefGroupGraph graph) {
 		String LUT6_2 = "lut6_2";
@@ -252,8 +265,8 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		// Iterate over all instances in the graph to see if any instance matches a
 		// cut instance name or a cut cell type name
 		for (Object node : graph.getNodes() ) {
-			if (node instanceof EdifCellInstance) {
-				EdifCellInstance eci = (EdifCellInstance) node;
+			if (node instanceof EdifPortRefGroupNode) {
+				EdifCellInstance eci = ((EdifPortRefGroupNode)node).getEdifCellInstance();
 				String cellType = eci.getCellType().getName();
 				if (cellType.compareToIgnoreCase(LUT6_2) == 0)
 					luts2cut.add(eci);
@@ -261,8 +274,11 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		}
 
 		if (luts2cut.size() > 0) {
+			System.out.println(luts2cut.size() + " LUT6_2 instances found");
 			for (Object node : luts2cut) {
 				EdifCellInstance lut6_2 = (EdifCellInstance) node;
+				
+				//dottyInstanceSubgraph(lut6_2, graph, "before.dot");
 				// get properties
 				Property init_string = lut6_2.getProperty("INIT");
 				if (init_string == null) {
@@ -281,23 +297,53 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 					
 					List<Integer> O6_dont_care = attr_O6.getDontCareInputs();
 					List<Integer> O5_dont_care = attr_O5.getDontCareInputs();
-					
-					// Find the single instance associated with the lut6_2 EdifCellInstance
-					//
-					// Returns all group nodes associated with a single instance. At this point,
-					// there should be only one.
-					//
-					// Collection<?> graph.getInstanceNodes(EdifCellInstance eci);
-					
-					// 1. Create a new node for O6
-					// 2. Move the EPR assocaited with the O6 output within the origional node to the new O6 node
-					// 3. Remove the I5 input on the O5 node (I5 is not used for O5)
-					// 4. Compute don't cares for O5 and remove from the O5 node
-					// 5. Compute don't cares for O6 and remove them from the O6 node
+					/*we have to also manually add I5 to the O5 don't cares
+					(since with a forced input it's like there's only 5 inputs) */
+					O5_dont_care.add(new Integer(5));
 
 					
+					// Find the single instance associated with the lut6_2 EdifCellInstance
+					List<EdifPortRefGroupNode> nodes = graph.getInstanceNodes(lut6_2);
+					if(nodes.size() > 1) {
+						out.println("Warning: more than 1 EdifPortRefGroupNode for this EdifCellInstance (was it already split?)");
+					}
+					EdifPortRefGroupNode graphNode = nodes.get(0);
+					
+					List<EdifPortRef> o5Group = new ArrayList<EdifPortRef>();
+					List<EdifPortRef> o6Group = new ArrayList<EdifPortRef>();
+					//put O6 and the do care EPRs for O6 in one group
+					//put O5 and the do care EPRs for O5 in another
+					Collection<EdifPortRef> allEPRs = lut6_2.getAllEPRs();
+					for(EdifPortRef epr : allEPRs) {
+						String portName = epr.getPort().getName();
+						int inputIndex = Integer.parseInt(portName.substring(1));
+						if (portName.equalsIgnoreCase("O5")) {
+							o5Group.add(epr);
+						}
+						else if (portName.equalsIgnoreCase("O6")) { 
+							o6Group.add(epr);
+						}
+						else { //must be an input
+							if(!O5_dont_care.contains(new Integer(inputIndex))) {
+								o5Group.add(epr);
+							}
+							if(!O6_dont_care.contains(new Integer(inputIndex))) {
+								o6Group.add(epr);
+							}	
+						}
+					}
+					//actually split the nodes in the graph
+					List<List<EdifPortRef>> groupsToSplit = new ArrayList<List<EdifPortRef>>();
+					groupsToSplit.add(o5Group);
+					groupsToSplit.add(o6Group);
+					graph.splitNode(graphNode, groupsToSplit);				
 				}
+				//dottyInstanceSubgraph(lut6_2, graph, "after.dot");
 			}
+			System.out.println("After splitting LUT6_2 nodes:");
+			graphSummary(graph, out);
+						
+			
 		} else {
 			out.println("Warning: No LUT6_2 instances");
 		}

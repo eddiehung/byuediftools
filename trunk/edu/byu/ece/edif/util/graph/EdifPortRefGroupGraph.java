@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
+import edu.byu.ece.edif.core.NamedPropertyObject;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
@@ -72,47 +74,38 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
     /**
      * Construct a new EdifPortRefGroupGraph from an EdifCell. Default to include
      * Top Level Ports in the graph and NOT create source-to-source Edges in the
-     * Graph or initially split nodes.
+     * Graph.
      * 
      * @param c
      */
     public EdifPortRefGroupGraph(EdifCell c) {
-        this(c, true, false, false);
+        this(c, true, false);
     }
 
     /**
      * Construct a new EdifPortRefGroupGraph from an EdifCell. Default to NOT
-     * create source-to-source Edges in the Graph or initially split nodes.
+     * create source-to-source Edges in the Graph.
      * 
      * @param c
      */
     public EdifPortRefGroupGraph(EdifCell c, boolean includeTopLevelPorts) {
-        this(c, includeTopLevelPorts, false, false);
+        this(c, includeTopLevelPorts, false);
     }
 
-    /**
-     * Construct a new EdifPortRefGroupGraph object from an EdifCell. Default to
-     * NOT initially split nodes
-     * 
-     * @param c
-     */
-    public EdifPortRefGroupGraph(EdifCell c, boolean includeTopLevelPorts, boolean createSourceToSourceEdges) {
-    	this(c, includeTopLevelPorts, createSourceToSourceEdges, false);
-    }
     
     /**
      * Construct a new EdifPortRefGroupGraph object from an EdifCell.
      * 
      * @param c
      */
-    public EdifPortRefGroupGraph(EdifCell c, boolean includeTopLevelPorts, boolean createSourceToSourceEdges,
-    		boolean splitNodes) {
+    public EdifPortRefGroupGraph(EdifCell c, boolean includeTopLevelPorts, boolean createSourceToSourceEdges) {
         super(c.getSubCellList().size());
         _cell = c;
         _sourceToSourceEdges = new ArrayList<EdifPortRefGroupEdge>();
         _eprToGroupMap = new HashMap<EdifPortRef, List<EdifPortRefGroupNode>>();
-        _init(includeTopLevelPorts, createSourceToSourceEdges, splitNodes);
-        _hasSplitNodes = splitNodes;
+        _eciToGroupMap = new HashMap<EdifCellInstance, List<EdifPortRefGroupNode>>();
+        _init(includeTopLevelPorts, createSourceToSourceEdges);
+        _hasSplitNodes = false;
     }
 	
 	@Override
@@ -322,8 +315,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * Edges connected to the given node and that are attached to the named
      * EdifPort
      */
-    public Collection getPredecessors(Object node, String portName) {
-        Collection predecessors = new ArrayList();
+    public Collection<Object> getPredecessors(Object node, String portName) {
+        Collection<Object> predecessors = new ArrayList<Object>();
         Collection<Edge> inputEdges = getInputEdges(node);
         for (Edge inputEdge : inputEdges) {
             // The Edge should be an EdifPortRefGroupEdge
@@ -349,8 +342,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * Edges connected to the given node and that are attached to the given
      * EdifPortRef
      */
-    public Collection getPredecessors(Object node, EdifPortRef epr) {
-        Collection predecessors = new ArrayList();
+    public Collection<Object> getPredecessors(Object node, EdifPortRef epr) {
+        Collection<Object> predecessors = new ArrayList<Object>();
         Collection<Edge> inputEdges = getInputEdges(node);
         for (Edge inputEdge : inputEdges) {
             // The Edge should be an EdifPortRefGroupEdge
@@ -380,8 +373,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * the Edges connected to the given node and that are attached to the named
      * EdifPort
      */
-    public Collection getSuccessors(Object node, EdifPortRef epr) {
-        Collection successors = new ArrayList();
+    public Collection<Object> getSuccessors(Object node, EdifPortRef epr) {
+        Collection<Object> successors = new ArrayList<Object>();
         Collection<Edge> outputEdges = getOutputEdges(node);
         for (Edge outputEdge : outputEdges) {
             // The Edge should be an EdifPortRefGroupEdge
@@ -407,8 +400,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * the Edges connected to the given node and that are attached to the named
      * EdifPort
      */
-    public Collection getSuccessors(Object node, String portName) {
-        Collection successors = new ArrayList();
+    public Collection<Object> getSuccessors(Object node, String portName) {
+        Collection<Object> successors = new ArrayList<Object>();
         Collection<Edge> outputEdges = getOutputEdges(node);
         for (Edge outputEdge : outputEdges) {
             // The Edge should be an EdifPortRefGroupEdge
@@ -477,6 +470,22 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
     }
     
     /**
+     * 
+     * @param eci
+     * @return a List of all nodes that correspond to this EdifCellInstance.
+     * If the graph does not contain any split nodes, this List will only
+     * contain one node.
+     * 
+     */
+    public List<EdifPortRefGroupNode> getInstanceNodes(EdifCellInstance eci) {
+    	List<EdifPortRefGroupNode> list = _eciToGroupMap.get(eci);
+    	if (list==null) {
+    		System.out.println("null list");
+    	}
+    	return list;
+    }
+    
+    /**
      * This method creates an EDIF file from the graph.
      * 
      * @param filename - the name of the EDIF file created.
@@ -502,8 +511,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
              * These Collections are used to ensure we don't try to add the same
              * EdifCellInstance, EdifPort, or EdifNet more than once.
              */
-            Collection addedNodes = new LinkedHashSet(this.getNodes().size());
-            Collection<EdifNet> addedNets = new LinkedHashSet();
+            Collection<NamedPropertyObject> addedNodes = new LinkedHashSet<NamedPropertyObject>(this.getNodes().size());
+            Collection<EdifNet> addedNets = new LinkedHashSet<EdifNet>();
 
             /*
              * Iterate over all the nodes adding EdifCellInstances and
@@ -569,11 +578,20 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 		node.addAll(eci.getAllEPRs());
 		nodes.add(node);
 		
+		//add ECI/node relationship to the map of ECIs to nodes
+		List<EdifPortRefGroupNode> list = _eciToGroupMap.get(eci);
+		if (list == null) {
+			list = new LinkedList<EdifPortRefGroupNode>();
+		}
+		list.add(node);
+		
+		_eciToGroupMap.put(eci, list);
+		
 		//add all EPR/node relationships to the map of EPRs to nodes
 		for(EdifPortRef epr : eci.getAllEPRs()) {
 			List<EdifPortRefGroupNode> eprgnList = _eprToGroupMap.get(epr);
 			if (eprgnList == null) {
-				eprgnList = new ArrayList<EdifPortRefGroupNode>();
+				eprgnList = new LinkedList<EdifPortRefGroupNode>();
 			}
 			eprgnList.add(node);
 			_eprToGroupMap.put(epr, eprgnList);
@@ -582,48 +600,75 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 		return nodes;
 	}
 	
-	protected List<EdifPortRefGroupNode> getSplitNodesFromECI(EdifCellInstance eci) {
-		ArrayList<EdifPortRefGroupNode> nodes = new ArrayList<EdifPortRefGroupNode>();
-
-		//group EPRs in some way (this is device specific)
-		List<Collection<EdifPortRef>> portRefGroups = getEPRSplitGroups(eci);
+	public void splitNode(EdifPortRefGroupNode nodeToSplit, List<List<EdifPortRef>> groupsToSplit) {
+		//TODO: update the EPR to Node Map
+		//TODO: update the ECI to Node Map
 		
-		for (Collection<EdifPortRef> portRefGroup : portRefGroups) {
-			EdifPortRefGroupNode node = new EdifPortRefGroupNode(eci);
-			node.addAll(portRefGroup);
-			nodes.add(node);
-			//add all EPR/node relationships to the map of EPRs to nodes
-			for(EdifPortRef epr : portRefGroup) {
-				List<EdifPortRefGroupNode> eprgnList = _eprToGroupMap.get(epr);
-				if (eprgnList == null) {
-					eprgnList = new ArrayList<EdifPortRefGroupNode>();
+		Collection<EdifPortRefGroupEdge> inputEdges = getInputEdges(nodeToSplit);
+		Collection<EdifPortRefGroupEdge> outputEdges = getOutputEdges(nodeToSplit);
+		
+		//remove the old, split node and all edges that refer to it
+		removeNode(nodeToSplit);
+		for(Edge e : inputEdges) {
+			removeEdge(e);
+		}
+		for(Edge e : outputEdges) {
+			removeEdge(e);
+		}
+		
+		//create a new node for each requested group of PortRefs
+		for(List<EdifPortRef> eprs: groupsToSplit) {
+			//create and add the new node
+			EdifPortRefGroupNode newNode = new EdifPortRefGroupNode(nodeToSplit.getEdifCellInstance());
+			newNode.addAll(eprs);
+			addNode(newNode);
+			
+			//update the EPR->port ref group map
+			for(EdifPortRef epr : eprs) {
+				List<EdifPortRefGroupNode> eprMapList = _eprToGroupMap.get(epr);
+				if(eprMapList == null) {
+					eprMapList = new LinkedList<EdifPortRefGroupNode>();
 				}
-				eprgnList.add(node);
-				_eprToGroupMap.put(epr, eprgnList);
+				eprMapList.remove(nodeToSplit);
+				eprMapList.add(newNode);
+				_eprToGroupMap.put(epr, eprMapList);
 			}
+			
+			//update the ECI->port ref group map
+			List<EdifPortRefGroupNode> eciMapList = _eciToGroupMap.get(nodeToSplit.getEdifCellInstance());
+			if (eciMapList == null) {
+				eciMapList = new LinkedList<EdifPortRefGroupNode>();
+			}
+			eciMapList.remove(nodeToSplit);
+			eciMapList.add(newNode);
+			_eciToGroupMap.put(nodeToSplit.getEdifCellInstance(), eciMapList);
+			
+			//create and add new input edges
+			for (EdifPortRefGroupEdge inEdge : inputEdges) {
+				Object sourceNode = inEdge.getSource();
+				EdifPortRef sourceEPR = inEdge.getSourceEPR();
+				for(EdifPortRef epr : eprs) {
+					if(inEdge.getSinkEPR().equals(epr)) {
+						addEdge(new EdifPortRefGroupEdge(sourceEPR, sourceNode, epr, newNode));
+					}
+				}
+			}
+			//create and add new output edges
+			for (EdifPortRefGroupEdge outEdge : outputEdges) {
+				Object sinkNode = outEdge.getSink();
+				EdifPortRef sinkEPR = outEdge.getSinkEPR();
+				for(EdifPortRef epr : eprs) {
+					if(outEdge.getSourceEPR().equals(epr)) {
+						addEdge(new EdifPortRefGroupEdge(epr, newNode, sinkEPR, sinkNode));
+					}
+				}
+			}	
 		}		
-		return nodes;
-	}
-	
-	
-	// TODO: The next four methods would be able to split/join nodes after the 
-	// graph is created (right now, a boolean in the constructor allows for nodes
-	// to be split or not in _init, but it may be useful sometime to do this after
-	// the graph is created...
-	protected void splitAllEligibleNodes() {
-		
-	}
-	
-	protected List<EdifPortRefGroupNode> splitNode(EdifPortRefGroupNode nodeToSplit) {
-		return null;
-	}
-	
-	protected void joinAllSplitNodes() {
-		
 	}
 
-	protected EdifPortRefGroupNode joinSplitNode(List<EdifPortRefGroupNode> nodesToJoin) {
-		return null;
+	//TODO: Implement this method
+	public void joinNodes(List<EdifPortRefGroupNode> nodesToJoin) {
+
 	}
 	
 	/**
@@ -631,16 +676,11 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * happens only once and that this does not track changes in the EdifCell.
      * If the cell changes, this connectivity will be stale.
      */
-    protected void _init(boolean includeTopLevelPorts, boolean createSourceToSourceEdges, boolean splitNodes) {
+    protected void _init(boolean includeTopLevelPorts, boolean createSourceToSourceEdges) {
         // Add Nodes
     	for (EdifCellInstance eci : _cell.getSubCellList()) {
     		List<EdifPortRefGroupNode> nodes;
-    		if(!splitNodes) {
-    			nodes = getUnsplitNodesFromECI(eci);
-    		}
-    		else {
-    			nodes = getSplitNodesFromECI(eci);
-    		}
+    		nodes = getUnsplitNodesFromECI(eci);
     		this.addNodes(nodes);
     	}
 
@@ -794,7 +834,7 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 
             // 3. Create the graph data structures         
             System.out.println("Creating Graphs . . .");
-            EdifPortRefGroupGraph prgGraph = new EdifPortRefGroupGraph(flat_cell, true, true, true);
+            EdifPortRefGroupGraph prgGraph = new EdifPortRefGroupGraph(flat_cell, true, true);
             EdifCellInstanceGraph eciGraph = new EdifCellInstanceGraph(flat_cell, true, true);
             
             // 4. Do an SCC depth first search on each graph
@@ -824,60 +864,7 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
             	System.out.println("SCCs differ!");
     	}
     }
-    
-    //TODO: This should be moved to another (Xilinx-specific) class!
-    protected List<Collection<EdifPortRef>> getEPRSplitGroups(EdifCellInstance eci) {
-    	List<Collection<EdifPortRef>> eprGroups = new ArrayList<Collection<EdifPortRef>>();
-    	if(eci.getCellType().getName().equals("LUT6_2")) {
-    		eprGroups = splitXilinxLUT6_2(eci);
-    		//System.out.println("nodes for LUT6_2");
-    	}
-    	else {
-    		eprGroups.add(eci.getAllEPRs());
-    	}
-    	return eprGroups;
-    }
-    
-    //TODO: This should be moved to another (Xilinx-specific) class!
-    protected List<Collection<EdifPortRef>> splitXilinxLUT6_2(EdifCellInstance eci) {
-    	/* TODO: find other don't cares with XilinxInitAttribute(?)
-    	 * right now, just makes the most basic assumption
-    	 * (O5 never cares about I5, while O6 may care about all inputs)
-    	 * 
-    	 * Would be something like this:
-    	 * 1- get init String from eci
-    	 * 2- split init String into the one for O5 and the one for O6
-    	 * 3- get don't cares for O5 and O6
-    	 * 4- create a group with EPRs for O5 and all O5 "do care" inputs
-    	 * (will never include I5), and another with EPRs for O6 and all O6
-    	 * "do care" inputs (may include any input.) 
-    	 */
-    	
-    	List<Collection<EdifPortRef>> groups = new ArrayList<Collection<EdifPortRef>>();
-    	List<EdifPortRef> o6PortRefs = new ArrayList<EdifPortRef>();
-    	List<EdifPortRef> o5PortRefs = new ArrayList<EdifPortRef>();
-    	for(EdifPortRef epr : eci.getAllEPRs()) {
-    		//first two cases: each group cares only about one output
-    		if (!epr.getSingleBitPort().getPortName().equalsIgnoreCase("O5")) {
-    			o5PortRefs.add(epr);
-    		}
-    		else if (!epr.getSingleBitPort().getPortName().equalsIgnoreCase("O6")) {
-    			o6PortRefs.add(epr);
-    		}
-    		//input that's not I5 case: both care about it
-    		else if (!epr.getSingleBitPort().getPortName().equalsIgnoreCase("I5")) {
-    			o5PortRefs.add(epr);
-        		o6PortRefs.add(epr);
-    		}
-    		else { //I5 input case: only O6 cares about it
-        		o6PortRefs.add(epr);
-    		}
-    	}
-		groups.add(o5PortRefs);
-		groups.add(o6PortRefs);
-    	return groups;
-    }
-    
+       
     /**
      * The cell corresponding to these connections.
      */
@@ -900,9 +887,6 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * Maps all EdifCellInstances to one or more EdifPortRefGroupNodes.
      * This helps us keep track of which ECIs have been split into multiple
      * nodes and can be merged later.
-     * 
-     * TODO: determine if we need this! Since I haven't implemented joining
-     * code yet, I don't create the structure or use it anywhere yet.
      */
     protected Map<EdifCellInstance, List<EdifPortRefGroupNode>> _eciToGroupMap;
     
