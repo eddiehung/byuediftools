@@ -1189,9 +1189,9 @@ EdifCellInstance instance(EdifCell parentCell) :
 {
   Object objectName;
   EdifNameable name = null;
-  Property p;
-  EdifCellInstance inst;
-  EdifCell referenceCell;
+  Property p = null;
+  EdifCellInstance inst = null;
+  EdifCell referenceCell = null;
 }
 {
     <LBR> <INSTANCE> 
