@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
@@ -25,9 +26,10 @@ import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.tools.replicate.nmr.SparseAllPairsShortestPath;
+import edu.byu.ece.graph.algorithms.SparseAllPairsShortestPath;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
+import edu.byu.ece.edif.util.graph.EdifPortRefGroupEdge;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
@@ -266,9 +268,25 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     }
 		
 	private static void shortestPathFeedbackAnalysis(int iterations, EdifPortRefGroupGraph graph) {
-		out.println("Shorestt path of "+iterations);
+		out.println("Calculating all pairs shortest path of "+iterations+" iterations...");
+		SparseAllPairsShortestPath apsp = SparseAllPairsShortestPath.shortestPath(graph, iterations);
+		out.println("Finding edges to cut from shortest path analysis...");
+		Set<EdifPortRefGroupEdge> edgesToCut = getShortestPathEdgesToCut(graph, apsp);
+		out.println("Removing " + edgesToCut.size() + " edges.");
+		graph.removeEdges(edgesToCut);
+		out.println("Graph now has " + graph.getNodes().size() + " nodes and "+ graph.getEdges().size()+" edges.");
 	}	
 	
+	private static Set<EdifPortRefGroupEdge> getShortestPathEdgesToCut(EdifPortRefGroupGraph graph, SparseAllPairsShortestPath apsp) {
+		Set<EdifPortRefGroupEdge> toReturn = new HashSet<EdifPortRefGroupEdge>();
+		for(EdifPortRefGroupEdge e : graph.getEdges()) {
+			Integer backweight = apsp.getValue(e.getSink(), e.getSource());
+			if (backweight == null) { //this means infinite
+				toReturn.add(e);
+			}
+		}	
+		return toReturn;
+	}
 	
 	private static void lut6_2ConnectivityAnalysis(EdifCell topCell, EdifPortRefGroupGraph graph) {
 		String LUT6_2 = "lut6_2";
