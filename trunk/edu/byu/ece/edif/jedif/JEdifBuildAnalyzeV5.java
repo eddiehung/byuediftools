@@ -145,14 +145,18 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     			lut6_2ConnectivityAnalysis(workCell, graph);
     		}
 
-    		// SCC depth first search
-    		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-    		sccSummary(sccDFS, graph, out);		
 
     		// Perform shortest path decomponsition
 			int iterations = ShortestPathAnalysisOption.getShortestPath(result);
     		if (iterations > 0) {
+    			// perform SCC cutting 
+        		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
     			shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
+    		} else {
+    			// do it normally
+        		// SCC depth first search
+        		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
+        		sccSummary(sccDFS, graph, out);		
     		}
     		
 
@@ -174,12 +178,22 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		out.println("\t"+dfs.getTopologicallySortedTreeList().size() + " trees");
 
 		for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
-            BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
+			treeSummary(t,graph,out);
+			/*
+			BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
             out.print("Tree " + j++ + ": " + tree.getNodes().size()+ " nodes ");
             BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
             int allEdges = sccGraph.getEdges().size();
     		out.println(allEdges+ " edges");
+    		*/
         }
+	}
+	public static void treeSummary(DepthFirstTree dfst, BasicGraph graph, PrintStream out) {
+        BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) dfst;
+        out.print("Tree: " + tree.getNodes().size()+ " nodes ");
+        BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
+        int allEdges = sccGraph.getEdges().size();
+		out.println(allEdges+ " edges");
 	}
 	
 	/**
@@ -271,15 +285,21 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 
 		for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
             BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
+            treeSummary(t, graph, out);
             BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
     		out.println("Calculating all pairs shortest path of "+iterations+" iterations...");
     		SparseAllPairsShortestPath apsp = SparseAllPairsShortestPath.shortestPath(sccGraph, iterations);
     		out.println("Finding edges to cut from shortest path analysis...");
     		Set<Edge> edgesToCut = getShortestPathEdgesToCut(sccGraph, apsp);
     		out.println("Removing " + edgesToCut.size() + " edges.");
-    		graph.removeEdges(edgesToCut);
+    		sccGraph.removeEdges(edgesToCut);
     		out.println("Graph now has " + sccGraph.getNodes().size() + " nodes and "+ sccGraph.getEdges().size()+" edges.");
-        }		
+    		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccGraph);
+    		out.println("\t New SCC decomposition");
+    		out.println("\t"+sccDFS.getSingleNodes().size()+" feed-forward nodes");
+    		out.println("\t"+sccDFS.getTopologicallySortedTreeList().size() + " trees");
+
+		}		
 	}	
 	
 	private static Set<Edge> getShortestPathEdgesToCut(BasicGraph graph, SparseAllPairsShortestPath apsp) {
