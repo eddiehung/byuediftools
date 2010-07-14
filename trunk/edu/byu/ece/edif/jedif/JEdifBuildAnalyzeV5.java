@@ -3,6 +3,7 @@ package edu.byu.ece.edif.jedif;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -19,20 +20,14 @@ import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
-import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.tools.replicate.nmr.SparseAllPairsShortestPath;
-import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
-import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
-import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
@@ -110,11 +105,9 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
         	if (flatten) {
         		workCell = flatten(cell);        		
         	}
-        	cellSummary(workCell,out);
         	
             // 2. Create an instance graph of the cell
     		EdifPortRefGroupGraph graph = new EdifPortRefGroupGraph(workCell);
-    		graphSummary(graph, out);
     		
     		// For now, ignore IOB stuff
     		/*
@@ -147,7 +140,13 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		}
     		
     		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-    		sccSummary(sccDFS, graph, out);		
+    		if (sccDFS.getTopologicallySortedTreeList().size() == 0) {
+    			out.println("\tNo Feedback");
+    		} else {
+            	cellSummary(workCell,out);
+            	graphSummary(graph, out);
+    			sccSummary(sccDFS, graph, out);
+    		}
         }
 
 	}
@@ -164,13 +163,27 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		out.println("\t"+dfs.getSingleNodes().size()+" feed-forward nodes");
 		out.println("\t"+dfs.getTopologicallySortedTreeList().size() + " trees");
 
+		HashMap<Integer, Integer> treeCount = new HashMap<Integer, Integer>();
 		for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
             BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
-            out.print("Tree " + j++ + ": " + tree.getNodes().size()+ " nodes ");
-            BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
-            int allEdges = sccGraph.getEdges().size();
-    		out.println(allEdges+ " edges");
+            int nodes = tree.getNodes().size();
+            Integer index = new Integer (nodes / 10);
+            Integer count = treeCount.get(index);
+            if (count == null) {
+            	count = new Integer(0);
+            	treeCount.put(index, count);
+            }
+            count = new Integer(count.intValue()+1);
+            treeCount.put(index, count);
+            //out.print("Tree " + j++ + ": " + tree.getNodes().size()+ " nodes ");
+            //BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
+            //int allEdges = sccGraph.getEdges().size();
+    		//out.println(allEdges+ " edges");
         }
+		for (Integer bins : treeCount.keySet()) {
+			int count = treeCount.get(bins);
+			out.println("\t\t"+count+" trees of size "+(bins.intValue()*10)+" to "+((bins.intValue()+1)*10-1));
+		}
 	}
 	
 	/**
