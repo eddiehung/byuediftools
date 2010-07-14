@@ -20,23 +20,19 @@ import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
-import edu.byu.ece.edif.core.EdifUtils;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
-import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.graph.algorithms.SparseAllPairsShortestPath;
-import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
-import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupEdge;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
-import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 import edu.byu.ece.graph.BasicGraph;
+import edu.byu.ece.graph.Edge;
+import edu.byu.ece.graph.algorithms.SparseAllPairsShortestPath;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
@@ -148,15 +144,19 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		if (LUT6_2FlaggedOption.performLUT6_2Decomposition(result)) {
     			lut6_2ConnectivityAnalysis(workCell, graph);
     		}
-    		
+
+    		// SCC depth first search
+    		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
+    		sccSummary(sccDFS, graph, out);		
+
     		// Perform shortest path decomponsition
 			int iterations = ShortestPathAnalysisOption.getShortestPath(result);
     		if (iterations > 0) {
-    			shortestPathFeedbackAnalysis(iterations, graph);   			
+    			shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
     		}
     		
-    		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-    		sccSummary(sccDFS, graph, out);		
+
+        
         }
 
 	}
@@ -267,19 +267,24 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		graph.getSubGraph(ancestorsPredecessorsAndNodes).toDotty(filename);
     }
 		
-	private static void shortestPathFeedbackAnalysis(int iterations, EdifPortRefGroupGraph graph) {
-		out.println("Calculating all pairs shortest path of "+iterations+" iterations...");
-		SparseAllPairsShortestPath apsp = SparseAllPairsShortestPath.shortestPath(graph, iterations);
-		out.println("Finding edges to cut from shortest path analysis...");
-		Set<EdifPortRefGroupEdge> edgesToCut = getShortestPathEdgesToCut(graph, apsp);
-		out.println("Removing " + edgesToCut.size() + " edges.");
-		graph.removeEdges(edgesToCut);
-		out.println("Graph now has " + graph.getNodes().size() + " nodes and "+ graph.getEdges().size()+" edges.");
+	private static void shortestPathFeedbackAnalysis(int iterations, EdifPortRefGroupGraph graph, SCCDepthFirstSearch dfs) {
+
+		for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
+            BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
+            BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
+    		out.println("Calculating all pairs shortest path of "+iterations+" iterations...");
+    		SparseAllPairsShortestPath apsp = SparseAllPairsShortestPath.shortestPath(sccGraph, iterations);
+    		out.println("Finding edges to cut from shortest path analysis...");
+    		Set<Edge> edgesToCut = getShortestPathEdgesToCut(sccGraph, apsp);
+    		out.println("Removing " + edgesToCut.size() + " edges.");
+    		graph.removeEdges(edgesToCut);
+    		out.println("Graph now has " + sccGraph.getNodes().size() + " nodes and "+ sccGraph.getEdges().size()+" edges.");
+        }		
 	}	
 	
-	private static Set<EdifPortRefGroupEdge> getShortestPathEdgesToCut(EdifPortRefGroupGraph graph, SparseAllPairsShortestPath apsp) {
-		Set<EdifPortRefGroupEdge> toReturn = new HashSet<EdifPortRefGroupEdge>();
-		for(EdifPortRefGroupEdge e : graph.getEdges()) {
+	private static Set<Edge> getShortestPathEdgesToCut(BasicGraph graph, SparseAllPairsShortestPath apsp) {
+		Set<Edge> toReturn = new HashSet<Edge>();
+		for(Edge e : graph.getEdges()) {
 			Integer backweight = apsp.getValue(e.getSink(), e.getSource());
 			if (backweight == null) { //this means infinite
 				toReturn.add(e);
