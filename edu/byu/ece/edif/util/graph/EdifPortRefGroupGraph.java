@@ -601,16 +601,23 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 	}
 	
 	public void splitNode(EdifPortRefGroupNode nodeToSplit, List<List<EdifPortRef>> groupsToSplit) {
-		//TODO: update the EPR to Node Map
-		//TODO: update the ECI to Node Map
-		
 		Collection<EdifPortRefGroupEdge> inputEdges = getInputEdges(nodeToSplit);
 		Collection<EdifPortRefGroupEdge> outputEdges = getOutputEdges(nodeToSplit);
+		HashMap<EdifPortRef, EdifPortRefGroupNode> eprToNewNodeMap
+			= new HashMap<EdifPortRef, EdifPortRefGroupNode>(); 
+		HashMap<List<EdifPortRef>, EdifPortRefGroupNode> eprGroupsToNewNodeMap
+			= new HashMap<List<EdifPortRef>, EdifPortRefGroupNode>(); 
 		
 		//remove the old, split node and all edges that refer to it
 		removeNode(nodeToSplit);
 		for(Edge e : inputEdges) {
 			removeEdge(e);
+			//if we have any self-loops, they will show up in both input and output edge collections
+			//we only want to handle them once, as input edges
+			if(outputEdges.contains(e)) {
+				outputEdges.remove(e);
+				//System.out.println("Removed output edge (self-loop)");
+			}
 		}
 		for(Edge e : outputEdges) {
 			removeEdge(e);
@@ -622,7 +629,23 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 			EdifPortRefGroupNode newNode = new EdifPortRefGroupNode(nodeToSplit.getEdifCellInstance());
 			newNode.addAll(eprs);
 			addNode(newNode);
+			eprGroupsToNewNodeMap.put(eprs, newNode);
 			
+			//for each output port ref in the group, map it to the new node
+			for (EdifPortRef epr : eprs) {
+				boolean hasDriverEPR = false;
+				if(epr.isDriverPortRef()) {
+					eprToNewNodeMap.put(epr, newNode);
+					if(hasDriverEPR) {
+						System.out.println("Warning: this group has more than one driver EPR");
+					}
+					hasDriverEPR = true;
+				}
+			}
+		}
+		
+		for(List<EdifPortRef> eprs : groupsToSplit) {
+			EdifPortRefGroupNode newNode = eprGroupsToNewNodeMap.get(eprs);
 			//update the EPR->port ref group map
 			for(EdifPortRef epr : eprs) {
 				List<EdifPortRefGroupNode> eprMapList = _eprToGroupMap.get(epr);
@@ -644,19 +667,28 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 			_eciToGroupMap.put(nodeToSplit.getEdifCellInstance(), eciMapList);
 			
 			//create and add new input edges
+			//this may include former self-loops that are now split into multiple nodes
 			for (EdifPortRefGroupEdge inEdge : inputEdges) {
 				Object sourceNode = inEdge.getSource();
 				EdifPortRef sourceEPR = inEdge.getSourceEPR();
+				if (sourceNode == nodeToSplit) { //found reference to removed node
+					//the new source is the node containing the driver port ref
+					sourceNode = eprToNewNodeMap.get(sourceEPR);
+				}
 				for(EdifPortRef epr : eprs) {
 					if(inEdge.getSinkEPR().equals(epr)) {
 						addEdge(new EdifPortRefGroupEdge(sourceEPR, sourceNode, epr, newNode));
 					}
 				}
 			}
-			//create and add new output edges
+			//create and add new output edges (all self-feedback should be handled already
+			//since all former self-edges were handled in the input edge case)
 			for (EdifPortRefGroupEdge outEdge : outputEdges) {
 				Object sinkNode = outEdge.getSink();
 				EdifPortRef sinkEPR = outEdge.getSinkEPR();
+				if (sinkNode == nodeToSplit) {
+					System.out.println("Warning: sink node was removed - this self-loop was not handled properly!");
+				}
 				for(EdifPortRef epr : eprs) {
 					if(outEdge.getSourceEPR().equals(epr)) {
 						addEdge(new EdifPortRefGroupEdge(epr, newNode, sinkEPR, sinkNode));
