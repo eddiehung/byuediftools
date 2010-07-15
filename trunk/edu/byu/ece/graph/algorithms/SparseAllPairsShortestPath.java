@@ -57,19 +57,22 @@ public class SparseAllPairsShortestPath {
 			HashMap<Object, Integer> iMap = _hash.get(i);
 			for (Object j : getNodes() ) {
 				int d_old = Integer.MAX_VALUE;
-				if (getValue(i,j) != null)
-					d_old = getValue(i,j);
+				Integer d_ij = getValue(i,j);
+				if (d_ij != null)
+					d_old = d_ij.intValue();
 				List<Object> keys = new ArrayList<Object>(iMap.keySet());
 				for (int idx=0; idx<keys.size(); idx++) {
 					Object k = keys.get(idx);
 					int dik = Integer.MAX_VALUE;
-					if (getValue(i,k) != null)
-						dik = getValue(i,k);
+					Integer d_ik = getValue(i,k);
+					if (d_ik != null)
+						dik = d_ik.intValue();
 					if (dik == Integer.MAX_VALUE)
 						continue;
 					int wkj = Integer.MAX_VALUE;
-					if (getValue(k,j) != null)
-						wkj = getValue(k,j);
+					Integer d_kj = getValue(k,j);
+					if (d_kj != null)
+						wkj = d_kj.intValue();
 					if (wkj == Integer.MAX_VALUE)
 						continue;
 					if (dik + wkj < d_old) {
