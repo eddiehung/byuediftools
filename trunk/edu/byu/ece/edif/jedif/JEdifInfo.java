@@ -91,17 +91,17 @@ public class JEdifInfo extends EDIFMain {
     	}
     	
     	// print non leaf cells and their recursive size
-    	TreeSet<ComparableEdifCell> set = new TreeSet<ComparableEdifCell>(); 
+    	TreeSet<ComparableEdifCell> sortedNonLeafChildren = new TreeSet<ComparableEdifCell>(); 
     	for (EdifCell child : children.keySet()) {
     		List<EdifCellInstance> instances = children.get(child);
     		if (!child.isLeafCell()) {
     			int num = instances.size();
     			int childSize = num * getRecursiveInnerCell(child);
     			ComparableEdifCell cec = new ComparableEdifCell(child,childSize);
-    			set.add(cec);
+    			sortedNonLeafChildren.add(cec);
     		}
     	}
-    	for (ComparableEdifCell ccell : set) {
+    	for (ComparableEdifCell ccell : sortedNonLeafChildren) {
     		EdifCell child = ccell._cell;
     		int childSize = ccell.size;
     		List<EdifCellInstance> instances = children.get(child);
@@ -135,7 +135,8 @@ public class JEdifInfo extends EDIFMain {
     			}
     		}
     	}
-    	for (EdifCell child : children.keySet()) {
+    	for (ComparableEdifCell c_child : sortedNonLeafChildren) {
+    		EdifCell child = c_child._cell;
     		if (!child.isLeafCell())
     			printEdifCell(child, printPrimitives, prefix, out);
     	}
