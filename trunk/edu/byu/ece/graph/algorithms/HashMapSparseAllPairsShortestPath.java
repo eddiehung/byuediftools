@@ -9,8 +9,8 @@ import java.util.List;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
 
-public class SparseAllPairsShortestPath {
-	public SparseAllPairsShortestPath(BasicGraph graph) {
+public class HashMapSparseAllPairsShortestPath {
+	public HashMapSparseAllPairsShortestPath(BasicGraph graph) {
 		_graph = graph;
 		
 		Collection<Object> objs = _graph.getNodes();
@@ -27,8 +27,8 @@ public class SparseAllPairsShortestPath {
 		return _hash.keySet();
 	}
 
-	public static SparseAllPairsShortestPath shortestPath(BasicGraph graph, int iterations) {
-		SparseAllPairsShortestPath  mat = new SparseAllPairsShortestPath(graph);
+	public static HashMapSparseAllPairsShortestPath shortestPath(BasicGraph graph, int iterations) {
+		HashMapSparseAllPairsShortestPath  mat = new HashMapSparseAllPairsShortestPath(graph);
 		return mat.crossMultiply(iterations);
 	}
 
@@ -41,18 +41,17 @@ public class SparseAllPairsShortestPath {
 		}			
 	}	
 	
-	protected SparseAllPairsShortestPath crossMultiply(int iterations) {
-		SparseAllPairsShortestPath curMatrix = this;
+	protected HashMapSparseAllPairsShortestPath crossMultiply(int iterations) {
+		HashMapSparseAllPairsShortestPath curMatrix = this;
 		for ( int i = 0; i < iterations; i ++) {
 			curMatrix = curMatrix.crossMultiply();
 		}
 		return curMatrix;
 	}
 	
-	protected SparseAllPairsShortestPath crossMultiply() {
-		//we need a copy of _hash b/c we can't modify the source matrix
-		//while multiplying it - leads to incorrect results
-		HashMap<Object,HashMap<Object,Integer>> newHash = copyHash();
+	protected HashMapSparseAllPairsShortestPath crossMultiply() {
+		//we need an empty HashMap to store the results
+		HashMap<Object,HashMap<Object,Integer>> newHash = getEmptyHash();
 		for (Object i : getNodes()) {
 			HashMap<Object, Integer> iMap = _hash.get(i);
 			for (Object j : getNodes() ) {
@@ -65,20 +64,21 @@ public class SparseAllPairsShortestPath {
 					Object k = keys.get(idx);
 					int dik = Integer.MAX_VALUE;
 					Integer d_ik = getValue(i,k);
-					if (d_ik != null)
+					if (d_ik  != null)
 						dik = d_ik.intValue();
 					if (dik == Integer.MAX_VALUE)
 						continue;
 					int wkj = Integer.MAX_VALUE;
-					Integer d_kj = getValue(k,j);
+					Integer d_kj = getValue(k,j);					
 					if (d_kj != null)
 						wkj = d_kj.intValue();
 					if (wkj == Integer.MAX_VALUE)
 						continue;
 					if (dik + wkj < d_old) {
-						//System.out.println("dik: " + dik + " wkj: " + wkj);
 						setValue(newHash, i,j, dik+wkj);
-						//System.out.println("New value for " + i + ", " + j + " is " + dik+wkj);
+					}
+					else {
+						setValue(newHash, i,j, d_old);
 					}
 				}
 			}
@@ -88,20 +88,14 @@ public class SparseAllPairsShortestPath {
 		return this;
 	}
 	
-	protected HashMap<Object,HashMap<Object,Integer>> copyHash() {
+	protected HashMap<Object,HashMap<Object,Integer>> getEmptyHash() {
 		Collection<Object> objs = getNodes();		
-		HashMap<Object,HashMap<Object,Integer>> copied  = new HashMap<Object,HashMap<Object, Integer>>(objs.size());
+		HashMap<Object,HashMap<Object,Integer>> empty  = new HashMap<Object,HashMap<Object, Integer>>(objs.size());
 		for (Object o1 : objs) {
 			HashMap<Object, Integer> oHash = new HashMap<Object,Integer>();
-			copied.put(o1, oHash);
-			for (Object o2 : getNodes()) {
-				Integer value = getValue(o1, o2);
-				if (value != null) {
-					setValue(copied, o1, o2, new Integer(value.intValue()));
-				}
-			}
+			empty.put(o1, oHash);
 		}
-		return copied;
+		return empty;
 	}
 	
 	public Integer getValue(Object source, Object sink) {

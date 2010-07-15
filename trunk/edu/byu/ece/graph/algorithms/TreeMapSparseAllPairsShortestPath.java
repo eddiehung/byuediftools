@@ -2,9 +2,7 @@ package edu.byu.ece.graph.algorithms;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -19,70 +17,68 @@ import edu.byu.ece.graph.Edge;
  * 
  * This class can also perform a shortest path in a limited number of iterations.
  */
-public class SparseAllPairsShortestPath {
+public class TreeMapSparseAllPairsShortestPath {
 
-	public SparseAllPairsShortestPath(BasicGraph graph) {
+	public TreeMapSparseAllPairsShortestPath(BasicGraph graph) {
 		_graph = graph;
+		_treemap = new TreeMap<NumberedNode,TreeMap<NumberedNode, Integer>>();
+		_nodesToNumberedNodes = new HashMap<Object, NumberedNode>();
 		
 		Collection<Object> objs = _graph.getNodes();
-		
-		//_hash = new HashMap<Object,HashMap<Object, Integer>>(objs.size());
-		_hash = new TreeMap<NumberedNode,TreeMap<NumberedNode, Integer>>();
 		int i = 0;
 		for (Object o : objs) {
 			NumberedNode n = new NumberedNode (o,i);
-			//HashMap<Object, Integer> oHash = new HashMap<Object,Integer>();
 			TreeMap<NumberedNode, Integer> oHash = new TreeMap<NumberedNode, Integer>();
-			//_hash.put(o, oHash);
-			_hash.put(n, oHash);
+			_treemap.put(n, oHash);
+			_nodesToNumberedNodes.put(o, n);
 			i++;
 		}
-		initialize();
+		initialize(_nodesToNumberedNodes);
 	}
 
-	public Collection<Object> getNodes() {
-		return _hash.keySet();
+	public Collection<NumberedNode> getNodes() {
+		return _treemap.keySet();
 	}
-
-	public static SparseAllPairsShortestPath shortestPath(BasicGraph graph, int iterations) {
-		SparseAllPairsShortestPath  mat = new SparseAllPairsShortestPath(graph);
+	
+	public static TreeMapSparseAllPairsShortestPath shortestPath(BasicGraph graph, int iterations) {
+		TreeMapSparseAllPairsShortestPath mat = new TreeMapSparseAllPairsShortestPath(graph);
 		return mat.crossMultiply(iterations);
 	}
 
-	protected void initialize() {
+	protected void initialize(HashMap<Object, NumberedNode> nodesToNumberedNodes) {
 		for (Edge e : _graph.getEdges()) {
-			setValue(_hash, e.getSource(), e.getSink(), 1);
+			NumberedNode source = nodesToNumberedNodes.get(e.getSource());
+			NumberedNode sink = nodesToNumberedNodes.get(e.getSink());
+			setValue(_treemap, source, sink, 1);
 		}
 		for(Object n : _graph.getNodes()) {
-			setValue(_hash, n, n, 0);
+			NumberedNode nn = nodesToNumberedNodes.get(n);
+			setValue(_treemap, nn, nn, 0);
 		}			
 	}	
 	
-	protected SparseAllPairsShortestPath crossMultiply(int iterations) {
-		SparseAllPairsShortestPath curMatrix = this;
+	protected TreeMapSparseAllPairsShortestPath crossMultiply(int iterations) {
+		TreeMapSparseAllPairsShortestPath curMatrix = this;
 		for ( int i = 0; i < iterations; i ++) {
 			curMatrix = curMatrix.crossMultiply();
 		}
 		return curMatrix;
 	}
 	
-	protected SparseAllPairsShortestPath crossMultiply() {
+	protected TreeMapSparseAllPairsShortestPath crossMultiply() {
 
-		//we need a copy of _hash b/c we can't modify the source matrix
-		//while multiplying it - leads to incorrect results
-		HashMap<Object,HashMap<Object,Integer>> newHash = copyHash();
-
-		
-		for (Object i : getNodes()) {
-			HashMap<Object, Integer> iMap = _hash.get(i);
-			for (Object j : getNodes() ) {
+		//we need an empty TreeMap to store the results
+		TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>> newTree = getEmptyTreeMap();		
+		for (NumberedNode i : getNodes()) {
+			TreeMap<NumberedNode, Integer> iMap = _treemap.get(i);
+			for (NumberedNode j : getNodes() ) {
 				int d_old = Integer.MAX_VALUE;
 				Integer d_ij = getValue(i,j);
 				if (d_ij != null)
 					d_old = d_ij.intValue();
-				List<Object> keys = new ArrayList<Object>(iMap.keySet());
+				List<NumberedNode> keys = new ArrayList<NumberedNode>(iMap.keySet());
 				for (int idx=0; idx<keys.size(); idx++) {
-					Object k = keys.get(idx);
+					NumberedNode k = keys.get(idx);
 					int dik = Integer.MAX_VALUE;
 					Integer d_ik = getValue(i,k);
 					if (d_ik  != null)
@@ -96,65 +92,63 @@ public class SparseAllPairsShortestPath {
 					if (wkj == Integer.MAX_VALUE)
 						continue;
 					if (dik + wkj < d_old) {
-						//System.out.println("dik: " + dik + " wkj: " + wkj);
-						setValue(newHash, i,j, dik+wkj);
-						//System.out.println("New value for " + i + ", " + j + " is " + dik+wkj);
+						setValue(newTree, i,j, dik+wkj);
+					}
+					else {
+						setValue(newTree, i,j, d_old);
 					}
 				}
 			}
 		}
-		//now we can replace the old _hash with the squared version
-		_hash = newHash;
+		//now we can replace the old _treemap with the squared version
+		_treemap = newTree;
 		return this;
 	}
 	
-	protected HashMap<Object,HashMap<Object,Integer>> copyHash() {
-		Collection<Object> objs = getNodes();		
-		HashMap<Object,HashMap<Object,Integer>> copied  = new HashMap<Object,HashMap<Object, Integer>>(objs.size());
-		for (Object o1 : objs) {
-			HashMap<Object, Integer> oHash = new HashMap<Object,Integer>();
-			copied.put(o1, oHash);
-			for (Object o2 : getNodes()) {
-				Integer value = getValue(o1, o2);
-				if (value != null) {
-					setValue(copied, o1, o2, new Integer(value.intValue()));
-				}
-			}
+	protected TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>> getEmptyTreeMap() {
+		Collection<NumberedNode> nodes = getNodes();		
+		TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>> empty  = new TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>>();
+		for (NumberedNode n1 : nodes) {
+			TreeMap<NumberedNode, Integer> oTree = new TreeMap<NumberedNode, Integer>();
+			empty.put(n1, oTree);
 		}
-		return copied;
+		return empty;
+	}
+	
+	protected Integer getValue(NumberedNode source, NumberedNode sink) {
+		TreeMap<NumberedNode, Integer> t = _treemap.get(source);
+		Integer i = t.get(sink);
+		return i;
 	}
 	
 	public Integer getValue(Object source, Object sink) {
-		HashMap<Object, Integer> h = _hash.get(source);
-		Integer i = h.get(sink);
-		return i;
+		Integer retVal = null;
+		NumberedNode sourceNode = _nodesToNumberedNodes.get(source);
+		NumberedNode sinkNode = _nodesToNumberedNodes.get(sink);
+		if (sinkNode == null || sourceNode == null) {
+			retVal = null;
+		}
+		else {
+			retVal = getValue(sourceNode, sinkNode);
+		}
+		return retVal;
 	}
 
 	/**
 	 * Set the value of an entry into the shortest path matrix.
 	 */
-	protected void setValue(HashMap<Object, HashMap<Object,Integer>> hash, Object source, Object sink, int val) {
-		HashMap<Object, Integer> h = hash.get(source);
-		h.put(sink, new Integer(val));
+	protected void setValue(TreeMap<NumberedNode, TreeMap<NumberedNode,Integer>> treemap, NumberedNode source, NumberedNode sink, int val) {
+		TreeMap<NumberedNode, Integer> t = treemap.get(source);
+		t.put(sink, new Integer(val));
 	}
 	
-	//only prints out an adjacency matrix for nodes that implement Comparable
-	//(if they don't then there is no ordering since HashMap doesn't preserve it)
 	public void printAdjacencyMatrix() {
 		String retVal = "";
-		List<Comparable> nodes = new LinkedList<Comparable>();
-		for(Object node : getNodes()) {
-			if (!(node instanceof Comparable)) {
-				System.out.println("Cannot print adjacency matrix if nodes do not implement Comparable");
-				return;
-			}
-			nodes.add((Comparable)node);
-		}
-		Collections.sort(nodes);
-		for(Comparable c1 : nodes) {
+		List<NumberedNode> nodes = new ArrayList<NumberedNode>(getNodes());
+		for(NumberedNode c1 : nodes) {
 			retVal += "[ ";
 			for(int i=0; i<nodes.size(); i++) {
-				Comparable c2 = nodes.get(i);
+				NumberedNode c2 = nodes.get(i);
 				if(getValue(c1, c2) == null) {
 					retVal += "\u221E ";
 				}
@@ -172,14 +166,18 @@ public class SparseAllPairsShortestPath {
 	 * A Map is used to allow the data structure to grow - entries for non infinite distances
 	 * are created.
 	 */
-	protected TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>> _hash;
-
+	protected TreeMap<NumberedNode,TreeMap<NumberedNode,Integer>> _treemap;
 	
 	/**
 	 * The graph that is used for the shortest path computation.
 	 */
 	BasicGraph _graph;
 
+	/**
+	 * Maps graph nodes to NumberedNodes (used for initialization
+	 * and external lookups)
+	 */
+	HashMap<Object, NumberedNode> _nodesToNumberedNodes;
 }
 
 class NumberedNode implements Comparable {

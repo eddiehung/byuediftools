@@ -32,7 +32,8 @@ import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
-import edu.byu.ece.graph.algorithms.SparseAllPairsShortestPath;
+import edu.byu.ece.graph.algorithms.HashMapSparseAllPairsShortestPath;
+import edu.byu.ece.graph.algorithms.TreeMapSparseAllPairsShortestPath;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
 import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
@@ -288,7 +289,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
             treeSummary(t, graph, out);
             BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
     		out.println("Calculating all pairs shortest path of "+iterations+" iterations...");
-    		SparseAllPairsShortestPath apsp = SparseAllPairsShortestPath.shortestPath(sccGraph, iterations);
+    		TreeMapSparseAllPairsShortestPath apsp = TreeMapSparseAllPairsShortestPath.shortestPath(sccGraph, iterations);
     		out.println("Finding edges to cut from shortest path analysis...");
     		Set<Edge> edgesToCut = getShortestPathEdgesToCut(sccGraph, apsp);
     		out.println("Removing " + edgesToCut.size() + " edges.");
@@ -302,7 +303,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		}		
 	}	
 	
-	private static Set<Edge> getShortestPathEdgesToCut(BasicGraph graph, SparseAllPairsShortestPath apsp) {
+	private static Set<Edge> getShortestPathEdgesToCut(BasicGraph graph, TreeMapSparseAllPairsShortestPath apsp) {
 		Set<Edge> toReturn = new HashSet<Edge>();
 		for(Edge e : graph.getEdges()) {
 			Integer backweight = apsp.getValue(e.getSink(), e.getSource());
@@ -330,10 +331,11 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 
 		if (luts2cut.size() > 0) {
 			System.out.println(luts2cut.size() + " LUT6_2 instances found");
+			graph.toDotty("/net/fpga1/users/whowes/Desktop/before.dot");
 			for (Object node : luts2cut) {
 				EdifCellInstance lut6_2 = (EdifCellInstance) node;
 				
-				//dottyInstanceSubgraph(lut6_2, graph, "before.dot");
+				//dottyInstanceSubgraph(lut6_2, graph, "/net/fpga1/users/whowes/Desktop/before.dot");
 				// get properties
 				Property init_string = lut6_2.getProperty("INIT");
 				if (init_string == null) {
@@ -393,10 +395,11 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 					groupsToSplit.add(o6Group);
 					graph.splitNode(graphNode, groupsToSplit);				
 				}
-				//dottyInstanceSubgraph(lut6_2, graph, "after.dot");
+				//dottyInstanceSubgraph(lut6_2, graph, "/net/fpga1/users/whowes/Desktop/after.dot");
 			}
 			System.out.println("After splitting LUT6_2 nodes:");
 			graphSummary(graph, out);
+			graph.toDotty("/net/fpga1/users/whowes/Desktop/after.dot");
 						
 			
 		} else {
