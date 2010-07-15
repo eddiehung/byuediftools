@@ -4,8 +4,11 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
+import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.QualifiedSwitch;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
@@ -26,8 +29,7 @@ import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
  */
 public class JEdifInfo extends EDIFMain {
 
-    public static PrintStream out;
-    public static PrintStream err;
+    static String PRINT_PRIMITIVES = new String("no_prims");
     
     public static void main(String[] args) {
         out = System.out;
@@ -41,7 +43,9 @@ public class JEdifInfo extends EDIFMain {
         EdifCommandParser parser = new EdifCommandParser();
         parser.addCommands(new MergeParserCommandGroup());
         parser.addCommands(new LogFileCommandGroup("build.log"));
- 
+        parser.addCommand(new QualifiedSwitch( PRINT_PRIMITIVES, JSAP.STRING_PARSER, JSAP.NO_DEFAULT, 
+        		JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, PRINT_PRIMITIVES, "Print primitives." ));
+ 		
         JSAPResult result = parser.parse(args, err);
         if (!result.success())
             System.exit(1);
@@ -61,15 +65,15 @@ public class JEdifInfo extends EDIFMain {
         }
       
         EdifCell topCell = env.getTopCell();
-        printEdifCell(topCell, out);
+        printEdifCell(topCell, result.getBoolean(PRINT_PRIMITIVES),out);
         
     }    
     
-    protected static void printEdifCell(EdifCell cell, PrintStream out) {
-    	printEdifCell(cell, new String(""), out);
+    protected static void printEdifCell(EdifCell cell, boolean printPrimitives, PrintStream out) {
+    	printEdifCell(cell, printPrimitives, new String(""), out);
     }
     
-    protected static void printEdifCell(EdifCell cell, String prefix, PrintStream out) {
+    protected static void printEdifCell(EdifCell cell, boolean printPrimitives, String prefix, PrintStream out) {
     	
     	int totalInstances = getRecursiveInnerCell(cell);
     	out.println(prefix + "Cell: " + cell.getName()+" "+totalInstances + " recursive cells " + 
@@ -87,16 +91,25 @@ public class JEdifInfo extends EDIFMain {
     	}
     	
     	// print non leaf cells and their recursive size
+    	TreeSet<ComparableEdifCell> set = new TreeSet<ComparableEdifCell>(); 
     	for (EdifCell child : children.keySet()) {
     		List<EdifCellInstance> instances = children.get(child);
     		if (!child.isLeafCell()) {
     			int num = instances.size();
     			int childSize = num * getRecursiveInnerCell(child);
-        		out.println(prefix+child.getName()+ " "+ childSize+" recursive cells ("+((childSize*100)/totalInstances)+"%) "+
-        				instances.size()+" instances");
+    			ComparableEdifCell cec = new ComparableEdifCell(child,childSize);
+    			set.add(cec);
     		}
     	}
+    	for (ComparableEdifCell ccell : set) {
+    		EdifCell child = ccell._cell;
+    		int childSize = ccell.size;
+    		List<EdifCellInstance> instances = children.get(child);
+    		out.println(prefix+child.getName()+ " "+ childSize+" recursive cells ("+((childSize*100)/totalInstances)+"%) "+
+    				instances.size()+" instances");    		
+    	}
 
+    	
     	// Print black boxes
     	for (EdifCell child : children.keySet()) {
     		List<EdifCellInstance> instances = children.get(child);
@@ -114,15 +127,17 @@ public class JEdifInfo extends EDIFMain {
     		}
     	}
     	out.println(prefix+"Local Primitives - "+primitiveCount+" ("+((primitiveCount*100)/totalInstances)+"%) ");
-    	for (EdifCell child : children.keySet()) {
-    		List<EdifCellInstance> instances = children.get(child);
-    		if (child.isPrimitive()) {
-        		out.println(prefix+"  "+child.getName()+ " (primitive) "+instances.size()+" instances");
+    	if (printPrimitives) {
+    		for (EdifCell child : children.keySet()) {
+    			List<EdifCellInstance> instances = children.get(child);
+    			if (child.isPrimitive()) {
+    				out.println(prefix+"  "+child.getName()+ " (primitive) "+instances.size()+" instances");
+    			}
     		}
     	}
     	for (EdifCell child : children.keySet()) {
     		if (!child.isLeafCell())
-    			printEdifCell(child, prefix, out);
+    			printEdifCell(child, printPrimitives, prefix, out);
     	}
     	
     }
@@ -141,4 +156,23 @@ public class JEdifInfo extends EDIFMain {
     	return cells;
     }
     
+}
+
+class ComparableEdifCell implements Comparable {
+	public ComparableEdifCell(EdifCell cell, int recursiveSubCells) {
+		_cell = cell;
+		size = recursiveSubCells;
+	}
+	public int compareTo(Object o) {
+		ComparableEdifCell c = (ComparableEdifCell) o;
+		if (c.getSize() > getSize())
+			return 1;
+		if (c.getSize() == getSize())
+			return 0;
+		return -1;
+	}
+	public EdifCell getCell() { return _cell; }
+	public int getSize() { return size; }
+	EdifCell _cell;
+	int size;
 }
