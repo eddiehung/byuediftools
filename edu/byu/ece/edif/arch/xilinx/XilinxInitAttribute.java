@@ -246,10 +246,12 @@ public class XilinxInitAttribute {
 	/**
 	 * Returns the integer log base 2 of the input integer. 
 	 * 
+	 * TODO: This should be moved to some utils class.
+	 * 
 	 * @param num
 	 * @return log2(num)
 	 */
-	private int intLog2(int num) {
+	public static int intLog2(int num) {
 		int cnt;
 		if(num<=0) 
 			return -1;
