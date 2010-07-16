@@ -300,14 +300,21 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		TreeMapSparseAllPairsShortestPath apsp = TreeMapSparseAllPairsShortestPath.shortestPath(sccGraph, iterations);
     		out.println("Finding edges to cut from shortest path analysis...");
     		Set<Edge> edgesToCut = getShortestPathEdgesToCut(sccGraph, apsp);
-    		out.println("Removing " + edgesToCut.size() + " edges.");
-    		sccGraph.removeEdges(edgesToCut);
-    		out.println("Graph now has " + sccGraph.getNodes().size() + " nodes and "+ sccGraph.getEdges().size()+" edges.");
-    		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccGraph);
-    		out.println("\t New SCC decomposition");
-    		out.println("\t"+sccDFS.getSingleNodes().size()+" feed-forward nodes");
-    		out.println("\t"+sccDFS.getTopologicallySortedTreeList().size() + " trees");
-
+    		if (edgesToCut.size() == 0) {
+    			out.println("\tNo Edges to Remove");
+    		} else {
+    			out.println("Removing " + edgesToCut.size() + " edges.");
+    			sccGraph.removeEdges(edgesToCut);
+    			out.println("Graph now has " + sccGraph.getNodes().size() + " nodes and "+ sccGraph.getEdges().size()+" edges.");
+    			SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(sccGraph);
+    			out.println("\t New SCC decomposition");
+    			if (sccDFS.getTopologicallySortedTreeList().size() == 1) {
+    				out.println("\tEdge removal did not decompose SCC (1 SCC)");
+    			} else {
+    				out.println("\t"+sccDFS.getSingleNodes().size()+" feed-forward nodes");
+    				out.println("\t"+sccDFS.getTopologicallySortedTreeList().size() + " trees");
+    			}
+    		}
 		}		
 	}	
 	
