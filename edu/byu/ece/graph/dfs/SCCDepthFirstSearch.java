@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import edu.byu.ece.graph.DirectedGraph;
 
@@ -114,6 +115,23 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
         return new ArrayList(_trees);
     }
 
+    /**
+     * Return a List of the DFS trees in order of size (nodes)
+     * 
+     * @return List of topologically-sorted trees.
+     */
+    public List<DepthFirstTree> getSizeSortedTreeList() {
+    	TreeSet<SizeOrderedDepthFirstSearchTree> trees = new TreeSet<SizeOrderedDepthFirstSearchTree>();
+    	ArrayList<DepthFirstTree> sortedTrees = new ArrayList<DepthFirstTree>();
+    	for (DepthFirstTree tree : _trees) {
+    		trees.add(new SizeOrderedDepthFirstSearchTree(tree));
+    	}
+    	for (SizeOrderedDepthFirstSearchTree tree : trees) {
+    		sortedTrees.add(tree.getTree());
+    	}
+    	return sortedTrees;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -194,4 +212,22 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
     boolean localDEBUG = false;
 
     Collection _singleNodes;
+}
+
+class SizeOrderedDepthFirstSearchTree implements Comparable {
+	DepthFirstTree _tree;
+	public SizeOrderedDepthFirstSearchTree(DepthFirstTree tree) {
+		_tree = tree;
+	}
+	public DepthFirstTree getTree () { return _tree; }
+	public int compareTo(Object o) {
+		SizeOrderedDepthFirstSearchTree tree = (SizeOrderedDepthFirstSearchTree) o;
+		int treeSize = tree._tree.getNodes().size();
+		int mySize = _tree.getNodes().size();
+		if (treeSize > mySize)
+			return 1;
+		if (treeSize < mySize)
+			return -1;
+		return 0;
+	}
 }
