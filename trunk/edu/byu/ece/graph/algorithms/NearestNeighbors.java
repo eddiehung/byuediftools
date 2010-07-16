@@ -35,7 +35,9 @@ public class NearestNeighbors {
 			Object root = workingGraph.getNodes().iterator().next();
 			
 			// Find its nearest n neigbhors
-			Set<Object> neighbors = nearestNeighbors(workingGraph, root, maxDistance);
+			ArrayList roots = new ArrayList(1);
+			roots.add(root);
+			Set<Object> neighbors = nearestNeighbors(workingGraph, roots, maxDistance);
 			// Create a sub graph of this graph (use the small sub graph call since it
 			// it is likely that the graph is much smaller than the original graph).
 			BasicGraph subgraph = workingGraph.getSmallSubGraph(neighbors);
@@ -57,7 +59,7 @@ public class NearestNeighbors {
 			if (DEBUG1)
 				if (nodesRemoved > 0) System.out.println(nodesRemoved + " nodes removed from "+sccs.size()+" sccs "+
 						edgesSaved+" edges saved");
-				else System.out.println("No SCCs found - only one node removed");
+				//else System.out.println("No SCCs found - only one node removed");
 					
 			// Remove the root node (if it has not already been removed)
 			workingGraph.removeNode(root);			
@@ -82,6 +84,61 @@ public class NearestNeighbors {
         /**
          * An internal stack is used to reduce the overhead of recursion. Using
          * a stack is tricky as we need to mimic the behavior of the recursion.
+         */
+        Stack<Object> s = new Stack<Object>();
+        // Initialize the stack with the root Node
+        s.push(node);
+        HashSet<Object> visited = new HashSet<Object>();
+        //ArrayList<Object> finished = new ArrayList<Object>();
+        HashMap<Object,Integer> depthMap = new HashMap<Object,Integer>();
+        depthMap.put(node, 0);
+        
+        if (DEBUG)
+            System.out.println("New TREE with root=" + node);
+        
+        // Continue processing until the stack is empty
+        while (!s.isEmpty()) {
+        	Object obj = s.peek();
+        	
+        	if (visited.contains(obj)) {
+        		// already visited - pop and move on.
+    			s.pop();
+        	} else {
+        		/*
+        		 * Cell has not yet been visited. Mark as visited and add successors to the stack
+        		 */
+        		if (DEBUG) System.out.println("visiting " + obj);
+
+        		visited.add(obj);
+        		Collection<Edge> targetLinks = graph.getOutputEdges(obj);
+
+        		if (DEBUG)
+        			if (targetLinks.size() > 0) System.out.print("\tPUSH links: ");
+        			else System.out.print("\tNO LINKS to Push.");
+
+        		// Add successors if max distance has not been violated
+        		int curDepth = depthMap.get(obj);
+        		if (curDepth < maxDistance) {
+        			for (Edge edge : targetLinks) {
+        				if (DEBUG) System.out.print(edge + " ");
+        				Object sink = edge.getSink();
+        				if (!visited.contains(sink)) {
+        					s.push(sink);
+        					depthMap.put(sink, curDepth+1);
+        				}
+        			}
+        		}
+        		if (DEBUG) System.out.println();
+        	}
+        }
+        return visited;
+	}
+
+	public static Set<Object> nearestNeighbors(DirectedGraph graph, Collection<Object> nodes, int maxDistance) {
+
+        /**
+         * An internal stack is used to reduce the overhead of recursion. Using
+         * a stack is tricky as we need to mimic the behavior of the recursion.
          * Two different items are placed on the stack:
          * <ol>
          * <li> A Node in the the depth first search. A Node appears on the top
@@ -100,15 +157,13 @@ public class NearestNeighbors {
          */
         Stack<Object> s = new Stack<Object>();
         // Initialize the stack with the root Node
-        s.push(node);
         HashSet<Object> visited = new HashSet<Object>();
-        //ArrayList<Object> finished = new ArrayList<Object>();
         HashMap<Object,Integer> depthMap = new HashMap<Object,Integer>();
-        depthMap.put(node, 0);
-        
-        if (DEBUG)
-            System.out.println("New TREE with root=" + node);
-        
+        for (Object o : nodes) {
+        	s.push(o);
+        	depthMap.put(o, 0);
+        }
+                
         // Continue processing until the stack is empty
         while (!s.isEmpty()) {
         	Object obj = s.peek();
