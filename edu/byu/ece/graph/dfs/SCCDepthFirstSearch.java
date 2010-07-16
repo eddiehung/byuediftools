@@ -126,6 +126,7 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
     	
     	ArrayList<DepthFirstTree> sortedTrees = new ArrayList<DepthFirstTree>(_trees);
     	Collections.sort(sortedTrees, new GraphNodeComparator());
+    	Collections.reverse(sortedTrees);
     	return sortedTrees; 
     }
 
