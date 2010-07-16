@@ -24,7 +24,6 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
-import edu.byu.ece.edif.util.graph.EdifPortRefGroupEdge;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
@@ -32,7 +31,7 @@ import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
-import edu.byu.ece.graph.algorithms.HashMapSparseAllPairsShortestPath;
+import edu.byu.ece.graph.algorithms.NearestNeighbors;
 import edu.byu.ece.graph.algorithms.TreeMapSparseAllPairsShortestPath;
 import edu.byu.ece.graph.dfs.BasicDepthFirstSearchTree;
 import edu.byu.ece.graph.dfs.DepthFirstTree;
@@ -45,6 +44,7 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
  */
 public class JEdifBuildAnalyzeV5 extends EDIFMain {
     
+	public static String NEIGHBOR = "nearest_neighbor";
 	
 	public static void main(String[] args) {
 		
@@ -64,6 +64,9 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		parser.addCommand(new LUT6_2FlaggedOption());
 		parser.addCommand(new DoAllCellsSwitch());
 		parser.addCommand(new ShortestPathAnalysisOption());
+        parser.addCommand(new FlaggedOption( NEIGHBOR,JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, NEIGHBOR, 
+        	"Nearest neighbor search" ));
+
 		
         // Start the parsing
 		JSAPResult result = parser.parse(args, System.err);
@@ -154,10 +157,15 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
         		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
     			shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
     		} else {
-    			// do it normally
-        		// SCC depth first search
-        		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-        		sccSummary(sccDFS, graph, out);		
+    			SCCDepthFirstSearch sccDFS = null;
+				sccDFS = new SCCDepthFirstSearch(graph);
+				out.println("Regular SCC Decomposition");
+				sccSummary(sccDFS, graph, out);		
+    			if (result.getInt(NEIGHBOR) > 0) {
+    				out.println("Neigbor SCC Decomposition");
+    				sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, result.getInt(NEIGHBOR));
+    				sccSummary(sccDFS, graph, out);		
+    			}
     		}
     		
 
