@@ -75,9 +75,6 @@ public interface DirectedGraph extends Serializable {
      */
     public Collection<?> getPredecessors(Object node);
 
-    // public boolean hasSuccessors(Object node);
-    // public boolean hasPredecessors(Object node);
-
     /**
      * Return a Collection of node objects in the graph that are descendants of
      * the node passed in as a parameter. Descendants are all nodes that are
@@ -131,6 +128,11 @@ public interface DirectedGraph extends Serializable {
      */
     public Edge getEdge(Object source, Object sink);
 
+    /**
+     * Return a new graph that has the same nodes as the original graph but 
+     * all edges are inverted.
+     * 
+     */
     public DirectedGraph invert();
 
 }
