@@ -164,7 +164,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     			if (result.getInt(NEIGHBOR) > 0) {
     				out.println("Neigbor SCC Decomposition");
     				sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, result.getInt(NEIGHBOR));
-    				sccSummary(sccDFS, graph, out);		
+    				sccSummary(sccDFS, graph, out, true);		
     			}
     		}
     		
@@ -181,28 +181,29 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		out.println("\tInstances="+cell.getSubCellList().size()+" nets="+cell.getNetList().size());
 	}
 	public static void sccSummary(SCCDepthFirstSearch dfs, BasicGraph graph, PrintStream out) {
+		sccSummary(dfs, graph, out, false);
+	}
+	public static void sccSummary(SCCDepthFirstSearch dfs, BasicGraph graph, PrintStream out, boolean sortBySize) {
 
-		int j=1;
 		out.println("\t"+dfs.getSingleNodes().size()+" feed-forward nodes");
 		out.println("\t"+dfs.getTopologicallySortedTreeList().size() + " trees");
 
-		for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
-			treeSummary(t,graph,out);
-			/*
-			BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
-            out.print("Tree " + j++ + ": " + tree.getNodes().size()+ " nodes ");
-            BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
-            int allEdges = sccGraph.getEdges().size();
-    		out.println(allEdges+ " edges");
-    		*/
-        }
+		if (!sortBySize) {
+			for (DepthFirstTree t : dfs.getTopologicallySortedTreeList()) {
+				treeSummary(t,graph,out);
+	        }			
+		} else {
+			for (DepthFirstTree t : dfs.getSizeSortedTreeList()) {
+				treeSummary(t,graph,out);
+	        }			
+		}
 	}
 	public static void treeSummary(DepthFirstTree dfst, BasicGraph graph, PrintStream out) {
         BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) dfst;
-        out.print("Tree: " + tree.getNodes().size()+ " nodes ");
-        BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
-        int allEdges = sccGraph.getEdges().size();
-		out.println(allEdges+ " edges");
+        out.println("Tree: " + tree.getNodes().size()+ " nodes ");
+        //BasicGraph sccGraph = graph.getSubGraph(tree.getNodes());
+        //int allEdges = sccGraph.getEdges().size();
+		//out.println(allEdges+ " edges");
 	}
 	
 	/**
