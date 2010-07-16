@@ -24,10 +24,12 @@ package edu.byu.ece.graph.dfs;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeSet;
 
 import edu.byu.ece.graph.DirectedGraph;
 
@@ -121,15 +123,10 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
      * @return List of topologically-sorted trees.
      */
     public List<DepthFirstTree> getSizeSortedTreeList() {
-    	TreeSet<SizeOrderedDepthFirstSearchTree> trees = new TreeSet<SizeOrderedDepthFirstSearchTree>();
-    	ArrayList<DepthFirstTree> sortedTrees = new ArrayList<DepthFirstTree>();
-    	for (DepthFirstTree tree : _trees) {
-    		trees.add(new SizeOrderedDepthFirstSearchTree(tree));
-    	}
-    	for (SizeOrderedDepthFirstSearchTree tree : trees) {
-    		sortedTrees.add(tree.getTree());
-    	}
-    	return sortedTrees;
+    	
+    	ArrayList<DepthFirstTree> sortedTrees = new ArrayList<DepthFirstTree>(_trees);
+    	Collections.sort(sortedTrees, new GraphNodeComparator());
+    	return sortedTrees; 
     }
 
     /*
@@ -231,3 +228,19 @@ class SizeOrderedDepthFirstSearchTree implements Comparable {
 		return 0;
 	}
 }
+
+class GraphNodeComparator implements Comparator {	
+	public int compare(Object o1, Object o2) {
+		DirectedGraph graph1 = (DirectedGraph) o1;
+		DirectedGraph graph2 = (DirectedGraph) o2;
+		if (graph1.getNodes().size() > graph2.getNodes().size())
+			return 1;
+		if (graph1.getNodes().size() < graph2.getNodes().size())
+			return -1;
+		return 0;
+	}
+	public boolean equals(Object o) {
+		return false;
+	}
+}
+
