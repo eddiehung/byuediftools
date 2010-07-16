@@ -169,9 +169,6 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     				sccSummary(sccDFS, graph, out, true);		
     			}
     		}
-    		
-
-        
         }
 
 	}
