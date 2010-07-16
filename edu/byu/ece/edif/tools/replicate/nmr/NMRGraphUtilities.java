@@ -828,7 +828,7 @@ public class NMRGraphUtilities {
                 System.out.println("Popping off a graph with " + subSCCDFSTree.getNodes().size()
                         + " nodes from a stack with " + (s.size() + 1) + " graphs");
             // Create a sub-graph of this SCC from the original graph
-            BasicGraph sccSubGraph = graph.getSubGraph2(subSCCDFSTree.getNodes());
+            BasicGraph sccSubGraph = graph.getSmallSubGraph(subSCCDFSTree.getNodes());
             //BasicGraph  sccSubGraph2= graph.getSubGraph2(subSCCDFSTree.getNodes());
 
             // Find the node that has the greatest fan out. Also find all of the fanout edges
