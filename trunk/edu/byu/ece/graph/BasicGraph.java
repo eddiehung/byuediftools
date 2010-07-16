@@ -267,6 +267,12 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
      * Creates a sub-graph of the given graph from a sub-set of nodes in the
      * graph. The resulting graph contains a sub-set of nodes and only those
      * edges that connect nodes in the sub-graph.
+     * 
+     * This implementation copies the entire graph using the clone method
+     * and then removes nodes that are not in the collection. If a small
+     * sub graph is created, it is more efficient to use the getSmallSubGraph
+     * method.
+	 *
      */
     public BasicGraph getSubGraph(Collection nodeCollection) {
 
@@ -284,7 +290,16 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
         return absGraph;
     }
 
-    public BasicGraph getSubGraph2(Collection nodes) {
+
+    /**
+     * Creates a sub-graph of the given graph from a sub-set of nodes in the
+     * graph. The resulting graph contains a sub-set of nodes and only those
+     * edges that connect nodes in the sub-graph.
+     * 
+     * This implementation copies individual nodes and the copies the 
+     * relevant topology. This method is efficient for small sub graphs.
+     */
+    public BasicGraph getSmallSubGraph(Collection nodes) {
         BasicGraph absGraph = new BasicGraph();
         absGraph.addNodes(nodes);
         for (Object node : nodes) {
@@ -369,6 +384,17 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
     }
 
     /**
+     * Removes a Collection of nodes from the graph and all Edges
+     * incident to these nodes.
+     * 
+     */
+    public void removeNodes(Collection nodes) {
+    	for (Object node : nodes) {
+    		removeNode(node, true);
+    	}
+    }
+        
+    /**
      * Removes the given node Object from the graph
      * 
      * @param node The node Object to remove
@@ -413,6 +439,7 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
      * @return A sorted List of the node Objects of the graph
      * @throws EdifRuntimeException In the case of a cyclic graph
      */
+    /*
     public static List topologicalSort(AbstractEdifGraph graph) {
         //		First, find a list of "start nodes" which have no incoming edges and 
         //		  insert them into a queue Q
@@ -478,6 +505,7 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
 
         return sortedList;
     }
+    */
 
     /**
      * A Map between graph "node" objects (which are implementation specific)
