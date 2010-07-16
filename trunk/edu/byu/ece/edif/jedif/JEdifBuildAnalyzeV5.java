@@ -24,6 +24,7 @@ import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
@@ -116,7 +117,8 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
         	cellSummary(workCell,out);
         	
             // 2. Create an instance graph of the cell
-    		EdifPortRefGroupGraph graph = new EdifPortRefGroupGraph(workCell);
+    		//EdifPortRefGroupGraph graph = new EdifPortRefGroupGraph(workCell);
+    		EdifCellInstanceGraph graph = new EdifCellInstanceGraph(workCell);
     		graphSummary(graph, out);
     		
     		// For now, ignore IOB stuff
@@ -146,7 +148,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 
     		// Perform LUT6_2 feedback
     		if (LUT6_2FlaggedOption.performLUT6_2Decomposition(result)) {
-    			lut6_2ConnectivityAnalysis(workCell, graph);
+    			//lut6_2ConnectivityAnalysis(workCell, graph);
     		}
 
 
@@ -155,7 +157,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		if (iterations > 0) {
     			// perform SCC cutting 
         		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
-    			shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
+    			//shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
     		} else {
     			SCCDepthFirstSearch sccDFS = null;
 				sccDFS = new SCCDepthFirstSearch(graph);
