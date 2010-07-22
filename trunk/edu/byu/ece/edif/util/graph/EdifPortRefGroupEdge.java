@@ -11,7 +11,8 @@ import edu.byu.ece.graph.Edge;
  * as well as the source and sink EdifPortRefs. This is necessary since
  * each EdifCellInstance may have more than one EdifPortRefGroupNode,
  * so we can't rely on simply fetching the EdifCellInstance that belongs
- * to the source and sink EdifPortRefs.
+ * to the source and sink EdifPortRefs. In addition, all source and sink
+ * nodes must be EdifPortRefGroup objects rather than just Objects,
  * 
  * @author whowes
  *
@@ -21,7 +22,7 @@ public class EdifPortRefGroupEdge implements EdifPortRefEdge {
      * Construct a new link from a given source and sink EdifPortRef
      * object.
      */
-    public EdifPortRefGroupEdge(EdifPortRef source, Object sourceNode, EdifPortRef sink, Object sinkNode) {
+    public EdifPortRefGroupEdge(EdifPortRef source, EdifPortRefGroupNode sourceNode, EdifPortRef sink, EdifPortRefGroupNode sinkNode) {
         _sourceEPR = source;
         _sinkEPR = sink;
         _sourceNode = sourceNode;
@@ -41,24 +42,16 @@ public class EdifPortRefGroupEdge implements EdifPortRefEdge {
 	}
 
     /**
-     * Return the sink node object associated with this link. If the sink is a
-     * top-level port, this method will return the EdifSingleBitPort associated
-     * with this link. If the sink is not a top-level port, this method will
-     * return the EdifPortRefListNode associated with the source EdifPortRef
-     * object.
+     * Return the sink node object associated with this link. 
      */
-    public Object getSink() {
+    public EdifPortRefGroupNode getSink() {
         return _sinkNode;
     }
 
     /**
-     * Return the source node object associated with this link. If the source is
-     * a top-level port, this method will return the EdifSingleBitPort
-     * associated with this link. If the source is not a top-level port, this
-     * method will return the EdifPortRefListNode associated with the source
-     * EdifPortRef object.
+     * Return the source node object associated with this link. 
      */
-    public Object getSource() {
+    public EdifPortRefGroupNode getSource() {
     	return _sourceNode;
     }
 
@@ -85,9 +78,9 @@ public class EdifPortRefGroupEdge implements EdifPortRefEdge {
     /**
      * The EdifPortRefListNode or EdifSingleBitPort object associated with the source of this edge.
      */
-    protected Object _sourceNode;
+    protected EdifPortRefGroupNode _sourceNode;
     /**
      * The EdifPortRefListNode or EdifSingleBitPort object associated with the sink of this edge.
      */
-    protected Object _sinkNode;
+    protected EdifPortRefGroupNode _sinkNode;
 }
