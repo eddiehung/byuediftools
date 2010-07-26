@@ -338,15 +338,17 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		for (Object node : graph.getNodes() ) {
 			if (node instanceof EdifPortRefGroupNode) {
 				EdifCellInstance eci = ((EdifPortRefGroupNode)node).getEdifCellInstance();
-				String cellType = eci.getCellType().getName();
-				if (cellType.compareToIgnoreCase(LUT6_2) == 0)
-					luts2cut.add(eci);
+				if(eci != null) {
+				    String cellType = eci.getCellType().getName();
+				    if (cellType.compareToIgnoreCase(LUT6_2) == 0)
+				        luts2cut.add(eci);
+				}
 			}
 		}
 
 		if (luts2cut.size() > 0) {
 			System.out.println(luts2cut.size() + " LUT6_2 instances found");
-			graph.toDotty("/net/fpga1/users/whowes/Desktop/before.dot");
+			//graph.toDotty("/net/fpga1/users/whowes/Desktop/before.dot");
 			for (Object node : luts2cut) {
 				EdifCellInstance lut6_2 = (EdifCellInstance) node;
 				
@@ -414,7 +416,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 			}
 			System.out.println("After splitting LUT6_2 nodes:");
 			graphSummary(graph, out);
-			graph.toDotty("/net/fpga1/users/whowes/Desktop/after.dot");
+			//graph.toDotty("/net/fpga1/users/whowes/Desktop/after.dot");
 						
 			
 		} else {
