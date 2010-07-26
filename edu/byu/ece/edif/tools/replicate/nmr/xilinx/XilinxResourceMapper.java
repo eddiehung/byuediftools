@@ -55,13 +55,19 @@ public class XilinxResourceMapper implements ResourceMapper {
     
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     public double getApproxLutUsage(EdifCell cell) {
         if (cell == null)
             return 0;
         return (cellToLUTEquivalentMap.get(cell.getName().toUpperCase())).doubleValue();
     }
 
+    public double getApproxLutUsage(String cellName) {
+        if (cellName == null)
+            return 0;
+        return cellToLUTEquivalentMap.get(cellName).doubleValue();
+    }
+    
     public double getApproxLUTUsage(EdifCellInstance eci) {
         if (eci == null)
             return 0;
@@ -113,6 +119,11 @@ public class XilinxResourceMapper implements ResourceMapper {
     public static final String DCM = "DCM";
 
     public static final String DLL = "DCM";
+    
+    /**
+     * PLL
+     */
+    public static final String PLL = "PLL";
 
     /**
      * Flip-Flop
@@ -155,19 +166,19 @@ public class XilinxResourceMapper implements ResourceMapper {
     public static final String DSP = "DSP";
 
     /**
-     * V4-ICAP
+     * ICAP
      */
     public static final String ICAP = "ICAP";
 
     /**
-     * V4 Frame ECC
+     * Frame ECC
      */
     public static final String FRAME_ECC = "ICAP";
 
     /**
-     * Rocket IO Transeiver
+     * Rocket IO Transceiver
      */
-    public static final String TRANSEIVER = "TRANSEIVER";
+    public static final String TRANSCEIVER = "TRANSCEIVER";
 
     /**
      * Ethernet MACs
@@ -178,6 +189,11 @@ public class XilinxResourceMapper implements ResourceMapper {
      * IBUFGs
      */
     public static final String IBUFG = "IBUFG";
+    
+    /**
+     * PCI Express
+     */
+    public static final String PCIE = "PCIE";
 
     
     ///////////////////////////////////////////////////////////////////
@@ -1233,8 +1249,8 @@ public class XilinxResourceMapper implements ResourceMapper {
         //	or if the dynamic configuration bus is implemented. See pg. 103
         //	SO BASICALLY FOR ANY DESIGNS A USER WANTS TRIPLICATED THEY HAVE TO USE THE DUAL, CUSTOM CAN'T BE SUPPORTED.
         //	AND YES, SINCE THE DUALS USE TWO CUSTOMS, THE MGTS TAKE UP 2 LOCATIONS (WHICH WILL REQUIRE A DOUBLE).
-        cellToResourceMap.put("GT11_CUSTOM", TRANSEIVER);//RocketIO MGT
-        cellToResourceMap.put("GT11_DUAL", TRANSEIVER);//RocketIO MGT Tile (contains 2 GT11_CUSTOM)
+        cellToResourceMap.put("GT11_CUSTOM", TRANSCEIVER);//RocketIO MGT
+        cellToResourceMap.put("GT11_DUAL", TRANSCEIVER);//RocketIO MGT Tile (contains 2 GT11_CUSTOM)
         cellToResourceMap.put("GT11CLK", "");//A MUX that can select from Differential Package Input Clock, refclk from the fabric, or rxbclk to drive the two vertical reference clock buses for the column of MGTs
         cellToResourceMap.put("GT11CLK_MGT", "");//Allows differential package input to drive the two vertical reference clock buses for the column of MGTs
 
@@ -1254,6 +1270,67 @@ public class XilinxResourceMapper implements ResourceMapper {
         cellToResourceMap.put("RAMB16", BRAM);
         cellToResourceMap.put("RAMB32_S64_ECC", BRAM);
         //end virtex 4 additions
+        
+        //added for the virtex 5       
+        cellToResourceMap.put("BSCAN_VIRTEX5", "");
+        cellToResourceMap.put("CAPTURE_VIRTEX5", "");
+        cellToResourceMap.put("USR_ACCESS_VIRTEX5", "");
+        cellToResourceMap.put("STARTUP_VIRTEX5", "");
+        cellToResourceMap.put("CARRY4", "");
+        cellToResourceMap.put("CRC32 ", "");
+        cellToResourceMap.put("CRC64 ", ""); 
+        cellToResourceMap.put("IODELAY", "");
+        cellToResourceMap.put("ISERDES_NODELAY", "");
+        cellToResourceMap.put("KEY_CLEAR", "");
+        cellToResourceMap.put("MUXF7 ", "");
+        cellToResourceMap.put("SYSMON", "");
+
+        cellToResourceMap.put("LUT5", LUT);
+        cellToResourceMap.put("LUT5_D", LUT);        
+        cellToResourceMap.put("LUT5_L", LUT);
+        cellToResourceMap.put("LUT6", LUT);
+        cellToResourceMap.put("LUT6_D", LUT);        
+        cellToResourceMap.put("LUT6_L", LUT);
+        cellToResourceMap.put("LUT6_2", LUT);
+        cellToResourceMap.put("SRLC32E", LUT);
+        cellToResourceMap.put("CFGLUT5", LUT);    
+        cellToResourceMap.put("RAM128X1D", LUT);
+        cellToResourceMap.put("RAM128X1S_1", LUT);
+        cellToResourceMap.put("RAM256X1S", LUT);
+        cellToResourceMap.put("RAM32X1D_1", LUT);
+        cellToResourceMap.put("RAM32M", LUT);
+        cellToResourceMap.put("RAM64M", LUT);
+        cellToResourceMap.put("RAM64X1D_1", LUT);
+
+        cellToResourceMap.put("FDCPE_1 ", FF);
+        cellToResourceMap.put("IDDR_2CLK", FF);
+
+        cellToResourceMap.put("RAMB18", BRAM);
+        cellToResourceMap.put("RAMB18SDP", BRAM);
+        cellToResourceMap.put("RAMB36", BRAM);
+        cellToResourceMap.put("RAMB36SDP", BRAM);
+        cellToResourceMap.put("FIFO18", BRAM);
+        cellToResourceMap.put("FIFO18_36", BRAM);
+        cellToResourceMap.put("FIFO36", BRAM);
+        cellToResourceMap.put("FIFO36_72", BRAM);
+        cellToResourceMap.put("BRAM_SDP_MACRO", BRAM);
+        cellToResourceMap.put("BRAM_SINGLE_MACRO", BRAM);
+        cellToResourceMap.put("BRAM_TDP_MACRO ", BRAM);
+        cellToResourceMap.put("FIFO_DUALCLOCK_MACRO", BRAM);
+        cellToResourceMap.put("FIFO_SYNC_MACRO", BRAM);
+
+        cellToResourceMap.put("GTP_DUAL", TRANSCEIVER);
+        cellToResourceMap.put("GTX_DUAL", TRANSCEIVER);
+        
+        cellToResourceMap.put("TEMAC", ETHERNET);
+        cellToResourceMap.put("PLL_ADV", PLL);
+        cellToResourceMap.put("PLL_BASE", PLL);
+        cellToResourceMap.put("DSP48E", DSP);
+        cellToResourceMap.put("PPC440", PPC);
+        cellToResourceMap.put("ICAP_VIRTEX5", ICAP);
+        cellToResourceMap.put("FRAME_ECC_VIRTEX5", FRAME_ECC);
+        cellToResourceMap.put("BUFGMUX_CTRL", BUFG);
+        //end V5 additions
     }
 
     static {

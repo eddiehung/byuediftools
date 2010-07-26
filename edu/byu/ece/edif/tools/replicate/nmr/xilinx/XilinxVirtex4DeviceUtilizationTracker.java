@@ -334,7 +334,7 @@ public class XilinxVirtex4DeviceUtilizationTracker extends XilinxDeviceUtilizati
         addResourceForTracking(XilinxResourceMapper.FRAME_ECC, 0.0, MAX_FRAME_ECC);
         addResourceForTracking(XilinxResourceMapper.PPC, 0.0, maxPPC);
         addResourceForTracking(XilinxResourceMapper.ETHERNET, 0.0, maxEthernet);
-        addResourceForTracking(XilinxResourceMapper.TRANSEIVER, 0.0, maxGBT);
+        addResourceForTracking(XilinxResourceMapper.TRANSCEIVER, 0.0, maxGBT);
 
         super._init(cell);
     }

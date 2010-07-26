@@ -32,6 +32,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex4DeviceUtilizationTracker;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex5DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexIIDeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexIIProDeviceUtilizationTracker;
@@ -59,6 +60,7 @@ public class DeviceParser {
 
     public static final String VIRTEX4 = "virtex4";
 
+    public static final String VIRTEX5 = "virtex5";
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
 
@@ -114,6 +116,9 @@ public class DeviceParser {
                     desiredUtilizationFactor);
         else if (xilinxFamily.equals(VIRTEX4))
             return new XilinxVirtex4DeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
+                    desiredUtilizationFactor);
+        else if (xilinxFamily.equals(VIRTEX5))
+            return new XilinxVirtex5DeviceUtilizationTracker(cell, part, mergeFactor, optimizationFactor,
                     desiredUtilizationFactor);
         else
             throw new EdifRuntimeException("Xilinx family " + xilinxFamily + " not yet supported.");
@@ -254,6 +259,8 @@ public class DeviceParser {
             return VIRTEX2PRO;
         else if (family.compareToIgnoreCase(VIRTEX4) == 0)
             return VIRTEX4;
+        else if (family.compareToIgnoreCase(VIRTEX5) == 0)
+            return VIRTEX5;
         else
             throw new EdifRuntimeException("Xilinx family " + family + " not yet supported.");
     }
