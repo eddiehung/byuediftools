@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import edu.byu.ece.edif.core.NamedPropertyObject;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
+import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
 /**
  * This class is designed to provide a mathematical graph view of an EdifCell
@@ -90,8 +90,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
         super(c.getSubCellList().size());
         _cell = c;
         _sourceToSourceEdges = new ArrayList<EdifPortRefGroupEdge>();
-        _eciToGroupMap = new HashMap<EdifCellInstance, Object>();
-        _esbpToGroupMap = new HashMap<EdifSingleBitPort, Object>();
+        _eciToGroupMap = new HashMap<EdifCellInstance, EdifPortRefGroupNodeWrapper>();
+        _esbpToGroupMap = new HashMap<EdifSingleBitPort, EdifPortRefGroupNodeWrapper>();
         _init(includeTopLevelPorts, createSourceToSourceEdges);
     }
 
@@ -439,12 +439,14 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * one node.
      */
     public List<EdifPortRefGroupNode> getInstanceNodes(EdifCellInstance eci) {
-        Object nodes = _eciToGroupMap.get(eci);
+        EdifPortRefGroupNodeWrapper nodes = _eciToGroupMap.get(eci);
         List<EdifPortRefGroupNode> nodesList = new ArrayList<EdifPortRefGroupNode>();
-        if (nodes instanceof EdifPortRefGroupNode)
-            nodesList.add((EdifPortRefGroupNode) nodes);
-        else if (nodes instanceof List)
-            nodesList.addAll((List<EdifPortRefGroupNode>) nodes);
+        if (nodes.isSingleNode()) {
+            nodesList.add(nodes.getNode());
+        }
+        else { 
+            nodesList.addAll(nodes.getNodes());
+        }
         return nodesList;
     }
 
@@ -579,18 +581,18 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
             EdifPortRefGroupNode newNode = eprGroupsToNewNodeMap.get(eprs);
 
             // update the ECI->port ref group map
-            Object eciMapList = _eciToGroupMap.get(nodeToSplit.getEdifCellInstance());
-            if (eciMapList == null) {
-                eciMapList = new LinkedList<EdifPortRefGroupNode>();
-            } else if (eciMapList instanceof EdifPortRefGroupNode) {
-                LinkedList<EdifPortRefGroupNode> tmp = new LinkedList<EdifPortRefGroupNode>();
-                tmp.add((EdifPortRefGroupNode) eciMapList);
-                eciMapList = tmp;
+            EdifPortRefGroupNodeWrapper eciMapWrapper = _eciToGroupMap.get(nodeToSplit.getEdifCellInstance());
+            ArrayList<EdifPortRefGroupNode> nodesList = new ArrayList<EdifPortRefGroupNode>();
+            if(eciMapWrapper != null) {
+                if(eciMapWrapper.isSingleNode())
+                    nodesList.add(eciMapWrapper.getNode());
+                else
+                    nodesList.addAll(eciMapWrapper.getNodes());
             }
-            ((List<EdifPortRefGroupNode>) eciMapList).remove(nodeToSplit);
-            ((List<EdifPortRefGroupNode>) eciMapList).add(newNode);
-            _eciToGroupMap.put(nodeToSplit.getEdifCellInstance(), eciMapList);
-
+            nodesList.remove(nodeToSplit);
+            nodesList.add(newNode);
+            _eciToGroupMap.put(nodeToSplit.getEdifCellInstance(), new EdifPortRefGroupNodeWrapper(nodesList));
+            
             // create and add new input edges
             // this may include former self-loops that are now split into
             // multiple nodes
@@ -649,8 +651,8 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
 
             // Create a EdifPortRefGroupEdge for each pair
             for (EdifPortRef sourceEPR : sourceEPRs) {
-                Object srcNodeObj;
-                EdifPortRefGroupNode srcNode;
+                EdifPortRefGroupNodeWrapper srcNodeObj;
+                EdifPortRefGroupNode srcNodeWrapped;
 
                 EdifCellInstance sourceECI = sourceEPR.getCellInstance();
                 // Skip if either the source or sink is a Top-Level Port
@@ -664,28 +666,28 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                         // instance
                         srcNodeObj = _eciToGroupMap.get(sourceECI);
                         if (srcNodeObj == null) {
-                            srcNode = new EdifPortRefGroupNode(sourceECI, false);
-                            addNode(srcNode);
-                            _eciToGroupMap.put(sourceECI, srcNode);
+                            srcNodeWrapped = new EdifPortRefGroupNode(sourceECI, false);
+                            addNode(srcNodeWrapped);
+                            _eciToGroupMap.put(sourceECI, new EdifPortRefGroupNodeWrapper(srcNodeWrapped));
                         } else {
-                            srcNode = (EdifPortRefGroupNode) srcNodeObj;
+                            srcNodeWrapped = srcNodeObj.getNode();
                         }
                     } else { // this node corresponds to a single-bit port
                         EdifSingleBitPort sourceESBP = sourceEPR.getSingleBitPort();
                         srcNodeObj = _esbpToGroupMap.get(sourceESBP);
                         if (srcNodeObj == null) {
-                            srcNode = new EdifPortRefGroupNode(sourceESBP, false);
-                            addNode(srcNode);
-                            _esbpToGroupMap.put(sourceESBP, srcNode);
+                            srcNodeWrapped = new EdifPortRefGroupNode(sourceESBP, false);
+                            addNode(srcNodeWrapped);
+                            _esbpToGroupMap.put(sourceESBP, new EdifPortRefGroupNodeWrapper(srcNodeWrapped));
                         } else {
-                            srcNode = (EdifPortRefGroupNode) srcNodeObj;
+                            srcNodeWrapped = srcNodeObj.getNode();
                         }
                     }
                 }
 
                 // Normal Edges: Source to sink
                 for (EdifPortRef sinkEPR : sinkEPRs) {
-                    Object sinkNodeObj;
+                    EdifPortRefGroupNodeWrapper sinkNodeWrapped;
                     EdifPortRefGroupNode sinkNode;
 
                     // Skip if source and sink are same (i.e. tri-state)
@@ -700,28 +702,28 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                     // find the EdifPortRefGroupNode or EdifSingleBitPort for the sink
                     else {
                         if (sinkECI != null) { // this node corresponds to an instance
-                            sinkNodeObj = _eciToGroupMap.get(sinkECI);
-                            if (sinkNodeObj == null) {
+                            sinkNodeWrapped = _eciToGroupMap.get(sinkECI);
+                            if (sinkNodeWrapped == null) {
                                 sinkNode = new EdifPortRefGroupNode(sinkECI, false);
                                 addNode(sinkNode);
-                                _eciToGroupMap.put(sinkECI, sinkNode);
+                                _eciToGroupMap.put(sinkECI, new EdifPortRefGroupNodeWrapper(sinkNode));
                             } else {
-                                sinkNode = (EdifPortRefGroupNode) sinkNodeObj;
+                                sinkNode = sinkNodeWrapped.getNode();
                             }
                         } else { // this node corresponds to a single-bit port
                             EdifSingleBitPort sinkESBP = sinkEPR.getSingleBitPort();
-                            sinkNodeObj = _esbpToGroupMap.get(sinkESBP);
-                            if (sinkNodeObj == null) {
+                            sinkNodeWrapped = _esbpToGroupMap.get(sinkESBP);
+                            if (sinkNodeWrapped == null) {
                                 sinkNode = new EdifPortRefGroupNode(sinkESBP, false);
                                 addNode(sinkNode);
-                                _esbpToGroupMap.put(sinkESBP, sinkNode);
+                                _esbpToGroupMap.put(sinkESBP, new EdifPortRefGroupNodeWrapper(sinkNode));
                             } else {
-                                sinkNode = (EdifPortRefGroupNode) sinkNodeObj;
+                                sinkNode = sinkNodeWrapped.getNode();
                             }
                         }
                     }
 
-                    EdifPortRefGroupEdge edge = new EdifPortRefGroupEdge(sourceEPR, srcNode, sinkEPR, sinkNode);
+                    EdifPortRefGroupEdge edge = new EdifPortRefGroupEdge(sourceEPR, srcNodeWrapped, sinkEPR, sinkNode);
                     this.addEdge(edge);
                 }
 
@@ -744,16 +746,16 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                         if (!includeTopLevelPorts && source2ECI == null)
                             continue;
                         else {
-                            Object source2Obj;
+                            EdifPortRefGroupNodeWrapper source2Obj;
                             if (source2ECI != null) { // this node corresponds
                                 // to an instance
                                 source2Obj = _eciToGroupMap.get(source2ECI);
                                 if (source2Obj == null) {
                                     src2Node = new EdifPortRefGroupNode(source2ECI, false);
                                     addNode(src2Node);
-                                    _eciToGroupMap.put(source2ECI, src2Node);
+                                    _eciToGroupMap.put(source2ECI, new EdifPortRefGroupNodeWrapper(src2Node));
                                 } else {
-                                    src2Node = (EdifPortRefGroupNode) source2Obj;
+                                    src2Node = source2Obj.getNode();
                                 }
                             } else { // this node corresponds to a single-bit
                                 // port
@@ -762,14 +764,14 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
                                 if (source2Obj == null) {
                                     src2Node = new EdifPortRefGroupNode(source2ESBP, false);
                                     addNode(src2Node);
-                                    _esbpToGroupMap.put(source2ESBP, src2Node);
+                                    _esbpToGroupMap.put(source2ESBP, new EdifPortRefGroupNodeWrapper(src2Node));
                                 } else {
-                                    src2Node = (EdifPortRefGroupNode) source2Obj;
+                                    src2Node = source2Obj.getNode();
                                 }
                             }
                         }
 
-                        EdifPortRefGroupEdge edge = new EdifPortRefGroupEdge(sourceEPR, srcNode, source2EPR, src2Node);
+                        EdifPortRefGroupEdge edge = new EdifPortRefGroupEdge(sourceEPR, srcNodeWrapped, source2EPR, src2Node);
                         this.addEdge(edge);
                         // Also add this Edge to the special list of
                         // source-to-source Edges
@@ -841,6 +843,17 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
             EdifPortRefGroupGraph prgGraph = new EdifPortRefGroupGraph(flat_cell, true, true);
             long afterPRG = System.currentTimeMillis();
             System.out.println("PRG graph took: " + (afterPRG - beforePRG) + " ms.");
+        
+            // 4. Do an SCC decomposition on each graph
+            System.out.println("Computing SCCs . . .");
+            SCCDepthFirstSearch eciSCCs = new SCCDepthFirstSearch(eciGraph);
+            SCCDepthFirstSearch prgSCCs = new SCCDepthFirstSearch(prgGraph);
+            if(eciSCCs.createSCCString().equals(prgSCCs.createSCCString())) {
+                System.out.println("Identical SCCs!");
+            }
+            else {
+                System.out.println("SCCs Differ!");
+            }           
         }
     }
 
@@ -862,7 +875,7 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * graph, as creating a new List for each node is very slow - it's only a
      * List if a node has been split)
      */
-    protected Map<EdifCellInstance, Object> _eciToGroupMap;
+    protected Map<EdifCellInstance, EdifPortRefGroupNodeWrapper> _eciToGroupMap;
 
     /**
      * Maps EdifSingleBitPorts to one or more EdifPortRefGroupNodes. The value
@@ -870,5 +883,5 @@ public class EdifPortRefGroupGraph extends AbstractEdifGraph {
      * (this is done to speed up creation of the graph, as creating a new List
      * for each node is very slow - it's only a List if a node has been split)
      */
-    protected Map<EdifSingleBitPort, Object> _esbpToGroupMap;
+    protected Map<EdifSingleBitPort, EdifPortRefGroupNodeWrapper> _esbpToGroupMap;
 }
