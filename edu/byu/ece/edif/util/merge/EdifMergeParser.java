@@ -1237,17 +1237,24 @@ public class EdifMergeParser {
                 for (String dirName : dirs) {
                     if (!dirName.endsWith(File.separator))
                         dirName += File.separator;
-                    for (EdifCell blackBox : blackBoxes) {
-                        for (int i = 0; i < EDIF_EXTENSIONS.length; i++) {
-                            String fullPath = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
-                            String fName = blackBox.getName() + "."
-									+ EDIF_EXTENSIONS[i];
-							if (filename_exists(dirName, fName)
-									&& !fileNameToEnv.containsKey(fullPath)
-                                    && (!fullPath.equals(filename))) {
-                                // does this file exist? and did we already parse it?
-                                fileNameToEnv.put(fullPath, getMergedEdifEnvironment(fullPath, dirs, files_i, primLib,
-                                        fileNameToEnv, openPins, quitOnError));
+                    // Check to make sure the directory exists (user would probably like to know if it doesn't)
+                    if (!(new File(dirName)).exists()) {
+                        if (outstream != null)
+                            LogFile.warn().println("WARNING: Specified directory does not exist: " + dirName);
+                    }
+                    else { // Directory exists
+                        for (EdifCell blackBox : blackBoxes) {
+                            for (int i = 0; i < EDIF_EXTENSIONS.length; i++) {
+                                String fullPath = dirName + blackBox.getName() + "." + EDIF_EXTENSIONS[i];
+                                String fName = blackBox.getName() + "."
+    									+ EDIF_EXTENSIONS[i];
+    							if (filename_exists(dirName, fName)
+    									&& !fileNameToEnv.containsKey(fullPath)
+                                        && (!fullPath.equals(filename))) {
+                                    // does this file exist? and did we already parse it?
+                                    fileNameToEnv.put(fullPath, getMergedEdifEnvironment(fullPath, dirs, files_i, primLib,
+                                            fileNameToEnv, openPins, quitOnError));
+                                }
                             }
                         }
                     }
@@ -1317,7 +1324,10 @@ public class EdifMergeParser {
             }
         };
         File dir = new File(dName);
-        ArrayList<String> children = new ArrayList<String>(Arrays.asList(dir.list(filter)));
+      	String[] listing = dir.list(filter);
+        if (listing == null)
+        	return false;
+        ArrayList<String> children = new ArrayList<String>(Arrays.asList(listing));
         for (String name : children) {
             if (file.equalsIgnoreCase(name))
                 return true;
