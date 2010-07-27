@@ -110,6 +110,10 @@ public class ClockDomainCommandParser extends JSAP {
         _ClockAnalyzerParameters.add(new Switch(SHOW_NO_DOMAIN).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(
                 "show_no_domain").setDefault(FALSE).setHelp("Add cells and nets not in a domain to the report."));
 
+        _ClockAnalyzerParameters.add(new Switch(SHOW_CLOCK_CROSSINGS).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(
+        "show_clock_crossings").setDefault(FALSE).setHelp(
+        "Show all clock domain crossings"));
+        /*
         _ClockAnalyzerParameters
                 .add(new FlaggedOption(SHOW_CLOCK_CROSSINGS)
                         .setStringParser(JSAP.STRING_PARSER)
@@ -121,7 +125,8 @@ public class ClockDomainCommandParser extends JSAP {
                         .setListSeparator(LIST_DELIMITER)
                         .setHelp(
                                 "The domain crossing to report. This option must be followed by 2 comma-separated domains.  e.g. --show_clock_crossings clk1,clk2 or --show_clock_crossings clk1,all."));
-
+	*/
+        
         _ClockAnalyzerParameters
                 .add(new FlaggedOption(CREATE_DOTTY_GRAPH)
                         .setStringParser(JSAP.STRING_PARSER)
