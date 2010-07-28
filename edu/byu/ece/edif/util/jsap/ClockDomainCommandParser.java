@@ -257,12 +257,14 @@ public class ClockDomainCommandParser extends JSAP {
         _result = super.parse(args);
 
         // Ensure that all clock crossings have exactly 2 values (from, to)
+        /*
         if (_result.contains(SHOW_CLOCK_CROSSINGS) && _result.getStringArray(SHOW_CLOCK_CROSSINGS).length % 2 != 0) {
             System.out.println("usage for --" + SHOW_CLOCK_CROSSINGS + " is:");
             System.out.println("--" + SHOW_CLOCK_CROSSINGS + " clock1,clock2");
             System.out.println("clock1 and clock2 are both required.  \"all\" can be used to choose all clocks.");
             System.exit(-1);
         }
+        */
         if (_result.contains(CREATE_DOTTY_GRAPH) && _result.getStringArray(CREATE_DOTTY_GRAPH).length % 2 != 0) {
             System.out.println("usage for --" + CREATE_DOTTY_GRAPH + " is:");
             System.out.println("--" + CREATE_DOTTY_GRAPH + " cell,port_name");
