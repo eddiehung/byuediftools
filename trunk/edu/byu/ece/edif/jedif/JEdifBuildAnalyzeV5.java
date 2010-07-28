@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.martiansoftware.jsap.FlaggedOption;
@@ -18,12 +19,15 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
@@ -46,6 +50,7 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 public class JEdifBuildAnalyzeV5 extends EDIFMain {
     
 	public static String NEIGHBOR = "nearest_neighbor";
+	public static String CLOCK_DOMAIN = "clock_domain";
 	
 	public static void main(String[] args) {
 		
@@ -67,6 +72,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		parser.addCommand(new ShortestPathAnalysisOption());
         parser.addCommand(new FlaggedOption( NEIGHBOR,JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, NEIGHBOR, 
         	"Nearest neighbor search" ));
+        parser.addCommand(new Switch( CLOCK_DOMAIN).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(CLOCK_DOMAIN).setDefault("false").setHelp("Isolate SCC analysis within clock domains"));
 
 		
         // Start the parsing
@@ -151,6 +157,33 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     			//lut6_2ConnectivityAnalysis(workCell, graph);
     		}
 
+    		// Perform Clock Domain analysis
+    		if (result.contains(CLOCK_DOMAIN)) {
+    			out.println("Clock Domain Analysis");
+    			Map<EdifNet, Set<EdifNet>> domainNets = ClockDomainParser.classifyNets(workCell);
+    			for (EdifNet sourceClock : domainNets.keySet()) {
+    				Set<EdifNet> nets = domainNets.get(sourceClock);
+    				out.println("\tClock domain "+sourceClock+" has "+nets.size()+" nets");
+    			}
+    			
+    			Map<EdifNet, Map<EdifNet, Set<EdifNet>>> crossings = ClockDomainParser.getClockCrossings(workCell, domainNets);
+    			Set<EdifNet> netsToRemove = new HashSet<EdifNet>();
+    	        for (EdifNet sourceClock : crossings.keySet()) {
+    	        	for (EdifNet sinkClock : crossings.get(sourceClock).keySet()) {
+    	        		Set<EdifNet> crossingNets = crossings.get(sourceClock).get(sinkClock);
+    	        		out.println("  Crossings from "+sourceClock+" to "+sinkClock+" "+crossingNets.size()+" nets");
+    	        		for (EdifNet crossingClock : crossingNets) {
+    	        			//out.println("    "+crossingClock);
+    	        			netsToRemove.add(crossingClock);
+    	        		}
+    	        	}
+    	        }
+    	        Set<EdifCellInstanceEdge> edgesToRemove = graph.getEdges(netsToRemove);
+    	        graph.removeEdges(edgesToRemove);
+    	        out.println(netsToRemove.size() + " nets Removed");
+    	        out.println(edgesToRemove.size() + " edges Removed");
+    			out.println("Clock Domain Analysis - Done");
+    		}
 
     		// Perform shortest path decomponsition
 			int iterations = ShortestPathAnalysisOption.getShortestPath(result);
