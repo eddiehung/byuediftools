@@ -24,17 +24,14 @@ package edu.byu.ece.edif.util.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
-import edu.byu.ece.edif.core.EdifDesign;
-import edu.byu.ece.edif.core.EdifEnvironment;
-import edu.byu.ece.edif.core.EdifLibrary;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
-import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.graph.Edge;
 
@@ -158,6 +155,34 @@ public class EdifCellInstanceGraph extends AbstractEdifGraph {
         return (Collection<EdifCellInstanceEdge>) super.getEdges();
     }
 
+    /**
+     * Return a set of EdifCellInstance Edge objects that correspond to
+     * the set of nets.
+     * 
+     * Note that the internal data structure of this graph does not lend itself
+     * for easy mapping between nets and edges. The aproach taken in this method
+     * is very slow and iterates through all of the edges in the graph.
+     * 
+     */
+    public Set<EdifCellInstanceEdge> getEdges(Set<EdifNet> nets) {
+        Set<EdifCellInstanceEdge> edges = new HashSet<EdifCellInstanceEdge>();
+
+        // Create a set of all EPRs within the nets
+        Set<EdifPortRef> eprsToFind = new HashSet<EdifPortRef>();
+        for (EdifNet net : nets) {
+        	eprsToFind.addAll(net.getConnectedPortRefs());
+        }
+
+        // Iterate through all of the edges in the design. See if the edge
+        // corresponds to one of the EPRs of the design
+        for (EdifCellInstanceEdge edge : this.getEdges()) {
+        	if (eprsToFind.contains(edge.getSinkEPR()) || eprsToFind.contains(edge.getSourceEPR()))
+        			edges.add(edge);
+        }
+        return edges;
+    	
+    }
+    
     /**
      * Obtain a Collection of EdifPortRef objects that are connected to the
      * input ports of this instance. If there are no connections, return a
