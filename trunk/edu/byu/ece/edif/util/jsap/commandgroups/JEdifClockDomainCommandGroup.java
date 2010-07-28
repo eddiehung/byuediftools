@@ -94,6 +94,13 @@ public class JEdifClockDomainCommandGroup extends JEdifParserCommandGroup {
         show_no_domain.setHelp("Add cells and nets not in a domain to the report.");
         this.addCommand(show_no_domain);
 
+        Switch clk_cross = new Switch(SHOW_CLOCK_CROSSINGS);
+        clk_cross.setShortFlag(JSAP.NO_SHORTFLAG);
+        clk_cross.setLongFlag(SHOW_CLOCK_CROSSINGS);
+        clk_cross
+                .setHelp("The domain crossing to report. ");
+        this.addCommand(clk_cross);
+        /*
         FlaggedOption clk_cross = new FlaggedOption(SHOW_CLOCK_CROSSINGS);
         clk_cross.setStringParser(JSAP.STRING_PARSER);
         clk_cross.setRequired(JSAP.NOT_REQUIRED);
@@ -105,7 +112,8 @@ public class JEdifClockDomainCommandGroup extends JEdifParserCommandGroup {
         clk_cross
                 .setHelp("The domain crossing to report. This option must be followed by 2 comma-separated domains.  e.g. --show_clock_crossings clk1,clk2 or --show_clock_crossings clk1,all.");
         this.addCommand(clk_cross);
-
+	*/
+        
         FlaggedOption dotty_graph = new FlaggedOption(CREATE_DOTTY_GRAPH);
         dotty_graph.setStringParser(JSAP.STRING_PARSER);
         dotty_graph.setRequired(JSAP.NOT_REQUIRED);
