@@ -627,7 +627,7 @@ public class ClockDomainParser {
      * describing the clock crossing.
      */
     protected Map<String, Set<String>> getClockCrossings() {
-        Map<String, Set<String>> domainCrossMap = new TreeMap<String, Set<String>>();
+        Map<String, Set<String>> domainCrossMap = new HashMap<String, Set<String>>();
         // Iterate through all EdifCellInstances.  If any of the nets driving
         // the ECIs are in a different domain than the ECI, we have a domain crossing
         for (EdifCellInstance eci : _top.getTopCell().getSubCellList()) {
@@ -699,7 +699,7 @@ public class ClockDomainParser {
     	//Map<String, Set<String>> domainCrossMap = new TreeMap<String, Set<String>>();
     	EdifCellInstanceGraph graph = new EdifCellInstanceGraph(cell);
     	// (Driver Clock Net (Sink Driver Net (Set of nets that make this crossing)))
-    	Map<EdifNet, Map<EdifNet, Set<EdifNet>>> clockDomainCrossings = new TreeMap<EdifNet, Map<EdifNet, Set<EdifNet>>>();
+    	Map<EdifNet, Map<EdifNet, Set<EdifNet>>> clockDomainCrossings = new HashMap<EdifNet, Map<EdifNet, Set<EdifNet>>>();
     	
         // Iterate through all EdifCellInstances and identify the "sequential" ones. Identify
     	// the clock associated with the instance. Find all input nets to the sequential instance and
@@ -784,12 +784,12 @@ public class ClockDomainParser {
     		EdifNet sinkClock, EdifNet crossingNet) {
     	Map<EdifNet, Set<EdifNet>> sourceClockCrossings = crossings.get(sourceClock);
     	if (sourceClockCrossings == null) {
-    		sourceClockCrossings = new TreeMap<EdifNet, Set<EdifNet>>();
+    		sourceClockCrossings = new HashMap<EdifNet, Set<EdifNet>>();
     		crossings.put(sourceClock, sourceClockCrossings);
     	}
     	Set<EdifNet> sourceSinkCrossingNets = sourceClockCrossings.get(sinkClock);
     	if (sourceSinkCrossingNets == null) {
-    		sourceSinkCrossingNets = new TreeSet<EdifNet>();
+    		sourceSinkCrossingNets = new HashSet<EdifNet>();
     		sourceClockCrossings.put(sinkClock,sourceSinkCrossingNets);
     	}
     	sourceSinkCrossingNets.add(crossingNet);
@@ -953,9 +953,12 @@ public class ClockDomainParser {
         showAsync(clocks, async, async_reset, async_reset_cells);
 
         if (_result.contains(ClockDomainCommandParser.SHOW_CLOCK_CROSSINGS)) {
-            showClockCrossings();
+        	output.println("Showing crossings");
+        	showClockCrossings();
         }
-
+        else
+        	output.println("Not Showing crossings");
+        
         if (_result.getBoolean(ClockDomainCommandParser.DO_SCC_ANALYSIS)) {
             SCCDepthFirstSearch scc = doSCCAnalysis(_result.getBoolean(ClockDomainCommandParser.NO_IOB_FEEDBACK));
             output.println(BAR + "\nSCC Analysis\n" + BAR);
