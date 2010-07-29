@@ -3,6 +3,7 @@ package edu.byu.ece.edif.jedif;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
+import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
+import edu.byu.ece.edif.util.graph.NetFanOutComparator;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
@@ -190,8 +193,17 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     	        out.println(netsToRemove.size() + " clock crossing nets Removed");
     	        out.println(edgesToRemove.size() + " clock crossing edges Removed");
 
-    	        // Remove actual clocks from the graph
-    	        
+    	        // print out other high fan out nets
+    	        ArrayList sortedNets = new ArrayList(workCell.getNetList());
+    	        // remove clocks from list - they have already been removed
+    	        sortedNets.removeAll(domainNets.keySet());
+    	        Collections.sort(sortedNets, new NetFanOutComparator());
+    	        out.println("High fanout nets:");
+    	        for (int i = 0; i < 10; i++) {
+    	        	out.println("\t"+sortedNets.get(i));
+    	        }
+
+    	        out.println();
     	        out.println("Clock Domain Analysis - Done");
     		}
 
