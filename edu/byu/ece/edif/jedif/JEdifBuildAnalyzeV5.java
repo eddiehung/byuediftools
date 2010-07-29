@@ -162,10 +162,15 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		// Perform Clock Domain analysis
     		if (result.contains(CLOCK_DOMAIN)) {
     			out.println("Clock Domain Analysis");
+
     			Map<EdifNet, Set<EdifNet>> domainNets = ClockDomainParser.classifyNets(workCell);
     			for (EdifNet sourceClock : domainNets.keySet()) {
-    				Set<EdifNet> nets = domainNets.get(sourceClock);
-    				out.println("\tClock domain "+sourceClock+" has "+nets.size()+" nets");
+        	        // Remove all edges associated with clock net
+    				Set<EdifCellInstanceEdge> clockEdgesToRemove = graph.getEdges(sourceClock);
+        	        graph.removeEdges(clockEdgesToRemove);
+
+        	        Set<EdifNet> nets = domainNets.get(sourceClock);
+    				out.println("\tClock domain "+sourceClock+" has "+nets.size()+" nets ("+clockEdgesToRemove.size() + " clock edges removed)");
     			}
     			
     			Map<EdifNet, Map<EdifNet, Set<EdifNet>>> crossings = ClockDomainParser.getClockCrossings(workCell, domainNets);
@@ -182,9 +187,12 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     	        }
     	        Set<EdifCellInstanceEdge> edgesToRemove = graph.getEdges(netsToRemove);
     	        graph.removeEdges(edgesToRemove);
-    	        out.println(netsToRemove.size() + " nets Removed");
-    	        out.println(edgesToRemove.size() + " edges Removed");
-    			out.println("Clock Domain Analysis - Done");
+    	        out.println(netsToRemove.size() + " clock crossing nets Removed");
+    	        out.println(edgesToRemove.size() + " clock crossing edges Removed");
+
+    	        // Remove actual clocks from the graph
+    	        
+    	        out.println("Clock Domain Analysis - Done");
     		}
 
     		// Perform shortest path decomponsition
