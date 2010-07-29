@@ -22,9 +22,9 @@ public class NearestNeighbors {
 	
 	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance) {
 		
-		// Copy the original graph. This graph will be changed throughout the algorithm.
+		// Copy the original graph - this graph will be changed throughout the algorithm.
 		// Note that the node objects and edge objects in this new graph are the same objects
-		// in the original graph.
+		// in the original graph. Only the topology information is different.
 		BasicGraph workingGraph = (BasicGraph) graph.clone();
 
 		// Maintain a list of the edges that need to be saved after the decomposition. These
@@ -47,14 +47,14 @@ public class NearestNeighbors {
 			List<DepthFirstTree> sccs = sccDFS.getTopologicallySortedTreeList();
 			// For each SCC:
 			//  - Remove the nodes in the working graph
-			//  - Save the edges
+			//  - Save the edges of teh SCC
 			int nodesRemoved = 0; int edgesSaved = 0;
 			for (DepthFirstTree t : sccs) {
 				BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
-				workingGraph.removeNodes(tree.getNodes());				
 				nodesRemoved+=tree.getNodes().size();
-				edgesToSave.addAll(tree.getAllEdges());
 				edgesSaved += tree.getAllEdges().size();
+				edgesToSave.addAll(tree.getEdges()); // Note that this does not get the "cross" edges between trees
+				workingGraph.removeNodes(tree.getNodes());				
 			}
 			if (DEBUG1)
 				if (nodesRemoved > 0) System.out.println(nodesRemoved + " nodes removed from "+sccs.size()+" sccs "+
@@ -79,97 +79,32 @@ public class NearestNeighbors {
 		return new SCCDepthFirstSearch(workingGraph);
 	}
 
-	public static Set<Object> nearestNeighbors(DirectedGraph graph, Object node, int maxDistance) {
-
-        /**
-         * An internal stack is used to reduce the overhead of recursion. Using
-         * a stack is tricky as we need to mimic the behavior of the recursion.
-         */
-        Stack<Object> s = new Stack<Object>();
-        // Initialize the stack with the root Node
-        s.push(node);
-        HashSet<Object> visited = new HashSet<Object>();
-        //ArrayList<Object> finished = new ArrayList<Object>();
-        HashMap<Object,Integer> depthMap = new HashMap<Object,Integer>();
-        depthMap.put(node, 0);
-        
-        if (DEBUG)
-            System.out.println("New TREE with root=" + node);
-        
-        // Continue processing until the stack is empty
-        while (!s.isEmpty()) {
-        	Object obj = s.peek();
-        	
-        	if (visited.contains(obj)) {
-        		// already visited - pop and move on.
-    			s.pop();
-        	} else {
-        		/*
-        		 * Cell has not yet been visited. Mark as visited and add successors to the stack
-        		 */
-        		if (DEBUG) System.out.println("visiting " + obj);
-
-        		visited.add(obj);
-        		Collection<Edge> targetLinks = graph.getOutputEdges(obj);
-
-        		if (DEBUG)
-        			if (targetLinks.size() > 0) System.out.print("\tPUSH links: ");
-        			else System.out.print("\tNO LINKS to Push.");
-
-        		// Add successors if max distance has not been violated
-        		int curDepth = depthMap.get(obj);
-        		if (curDepth < maxDistance) {
-        			for (Edge edge : targetLinks) {
-        				if (DEBUG) System.out.print(edge + " ");
-        				Object sink = edge.getSink();
-        				if (!visited.contains(sink)) {
-        					s.push(sink);
-        					depthMap.put(sink, curDepth+1);
-        				}
-        			}
-        		}
-        		if (DEBUG) System.out.println();
-        	}
-        }
-        return visited;
-	}
 
 	public static Set<Object> nearestNeighbors(DirectedGraph graph, Collection<Object> nodes, int maxDistance) {
 
-        /**
-         * An internal stack is used to reduce the overhead of recursion. Using
-         * a stack is tricky as we need to mimic the behavior of the recursion.
-         * Two different items are placed on the stack:
-         * <ol>
-         * <li> A Node in the the depth first search. A Node appears on the top
-         * of the stack when it is first visited OR after all of its children
-         * have been visited.
-         * <li> A Edge object representing a connection from a source node to a
-         * target node. When this is on the top of the stack, the edge will be
-         * removed from the stack and "processed". Processing an edge involves
-         * the following steps:
-         * <ol>
-         * <li> Create the appropriate DFS "edge" corresponding to this link
-         * (i.e. forward, cross, back, etc.).
-         * <li> Push target Node on the stack if it has not been visited yet.
-         * </ol>
-         * </ol>
-         */
-        Stack<Object> s = new Stack<Object>();
-        // Initialize the stack with the root Node
-        HashSet<Object> visited = new HashSet<Object>();
-        HashMap<Object,Integer> depthMap = new HashMap<Object,Integer>();
+		// Create a stack to manage the depth first search instead of using recursion
+		// (the recursive version is very slow in Java)
+		Stack<Object> s = new Stack<Object>();
+		// Create a map between objects within the stack and their depth. The depth is needed
+		// to limit the length of the depth first search.
+		HashMap<Object,Integer> depthMap = new HashMap<Object,Integer>();        
+		// Initialize the stack with the root nodes and the depths
         for (Object o : nodes) {
         	s.push(o);
         	depthMap.put(o, 0);
         }
+        // Create a set of objects that have already been visited
+        HashSet<Object> visited = new HashSet<Object>();
                 
-        // Continue processing until the stack is empty
+        // Continue processing until the stack is empty (it is initialized with the root nodes)
         while (!s.isEmpty()) {
+        	
+        	// Check the top of the stack
         	Object obj = s.peek();
+
         	
         	if (visited.contains(obj)) {
-        		// already visited - pop and move on.
+        		// The object at the top of the stack has already been visited - pop it off and move on.
     			s.pop();
         	} else {
         		/*
@@ -184,15 +119,19 @@ public class NearestNeighbors {
         			if (targetLinks.size() > 0) System.out.print("\tPUSH links: ");
         			else System.out.print("\tNO LINKS to Push.");
 
-        		// Add successors if max distance has not been violated
+        		// Determine the depth of the current node
         		int curDepth = depthMap.get(obj);
+        		// If the depth of the current node is less than the max distance, add all of the
+        		// direct successors of the current node.
         		if (curDepth < maxDistance) {
         			for (Edge edge : targetLinks) {
         				if (DEBUG) System.out.print(edge + " ");
-        				Object sink = edge.getSink();
-        				if (!visited.contains(sink)) {
-        					s.push(sink);
-        					depthMap.put(sink, curDepth+1);
+        				Object successor = edge.getSink();
+        				// if the successor hasn't been visited, put it on the stack and
+        				// give it a depth of 1 + the current depth of the node
+        				if (!visited.contains(successor)) {
+        					s.push(successor);
+        					depthMap.put(successor, curDepth+1);
         				}
         			}
         		}
