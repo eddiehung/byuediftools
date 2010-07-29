@@ -25,12 +25,12 @@ package edu.byu.ece.graph.dfs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
 import edu.byu.ece.graph.DirectedGraph;
 
 /**
@@ -239,27 +239,5 @@ class SizeOrderedDepthFirstSearchTree implements Comparable {
 			return -1;
 		return 0;
 	}
-}
-
-/**
- * A comparator that compares DirectedGraph objects in terms
- * of the node count. 
- */
-class GraphNodeSizeComparator implements Comparator<DirectedGraph> {	
-	
-	public int compare(DirectedGraph graph1, DirectedGraph graph2) {
-		if (graph1.getNodes().size() > graph2.getNodes().size())
-			return 1;
-		if (graph1.getNodes().size() < graph2.getNodes().size())
-			return -1;
-		return 0;
-	}
-	
-	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		return false;
-	}
-	
 }
 
