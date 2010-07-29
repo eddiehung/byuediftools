@@ -18,7 +18,9 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifRuntimeException;
+import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.tools.LogFile;
+import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.tools.flatten.PreservedHierarchyByNames;
 import edu.byu.ece.edif.tools.replicate.nmr.CircuitDescription;
 import edu.byu.ece.edif.tools.replicate.nmr.DeviceParser;
@@ -38,6 +40,7 @@ import edu.byu.ece.edif.tools.replicate.nmr.ReplicationUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.UnsupportedResourceTypeException;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedDummyTrimmer;
 import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
+import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
 import edu.byu.ece.edif.util.export.serialize.JEdifFileContents;
 import edu.byu.ece.edif.util.graph.EdifCellBadCutGroupings;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceCollection;
@@ -369,7 +372,13 @@ public class JEdifNMRSelection extends EDIFMain {
 	        Collection<String> excludeClockDomains = Arrays.asList(JEdifNMRSelectionCommandGroup
 	                .getNoNMRclk(result));
 	
-	        JEdifClockDomain domainParser = new JEdifClockDomain(env);
+	        ClockDomainParser domainParser = null;
+	        try {
+	        	domainParser = new ClockDomainParser( (FlattenedEdifCell) topCell );
+	        } catch (InvalidEdifNameException e) {
+	        	System.err.println(e);
+	        	System.exit(1);
+	        }
 	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.getECIMap();
 	        Set<EdifNet> clocks = clockDomainMap.keySet();
 	
@@ -500,7 +509,13 @@ public class JEdifNMRSelection extends EDIFMain {
 	    if (JEdifNMRSelectionCommandGroup.nmrClk(result)) {
 	        Collection<String> forceClockDomains = Arrays.asList(JEdifNMRSelectionCommandGroup.getNMRclk(result));
 	
-	        JEdifClockDomain domainParser = new JEdifClockDomain(env);
+	        ClockDomainParser domainParser = null;
+	        try {
+	        	domainParser = new ClockDomainParser( (FlattenedEdifCell) topCell );
+	        } catch (InvalidEdifNameException e) {
+	        	System.err.println(e);
+	        	System.exit(1);
+	        }
 	
 	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.getECIMap();
 	        Set<EdifNet> clocks = clockDomainMap.keySet();
