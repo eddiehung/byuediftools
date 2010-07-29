@@ -303,20 +303,14 @@ public class BasicGraph extends AbstractGraph implements Cloneable {
         BasicGraph absGraph = new BasicGraph();
         absGraph.addNodes(nodes);
         for (Object node : nodes) {
-            for (Edge o : (Collection<Edge>) _nodeSourceMap.getEdges(node)) {
-                try {
-                    absGraph.addEdge(o);
-                } catch (RuntimeException ex) {
-                    //System.out.println(ex);
-                    //missing a node, can't add that particular edge
-                }
-            }
-            for (Edge o : (Collection<Edge>) _nodeSinkMap.getEdges(node)) {
-                try {
-                    absGraph.addEdge(o);
-                } catch (RuntimeException ex) {
-                    //System.out.println(ex);
-                    //this (sinkmap) may be unessisary, but I would rather be safe.
+        	for (Edge edge : (Collection<Edge>) getOutputEdges(node)) {
+        		if (this.containsNode(edge.getSink())) {
+                	try {
+                        absGraph.addEdge(edge);
+                    } catch (RuntimeException ex) {
+                        //System.out.println(ex);
+                        //missing a node, can't add that particular edge
+                    }                	
                 }
             }
         }
