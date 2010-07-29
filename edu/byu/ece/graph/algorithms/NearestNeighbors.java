@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraphFanOutComparator;
+import edu.byu.ece.edif.util.graph.EdifNetFanOutComparator;
 import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.DirectedGraph;
@@ -35,9 +36,12 @@ public class NearestNeighbors {
 		ArrayList<Edge> edgesToSave = new ArrayList<Edge>();
 		
 		// Create a sorted list of nodes
+		if (DEBUG1) System.out.println("Starting Sort");
 		ArrayList sortedNodeList = new ArrayList(workingGraph.getNodes());
-		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator());
+		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
 		Collections.reverse(sortedNodeList);
+
+		if (DEBUG1) System.out.println("Starting Decomposition");
 		
 		do {
 			// Pick a node that hasn't been visited yet (it doesn't matter which one)
@@ -93,6 +97,7 @@ public class NearestNeighbors {
 		}
 
 		// Perform a final SCC decomposition on the graph 
+		if (DEBUG1) System.out.println("Neighbor SCC Decomposition");
 		return new SCCDepthFirstSearch(workingGraph);
 	}
 
