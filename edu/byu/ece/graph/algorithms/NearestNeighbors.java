@@ -58,7 +58,7 @@ public class NearestNeighbors {
 			}
 			if (DEBUG1)
 				if (nodesRemoved > 0) System.out.println(nodesRemoved + " nodes removed from "+sccs.size()+" sccs "+
-						edgesSaved+" edges saved ("+neighbors.size()+" neighbors found)");
+						edgesSaved+" edges saved ("+neighbors.size()+" neighbors)");
 				//else System.out.println("No SCCs found - only one node removed");
 					
 			// Remove the root node (if it has not already been removed)
