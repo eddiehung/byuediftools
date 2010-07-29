@@ -2,12 +2,17 @@ package edu.byu.ece.graph.algorithms;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import com.sun.tools.internal.xjc.generator.bean.field.NoExtendedContentField;
+
+import edu.byu.ece.edif.util.graph.EdifCellInstanceGraphFanOutComparator;
+import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.DirectedGraph;
 import edu.byu.ece.graph.Edge;
@@ -30,10 +35,17 @@ public class NearestNeighbors {
 		// Maintain a list of the edges that need to be saved after the decomposition. These
 		// edge objects also appear in the original graph.
 		ArrayList<Edge> edgesToSave = new ArrayList<Edge>();
+		
+		// Create a sorted list of nodes
+		ArrayList sortedNodeList = new ArrayList(workingGraph.getNodes());
+		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator());
+		Collections.reverse(sortedNodeList);
+		
 		do {
 			// Pick a node that hasn't been visited yet (it doesn't matter which one)
-			Object root = workingGraph.getNodes().iterator().next();
-			
+			// Object root = workingGraph.getNodes().iterator().next();
+			Object root = sortedNodeList.get(0);
+				
 			// Find its nearest n neigbhors of the root node
 			ArrayList roots = new ArrayList(1);
 			roots.add(root);
@@ -49,21 +61,28 @@ public class NearestNeighbors {
 			//  - Remove the nodes in the working graph
 			//  - Save the edges of teh SCC
 			int nodesRemoved = 0; int edgesSaved = 0;
-			for (DepthFirstTree t : sccs) {
-				BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
-				nodesRemoved+=tree.getNodes().size();
-				edgesSaved += tree.getAllEdges().size();
-				edgesToSave.addAll(tree.getEdges()); // Note that this does not get the "cross" edges between trees
-				workingGraph.removeNodes(tree.getNodes());				
+			if (sccs.size() > 0) {
+				for (DepthFirstTree t : sccs) {
+					BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) t;
+					nodesRemoved+=tree.getNodes().size();
+					edgesSaved += tree.getAllEdges().size();
+					edgesToSave.addAll(tree.getEdges()); // Note that this does not get the "cross" edges between trees
+					workingGraph.removeNodes(tree.getNodes());				
+					sortedNodeList.removeAll(tree.getNodes());
+				}
+				if (DEBUG1)
+					if (nodesRemoved > 0) System.out.println("SCCs found!: "+ nodesRemoved + " nodes removed from "+sccs.size()+" sccs (" + 
+							(nodesRemoved / sccs.size())+" nodes/scc) "
+							+ edgesSaved+" edges saved ("+(edgesSaved/sccs.size())+" edges/scc) ("+
+							neighbors.size()+" neighbors)");
+			} else {
+				workingGraph.removeNode(root);
+				sortedNodeList.remove(root);
+				if (DEBUG)
+					System.out.println("NO SCCs found - root node removed (graph size="+workingGraph.getNodes().size()+")");
 			}
-			if (DEBUG1)
-				if (nodesRemoved > 0) System.out.println(nodesRemoved + " nodes removed from "+sccs.size()+" sccs "+
-						edgesSaved+" edges saved ("+neighbors.size()+" neighbors)");
-				//else System.out.println("No SCCs found - only one node removed");
-					
-			// Remove the root node (if it has not already been removed)
-			workingGraph.removeNode(root);			
-		} while (workingGraph.getNodes().size() > 0);
+			
+		} while (sortedNodeList.size() > 0);
 		
 		// We now have a list of edges that need to be saved. Create a new graph that is a copy of
 		// the original graph but remove the edges that are not to be saved
@@ -92,6 +111,7 @@ public class NearestNeighbors {
         for (Object o : nodes) {
         	s.push(o);
         	depthMap.put(o, 0);
+        	if (DEBUG) System.out.println("\nRoot Node:"+o);
         }
         // Create a set of objects that have already been visited
         HashSet<Object> visited = new HashSet<Object>();
@@ -110,14 +130,10 @@ public class NearestNeighbors {
         		/*
         		 * Cell has not yet been visited. Mark as visited and add successors to the stack
         		 */
-        		if (DEBUG) System.out.println("visiting " + obj);
+        		if (DEBUG) System.out.println("visiting depth " +depthMap.get(obj) + " " + obj);
 
         		visited.add(obj);
         		Collection<Edge> targetLinks = graph.getOutputEdges(obj);
-
-        		if (DEBUG)
-        			if (targetLinks.size() > 0) System.out.print("\tPUSH links: ");
-        			else System.out.print("\tNO LINKS to Push.");
 
         		// Determine the depth of the current node
         		int curDepth = depthMap.get(obj);
@@ -125,17 +141,19 @@ public class NearestNeighbors {
         		// direct successors of the current node.
         		if (curDepth < maxDistance) {
         			for (Edge edge : targetLinks) {
-        				if (DEBUG) System.out.print(edge + " ");
         				Object successor = edge.getSink();
+        				if (DEBUG) System.out.println("\tChild "+successor);
         				// if the successor hasn't been visited, put it on the stack and
         				// give it a depth of 1 + the current depth of the node
         				if (!visited.contains(successor)) {
         					s.push(successor);
         					depthMap.put(successor, curDepth+1);
+        					if (DEBUG) System.out.println("\t\tNever Visited");
+        				} else {
+        					if (DEBUG) System.out.println("\t\tAlready Visited");
         				}
         			}
         		}
-        		if (DEBUG) System.out.println();
         	}
         }
         return visited;
