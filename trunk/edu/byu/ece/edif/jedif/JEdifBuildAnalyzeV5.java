@@ -217,14 +217,17 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     			//shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
     		} else {
     		*/
-    		SCCDepthFirstSearch sccDFS = null;
-    		sccDFS = new SCCDepthFirstSearch(graph);
-    		out.println("Regular SCC Decomposition");
-    		sccSummary(sccDFS, graph, out, true);
     		
     		int neighborDistance = result.getInt(NEIGHBOR);
-    		if (neighborDistance > 0) {
-    			out.println("Neigbor SCC Decomposition");
+    		
+    		SCCDepthFirstSearch sccDFS = null;
+
+    		if (neighborDistance == 0) {
+        		out.println("Regular SCC Decomposition");
+        		sccDFS = new SCCDepthFirstSearch(graph);
+        		sccSummary(sccDFS, graph, out, true);    			
+    		} else {
+    			out.println("Neighbor Decomposition");
     			sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, neighborDistance);
     			sccSummary(sccDFS, graph, out, true);		
     		}
