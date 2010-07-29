@@ -300,7 +300,7 @@ public class ClockDomainParser {
         }
         return clockNets;
     }
-    
+
     /**
      * Iterate through the design and classify nets into a clock domain. First,
      * clock domains are identified as those nets that drive clock ports of
@@ -432,6 +432,11 @@ public class ClockDomainParser {
     	return noClockNets;
     }
 
+    public static Map<EdifNet, Set<EdifNet>> classifyNets(EdifCell cell) {
+        Set<EdifNet> clockNets = getClockNets(cell);        
+        return classifyNets(cell, clockNets);
+    }
+    
     /**
      * Iterate through the design and classify nets into a clock domain. First,
      * clock domains are identified as those nets that drive clock ports of
@@ -443,11 +448,10 @@ public class ClockDomainParser {
      * value is a set of EdifNets that belong to that domain. The sets of
      * EdifNets are not necessarily mutually exclusive.
      */    
-    public static Map<EdifNet, Set<EdifNet>> classifyNets(EdifCell cell) {
+    public static Map<EdifNet, Set<EdifNet>> classifyNets(EdifCell cell, Set<EdifNet> clockNets) {
 
     	LinkedHashMap<EdifNet, Set<EdifNet>> clkToNetMap = new LinkedHashMap<EdifNet, Set<EdifNet>>();
         
-        Set<EdifNet> clockNets = getClockNets(cell);        
         EdifCellInstanceGraph graph = new EdifCellInstanceGraph(cell);
         
         // Iterate over all clock nets and find the ports they connect to. Specifically,
