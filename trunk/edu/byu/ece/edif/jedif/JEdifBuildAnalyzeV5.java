@@ -33,7 +33,7 @@ import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
 import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
-import edu.byu.ece.edif.util.graph.NetFanOutComparator;
+import edu.byu.ece.edif.util.graph.EdifNetFanOutComparator;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
@@ -197,10 +197,11 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     	        ArrayList sortedNets = new ArrayList(workCell.getNetList());
     	        // remove clocks from list - they have already been removed
     	        sortedNets.removeAll(domainNets.keySet());
-    	        Collections.sort(sortedNets, new NetFanOutComparator());
+    	        Collections.sort(sortedNets, new EdifNetFanOutComparator());
     	        out.println("High fanout nets:");
     	        for (int i = 0; i < 10; i++) {
-    	        	out.println("\t"+sortedNets.get(i));
+    	        	EdifNet highFanOutNet = (EdifNet) sortedNets.get(i);
+    	        	out.println("\t"+highFanOutNet.getName()+" fanout of "+highFanOutNet.getPortRefList().size());
     	        }
 
     	        out.println();
