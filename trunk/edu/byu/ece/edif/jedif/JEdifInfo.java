@@ -75,10 +75,11 @@ public class JEdifInfo extends EDIFMain {
     
     protected static void printEdifCell(EdifCell cell, boolean printPrimitives, String prefix, PrintStream out) {
     	
-    	int totalInstances = getRecursiveInnerCell(cell);
-    	out.println(prefix + "Cell: " + cell.getName()+" "+totalInstances + " recursive cells " + 
-    			cell.getCellInstanceList().size()+" inner cells "+cell.getNetList().size() + " nets");
-    	prefix += "  ";
+    	int totalRecursiveInstances = getRecursiveInnerCell(cell);
+    	int numInstances = cell.getCellInstanceList().size();
+    	
+    	
+    	// Map between EdifCell types found within this EdifCell and the instances of this type.
     	HashMap<EdifCell, List<EdifCellInstance>> children = new HashMap<EdifCell, List<EdifCellInstance>>();
     	for (EdifCellInstance eci : cell.getCellInstanceList()) {
     		EdifCell type = eci.getCellType();
@@ -90,23 +91,33 @@ public class JEdifInfo extends EDIFMain {
     		instances.add(eci);
     	}
     	
-    	// print non leaf cells and their recursive size
+    	// Identify all non-leaf cells and sort them according to their size.
     	TreeSet<ComparableEdifCell> sortedNonLeafChildren = new TreeSet<ComparableEdifCell>(); 
+    	int hierarchicalRecusriveCells = 0;
     	for (EdifCell child : children.keySet()) {
     		List<EdifCellInstance> instances = children.get(child);
     		if (!child.isLeafCell()) {
     			int num = instances.size();
     			int childSize = num * getRecursiveInnerCell(child);
+    			hierarchicalRecusriveCells += childSize;
     			ComparableEdifCell cec = new ComparableEdifCell(child,childSize);
     			sortedNonLeafChildren.add(cec);
     		}
     	}
+    	
+    	int localPrimitiveCells = totalRecursiveInstances-hierarchicalRecusriveCells;
+    	out.println(prefix + "Cell: " + cell.getName()+" "+totalRecursiveInstances + " recursive cells (" + 
+    			hierarchicalRecusriveCells+"/"+(hierarchicalRecusriveCells*100)/totalRecursiveInstances+"% hierarchical "+
+    			localPrimitiveCells+"/"+(localPrimitiveCells*100)/totalRecursiveInstances+"% local)");
+
+    	prefix += "  ";
+    	
     	for (ComparableEdifCell ccell : sortedNonLeafChildren) {
     		EdifCell child = ccell._cell;
     		int childSize = ccell.size;
     		List<EdifCellInstance> instances = children.get(child);
-    		out.println(prefix+child.getName()+ " "+ childSize+" recursive cells ("+((childSize*100)/totalInstances)+"%) "+
-    				instances.size()+" instances");    		
+    		out.println(prefix+child.getName()+ " (" + instances.size() + "x) "+
+    				childSize + " recursive cells ("+((childSize*100)/totalRecursiveInstances)+"%)");    		
     	}
 
     	
@@ -126,7 +137,7 @@ public class JEdifInfo extends EDIFMain {
     			primitiveCount+=instances.size();
     		}
     	}
-    	out.println(prefix+"Local Primitives - "+primitiveCount+" ("+((primitiveCount*100)/totalInstances)+"%) ");
+    	out.println(prefix+"Local Primitives - "+primitiveCount+" ("+((primitiveCount*100)/totalRecursiveInstances)+"%) ");
     	if (printPrimitives) {
     		for (EdifCell child : children.keySet()) {
     			List<EdifCellInstance> instances = children.get(child);
@@ -135,6 +146,8 @@ public class JEdifInfo extends EDIFMain {
     			}
     		}
     	}
+    	
+    	// Done printing information about cell - recursively print children
     	for (ComparableEdifCell c_child : sortedNonLeafChildren) {
     		EdifCell child = c_child._cell;
     		if (!child.isLeafCell())
