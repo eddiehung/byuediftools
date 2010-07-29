@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import com.sun.tools.internal.xjc.generator.bean.field.NoExtendedContentField;
-
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraphFanOutComparator;
 import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
 import edu.byu.ece.graph.BasicGraph;
