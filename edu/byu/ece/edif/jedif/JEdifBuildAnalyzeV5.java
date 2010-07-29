@@ -50,6 +50,7 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 public class JEdifBuildAnalyzeV5 extends EDIFMain {
     
 	public static String NEIGHBOR = "nearest_neighbor";
+	public static String TREES_TO_TRIPLICATE = "num_trees";
 	public static String CLOCK_DOMAIN = "clock_domain";
 	
 	public static void main(String[] args) {
@@ -72,8 +73,9 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 		parser.addCommand(new ShortestPathAnalysisOption());
         parser.addCommand(new FlaggedOption( NEIGHBOR,JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, NEIGHBOR, 
         	"Nearest neighbor search" ));
+        parser.addCommand(new FlaggedOption( TREES_TO_TRIPLICATE,JSAP.INTEGER_PARSER, "0", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, TREES_TO_TRIPLICATE, 
+    	"Number of trees to mitigate" ));
         parser.addCommand(new Switch( CLOCK_DOMAIN).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(CLOCK_DOMAIN).setDefault("false").setHelp("Isolate SCC analysis within clock domains"));
-
 		
         // Start the parsing
 		JSAPResult result = parser.parse(args, System.err);
@@ -197,14 +199,25 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		SCCDepthFirstSearch sccDFS = null;
     		sccDFS = new SCCDepthFirstSearch(graph);
     		out.println("Regular SCC Decomposition");
-    		sccSummary(sccDFS, graph, out);
+    		sccSummary(sccDFS, graph, out, true);
     		
-    		if (result.getInt(NEIGHBOR) > 0) {
+    		int neighborDistance = result.getInt(NEIGHBOR);
+    		if (neighborDistance > 0) {
     			out.println("Neigbor SCC Decomposition");
-    			sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, result.getInt(NEIGHBOR));
+    			sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, neighborDistance);
     			sccSummary(sccDFS, graph, out, true);		
     		}
-    		
+
+    		// Now that the SCC analysis is done, determine the nodes that are to be triplicated
+    		Set<Set<EdifCellInstance>> groupsOfECIsToTriplicate = new HashSet<Set<EdifCellInstance>>();
+    		int treesToTriplicate = result.getInt(TREES_TO_TRIPLICATE);
+    		List<DepthFirstTree> sortedTrees =  sccDFS.getSizeSortedTreeList();
+    		if (treesToTriplicate == 0)
+    			treesToTriplicate = sccDFS.getTrees().size();
+    		for (int i = 0; i < treesToTriplicate; i++) {
+    			HashSet<EdifCellInstance> instanceGroup = new HashSet<EdifCellInstance>();
+    		}
+    			
         }
 
 	}
@@ -218,6 +231,7 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 	public static void sccSummary(SCCDepthFirstSearch dfs, BasicGraph graph, PrintStream out) {
 		sccSummary(dfs, graph, out, false);
 	}
+
 	public static void sccSummary(SCCDepthFirstSearch dfs, BasicGraph graph, PrintStream out, boolean sortBySize) {
 
 		out.println("\t"+dfs.getSingleNodes().size()+" feed-forward nodes");
@@ -228,11 +242,26 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
 				treeSummary(t,graph,out);
 	        }			
 		} else {
+			int currentSize = -1;
+			int currentSizeCount = 0;
 			for (DepthFirstTree t : dfs.getSizeSortedTreeList()) {
-				treeSummary(t,graph,out);
+				int treeSize = t.getNodes().size();
+				if (treeSize != currentSize) {
+			        if (currentSize != -1)
+			        	// print old tree
+			        	out.println("Tree: " + currentSize + " nodes ("+currentSizeCount+"x)");
+			        currentSizeCount = 1;
+			        currentSize = treeSize;
+				} else {
+					currentSizeCount++;
+				}
+				//treeSummary(t,graph,out);
 	        }			
+			// print out last tree
+			out.println("Tree: " + currentSize + " nodes ("+currentSizeCount+"x)");
 		}
 	}
+	
 	public static void treeSummary(DepthFirstTree dfst, BasicGraph graph, PrintStream out) {
         BasicDepthFirstSearchTree tree = (BasicDepthFirstSearchTree) dfst;
         out.println("Tree: " + tree.getNodes().size()+ " nodes ");
