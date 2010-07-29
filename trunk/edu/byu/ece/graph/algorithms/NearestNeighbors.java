@@ -34,7 +34,7 @@ public class NearestNeighbors {
 			// Pick a node that hasn't been visited yet (it doesn't matter which one)
 			Object root = workingGraph.getNodes().iterator().next();
 			
-			// Find its nearest n neigbhors
+			// Find its nearest n neigbhors of the root node
 			ArrayList roots = new ArrayList(1);
 			roots.add(root);
 			Set<Object> neighbors = nearestNeighbors(workingGraph, roots, maxDistance);
@@ -58,7 +58,7 @@ public class NearestNeighbors {
 			}
 			if (DEBUG1)
 				if (nodesRemoved > 0) System.out.println(nodesRemoved + " nodes removed from "+sccs.size()+" sccs "+
-						edgesSaved+" edges saved");
+						edgesSaved+" edges saved ("+neighbors.size()+" neighbors found)");
 				//else System.out.println("No SCCs found - only one node removed");
 					
 			// Remove the root node (if it has not already been removed)
