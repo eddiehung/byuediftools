@@ -155,6 +155,12 @@ public class EdifCellInstanceGraph extends AbstractEdifGraph {
         return (Collection<EdifCellInstanceEdge>) super.getEdges();
     }
 
+    public Set<EdifCellInstanceEdge> getEdges(EdifNet net) {
+    	HashSet<EdifNet> edgeSet = new HashSet<EdifNet>(1);
+    	edgeSet.add(net);
+    	return getEdges(edgeSet);
+    }
+    
     /**
      * Return a set of EdifCellInstance Edge objects that correspond to
      * the set of nets.
