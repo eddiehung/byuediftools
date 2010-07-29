@@ -186,22 +186,25 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		}
 
     		// Perform shortest path decomponsition
-			int iterations = ShortestPathAnalysisOption.getShortestPath(result);
+    		/*
+    		int iterations = ShortestPathAnalysisOption.getShortestPath(result);
     		if (iterations > 0) {
     			// perform SCC cutting 
         		SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(graph);
     			//shortestPathFeedbackAnalysis(iterations, graph, sccDFS);   			
     		} else {
-    			SCCDepthFirstSearch sccDFS = null;
-				sccDFS = new SCCDepthFirstSearch(graph);
-				out.println("Regular SCC Decomposition");
-				sccSummary(sccDFS, graph, out);		
-    			if (result.getInt(NEIGHBOR) > 0) {
-    				out.println("Neigbor SCC Decomposition");
-    				sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, result.getInt(NEIGHBOR));
-    				sccSummary(sccDFS, graph, out, true);		
-    			}
+    		*/
+    		SCCDepthFirstSearch sccDFS = null;
+    		sccDFS = new SCCDepthFirstSearch(graph);
+    		out.println("Regular SCC Decomposition");
+    		sccSummary(sccDFS, graph, out);
+    		
+    		if (result.getInt(NEIGHBOR) > 0) {
+    			out.println("Neigbor SCC Decomposition");
+    			sccDFS = NearestNeighbors.nearestNeighborDecomposition(graph, result.getInt(NEIGHBOR));
+    			sccSummary(sccDFS, graph, out, true);		
     		}
+    		
         }
 
 	}
