@@ -1,21 +1,21 @@
 package edu.byu.ece.edif.util.graph;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 
-import edu.byu.ece.edif.core.EdifCellInstance;
-import edu.byu.ece.edif.core.EdifNet;
-import edu.byu.ece.edif.core.EdifSingleBitPort;
+import edu.byu.ece.graph.DirectedGraph;
 
 /**
  * A comparator that compares the fan out of EdifNet objects
  */
 public class EdifCellInstanceGraphFanOutComparator implements Comparator {	
 	
+	public EdifCellInstanceGraphFanOutComparator(DirectedGraph graph) {
+		_graph = graph;
+	}
+	
 	public int compare(Object eci1, Object eci2) {
-		int net1FanOut = getEdifCellInstanceFanout(eci1);
-		int net2FanOut = getEdifCellInstanceFanout(eci2);
+		int net1FanOut = _graph.getOutputEdges(eci1).size();
+		int net2FanOut = _graph.getOutputEdges(eci2).size();
 		
 		if (net1FanOut > net2FanOut)
 			return -1;
@@ -30,19 +30,6 @@ public class EdifCellInstanceGraphFanOutComparator implements Comparator {
 		return false;
 	}
 	
-	public static int getEdifCellInstanceFanout(Object eci) {
-		int fanOut = 0;
-		Collection<EdifNet> outputNets = null;
-		if (eci instanceof EdifCellInstance) {
-			outputNets = ((EdifCellInstance) eci).getOuterNets().values();
-		} else {
-			outputNets = new ArrayList<EdifNet>(1);
-			outputNets.add (((EdifSingleBitPort) eci).getInnerNet());
-		}
-		for (EdifNet n : outputNets) {
-			fanOut += n.getConnectedPortRefs().size();
-		}
-		return fanOut;
-	}
 	
+	DirectedGraph _graph;
 }
