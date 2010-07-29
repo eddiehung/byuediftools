@@ -118,14 +118,15 @@ public class SCCDepthFirstSearch extends DepthFirstSearchForest {
     }
 
     /**
-     * Return a List of the DFS trees in order of size (nodes)
+     * Return a List of the DFS trees in order of size (nodes) with the largest tree
+     * appearing first.
      * 
      * @return List of topologically-sorted trees.
      */
     public List<DepthFirstTree> getSizeSortedTreeList() {
     	
     	ArrayList<DepthFirstTree> sortedTrees = new ArrayList<DepthFirstTree>(_trees);
-    	Collections.sort(sortedTrees, new GraphNodeComparator());
+    	Collections.sort(sortedTrees, new GraphNodeSizeComparator());
     	Collections.reverse(sortedTrees);
     	return sortedTrees; 
     }
@@ -240,18 +241,25 @@ class SizeOrderedDepthFirstSearchTree implements Comparable {
 	}
 }
 
-class GraphNodeComparator implements Comparator {	
-	public int compare(Object o1, Object o2) {
-		DirectedGraph graph1 = (DirectedGraph) o1;
-		DirectedGraph graph2 = (DirectedGraph) o2;
+/**
+ * A comparator that compares DirectedGraph objects in terms
+ * of the node count. 
+ */
+class GraphNodeSizeComparator implements Comparator<DirectedGraph> {	
+	
+	public int compare(DirectedGraph graph1, DirectedGraph graph2) {
 		if (graph1.getNodes().size() > graph2.getNodes().size())
 			return 1;
 		if (graph1.getNodes().size() < graph2.getNodes().size())
 			return -1;
 		return 0;
 	}
+	
 	public boolean equals(Object o) {
+		if (o == this)
+			return true;
 		return false;
 	}
+	
 }
 
