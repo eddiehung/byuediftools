@@ -1,5 +1,6 @@
 package edu.byu.ece.edif.jedif;
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,23 +21,36 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifLibraryManager;
 import edu.byu.ece.edif.core.EdifNameConflictException;
+import edu.byu.ece.edif.core.EdifNameable;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
+import edu.byu.ece.edif.core.NamedObject;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.LogFile;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
+import edu.byu.ece.edif.tools.replicate.nmr.EdifEnvironmentReplicate;
+import edu.byu.ece.edif.tools.replicate.nmr.EdifReplicationPropertyReader;
+import edu.byu.ece.edif.tools.replicate.nmr.NMRGraphUtilities;
+import edu.byu.ece.edif.tools.replicate.nmr.OrganSpecification;
+import edu.byu.ece.edif.tools.replicate.nmr.ReplicationDescription;
+import edu.byu.ece.edif.tools.replicate.nmr.ReplicationType;
+import edu.byu.ece.edif.tools.replicate.nmr.tmr.TMRReplicationType;
+import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
 import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
+import edu.byu.ece.edif.util.graph.EdifNetFanOutComparator;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupGraph;
 import edu.byu.ece.edif.util.graph.EdifPortRefGroupNode;
-import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
-import edu.byu.ece.edif.util.graph.EdifNetFanOutComparator;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
+import edu.byu.ece.edif.util.jsap.commandgroups.InputFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.JEdifAnalyzeCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.LogFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.MergeParserCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.OutputFileCommandGroup;
+import edu.byu.ece.edif.util.jsap.commandgroups.ReplicationDescriptionCommandGroup;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.Edge;
 import edu.byu.ece.graph.algorithms.NearestNeighbors;
@@ -241,7 +255,112 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		for (int i = 0; i < treesToTriplicate; i++) {
     			HashSet<EdifCellInstance> instanceGroup = new HashSet<EdifCellInstance>();
     		}
-    			
+    		// Create replication description
+    		XilinxNMRArchitecture nmrArch = new XilinxNMRArchitecture();
+    	    ReplicationType defaultReplicationType = TMRReplicationType.getInstance(nmrArch);
+    	 	ReplicationDescription rDesc = new ReplicationDescription();
+    		for (Set<EdifCellInstance> tmrGroup : groupsOfECIsToTriplicate) {
+    			rDesc.addInstances(tmrGroup, defaultReplicationType);
+    		}
+
+    		// Voter selection
+    		boolean skipClockNets = true;
+    		// From JEdifVoterSelection
+    		for (EdifNet net : workCell.getNetList()) {
+    		    if (rDesc.shouldIgnoreNet(net) || (nmrArch.isClockNet(net) && skipClockNets))
+    		        continue;
+    			Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
+    			ReplicationType replicationType = null;
+                for (EdifPortRef driver : drivers) {
+                    ReplicationType driverType = rDesc.getReplicationType(driver);
+                    if (replicationType == null)
+                        replicationType = driverType;
+                    else {
+                        if (replicationType != driverType) {
+                            System.out.println(drivers);
+                            throw new EdifRuntimeException("Unexpected: Net drivers have different ReplicationTypes");
+                        }
+                    }
+                }
+                // Check to see if there is a property to prevent restore. It adds a 
+                // special replication type for preventing this restore. In most cases, nothing
+                // is returned.
+    			if (EdifReplicationPropertyReader.isDoNotRestoreLocation(net)) {
+    				rDesc.addOrganSpecifications(net, replicationType.antiRestore(net, rDesc));
+    			}
+    			else if (EdifReplicationPropertyReader.isForceRestoreLocation(net)) {
+    				rDesc.addOrganSpecifications(net, replicationType.forceRestore(net, null, rDesc));
+    			}
+    			else {
+    				// Adds voters for reduction, etc. Depends on the repcliation tpye of the driver.
+    				rDesc.addOrganSpecifications(net, replicationType.defaultRestore(net, rDesc));
+    			}
+    		}
+    		// After FF cutset
+            Collection<EdifPortRef> portRefCuts = null;
+            EdifCellInstanceGraph cutGraph = (EdifCellInstanceGraph) graph.clone();
+            portRefCuts = NMRGraphUtilities.createAfterFFsCutset(cutGraph, nmrArch);           
+            SCCDepthFirstSearch checkSCCDFS = new SCCDepthFirstSearch(graph);
+            if (checkSCCDFS.getTrees().size() > 0) {
+            	out.println("Warning: unable to cut all feedback using after FFs cutset. " + 
+            			checkSCCDFS.getTrees().size() + " SCCs remaining");
+            }
+    		// save the cutset so it doesn't need to be recomputed later if using JEdifDetectionSelection with persistence detection or JEdifMoreFrequentVoting
+    		rDesc.setCutsetReference(portRefCuts);
+    		
+    		// add organ specifications for cutset (use forceRestore)
+    		for (EdifPortRef cut : portRefCuts) {
+    		    EdifNet net = cut.getNet();
+    		    Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
+    		    ReplicationType replicationType = null;
+    		    for (EdifPortRef driver : drivers) {
+    		        ReplicationType driverType = rDesc.getReplicationType(driver);
+    		        if (replicationType == null)
+    		            replicationType = driverType;
+    		        else {
+    		            if (replicationType != driverType) {
+    		                System.out.println(drivers);
+    		                throw new EdifRuntimeException("Unexpected: Net drivers have different ReplicationTypes");
+    		            }
+    		        }
+    		    }
+    		    // check to see if there is already a voter to be inserted on this net -- use it if there is
+    		    Set<OrganSpecification> prevSpecs = rDesc.getOrganSpecifications(net);
+    		    List<EdifPortRef> forceRefs = new ArrayList<EdifPortRef>(1);
+    			forceRefs.add(cut);
+    			// this is confusing so I'll explain it -- when prevSpecs is not null and contains an OrganSpecification
+    			// that can be reused, its organ count will be promoted if necessary, and its list of forceRestoreRefs will
+    			// have forceRefs appended to it. ReplicationType.forceRestore() will return null, so nothing new will be added
+    			// to the ReplicationDescription -- only the existing OrganSpecification will be modified as necessary. The
+    			// effect is to create a new OrganSpecification only when necessary.
+    			rDesc.addOrganSpecifications(net, replicationType.forceRestore(net, forceRefs, prevSpecs, rDesc));
+    		}
+    		
+    		
+    		// Create new edif
+    		// Create a new name for the top level cell and call replicate
+    		EdifEnvironmentReplicate replicator = null;
+    		EdifEnvironment newEnv = null;
+    		try {
+    			replicator = new EdifEnvironmentReplicate(env, rDesc, nmrArch);
+    			newEnv = replicator.replicate();
+    		} catch (EdifNameConflictException e) {
+    			e.printStackTrace();
+    			throw new EdifRuntimeException("Unexpected EDIF name conflict");
+    		}
+    		
+    		// Determine output filename
+    		String outputFileName = "ptmr.edf";
+
+    		// Generate EDIF output
+    		LogFile.out().println("Generating .edf file " + outputFileName);
+    		try {
+    			JEdifNetlist.generateEdifNetlist(newEnv, result, EXECUTABLE_NAME, VERSION_STRING);
+    		} catch (FileNotFoundException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
+            
         }
 
 	}
