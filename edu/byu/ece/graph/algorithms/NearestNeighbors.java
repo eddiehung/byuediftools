@@ -73,7 +73,7 @@ public class NearestNeighbors {
 					sortedNodeList.removeAll(tree.getNodes());
 				}
 				if (DEBUG1)
-					if (nodesRemoved > 0) System.out.println("SCCs found!: "+ nodesRemoved + " nodes removed from "+sccs.size()+" sccs (" + 
+					if (nodesRemoved > 0) System.out.println("SCC: "+ nodesRemoved + " nodes removed from "+sccs.size()+" sccs (" + 
 							(nodesRemoved / sccs.size())+" nodes/scc) "
 							+ edgesSaved+" edges saved ("+(edgesSaved/sccs.size())+" edges/scc) ("+
 							neighbors.size()+" neighbors)");
