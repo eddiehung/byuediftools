@@ -1,6 +1,7 @@
 package edu.byu.ece.edif.jedif;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.EdifNameable;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
+import edu.byu.ece.edif.core.EdifPrintWriter;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
 import edu.byu.ece.edif.core.NamedObject;
@@ -38,6 +40,8 @@ import edu.byu.ece.edif.tools.replicate.nmr.ReplicationDescription;
 import edu.byu.ece.edif.tools.replicate.nmr.ReplicationType;
 import edu.byu.ece.edif.tools.replicate.nmr.tmr.TMRReplicationType;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
+import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedDummyTrimmer;
+import edu.byu.ece.edif.tools.replicate.wiring.PreMitigatedPortGroup;
 import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceEdge;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
@@ -259,7 +263,13 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		XilinxNMRArchitecture nmrArch = new XilinxNMRArchitecture();
     	    ReplicationType defaultReplicationType = TMRReplicationType.getInstance(nmrArch);
     	 	ReplicationDescription rDesc = new ReplicationDescription();
-    		for (Set<EdifCellInstance> tmrGroup : groupsOfECIsToTriplicate) {
+            if (!rDesc.alreadySetPortGroups()) {
+            	// This is the call to get the portGroups from the properties
+                Collection<PreMitigatedPortGroup> portGroups = EdifReplicationPropertyReader.getPreMitigatedPortGroups(workCell, nmrArch);
+                rDesc.setPortGroups(portGroups);
+            }
+
+    	 	for (Set<EdifCellInstance> tmrGroup : groupsOfECIsToTriplicate) {
     			rDesc.addInstances(tmrGroup, defaultReplicationType);
     		}
 
@@ -351,9 +361,23 @@ public class JEdifBuildAnalyzeV5 extends EDIFMain {
     		
     		// Determine output filename
     		String outputFileName = "ptmr.edf";
-
     		// Generate EDIF output
     		LogFile.out().println("Generating .edf file " + outputFileName);
+
+			EdifPrintWriter epw = null;
+    		try {
+    			epw = new EdifPrintWriter(new FileOutputStream(outputFileName));
+    		} catch (FileNotFoundException e) {
+    			System.err.println(e);
+    			System.exit(1);
+    		}
+    	    env.setVersion(VERSION_STRING);
+    	    env.setProgram(EXECUTABLE_NAME);
+    	    env.setAuthor(DEFAULT_AUTHOR_STRING);
+    	    //top.toEdif(epw, tool, version);
+    	    env.toEdif(epw);
+    	    epw.close();
+
     		try {
     			JEdifNetlist.generateEdifNetlist(newEnv, result, EXECUTABLE_NAME, VERSION_STRING);
     		} catch (FileNotFoundException e) {
