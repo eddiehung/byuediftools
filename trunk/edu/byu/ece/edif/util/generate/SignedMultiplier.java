@@ -7,9 +7,25 @@ public class SignedMultiplier extends WeightedModule {
 	public SignedMultiplier(String name, int width, CircuitGenerator generator, int weight) {
 		super(name, generator, weight);
 		_width = width;
+		_diagonal = false;
 		_buildModule();
 	}
 
+	/**
+	 * Includes an alternate way of tagging weights. This is used 
+	 * when tagging weights according to a diagonal-weighted multiplier.
+	 */
+	public SignedMultiplier(String name, int width, CircuitGenerator generator, int weight, boolean diagonal) {
+		super(name, generator, weight);
+		_width = width;
+		_diagonal = diagonal;
+		_buildModule();
+	}
+
+	/**
+	 * Includes an alternate way of tagging weights. This is used 
+	 * when tagging weights according to a diagonal-weighted multiplier.
+	 */
 	protected void _buildModule() {
 
 	    // create N - 1 adders of N bits each
@@ -18,15 +34,23 @@ public class SignedMultiplier extends WeightedModule {
 	        if (j == (_width-2)) {
 	            // this is for signed multiplication. This row need as a carry-in the most significant bit
 	            // of the multiplier (X)
-	            adders[j] = new AdderCIN(_name + "_adder_" + j, _width, _parent, j+1+_weightOffset);
+	        	if (_diagonal)
+		        	// BHP: Use modified weights to treat multiplier diagonals as columns
+		            adders[j] = new AdderCIN(_name + "_adder_" + j, _width, _parent, _weightOffset, j+1);
+	        	else
+	        		adders[j] = new AdderCIN(_name + "_adder_" + j, _width, _parent, j+1+_weightOffset);
 	            connectPort("X", _width-1, adders[j].getPort("CIN"));
 	        }
 	        else {
-	            adders[j] = new Adder(_name + "_adder_" + j, _width, _parent, j+1+_weightOffset);
+	        	if (_diagonal)
+		        	// BHP: Use modified weights to treat multiplier diagonals as columns
+	        		adders[j] = new Adder(_name + "_adder_" + j, _width, _parent, _weightOffset, j+1);
+	        	else
+		            adders[j] = new Adder(_name + "_adder_" + j, _width, _parent, j+1+_weightOffset);
 	        }
 	    }
 
-		// first row
+		//// first row
 		// bit 0
 		EdifCellInstance bit0And = createAndOrNand(0, 0);
 		addPort("P", 0, bit0And, "O");
@@ -43,7 +67,7 @@ public class SignedMultiplier extends WeightedModule {
 		_parent.connect(and, "O", adders[0].getPort("X", _width-1));
 		_parent.connect(_parent.globalGND(), adders[0].getPort("Y", _width-1));
 		
-		// the rest of the rows
+		//// the rest of the rows
 		for (int i = 1; i < _width-1; i++) {
 			// all but the last bit
 			for (int j = 0; j < _width-1; j++) {
@@ -58,13 +82,22 @@ public class SignedMultiplier extends WeightedModule {
 			_parent.connect(adders[i-1].getPort("S", _width), adders[i].getPort("Y", _width-1));
 		}
 		
-		// collect the product bits
+		//// collect the product bits
 		for (int j = 1; j < _width-1; j++) {
 			connectPort("P", j, adders[j-1].getPort("S", 0));
 		}
 		
-		// add the final ripple stage
-		Adder finalAdder = new Adder(_name+"_fAdder", _width+1, _parent, _width-1+_weightOffset);
+		//// add the final ripple stage
+		Adder finalAdder = null;
+    	if (_diagonal) {
+    		// BHP: Artificially inflate the weight on this last carry-ripple adder so it has the same
+    		//      weight as the row just before (to get the right triplication status for the 
+    		//      RP multiplier outputs).
+    		finalAdder = new Adder(_name+"_fAdder", _width+1, _parent, _weightOffset, _width);
+    	}
+    	else
+    		finalAdder = new Adder(_name+"_fAdder", _width+1, _parent, _width-1+_weightOffset);
+    	
 		for (int i = 0; i < _width+1; i++) {
 		    _parent.connect(finalAdder.getPort("X", i), adders[_width-2].getPort("S", i));
 		    if (i == 0 || i == _width) {
@@ -88,11 +121,27 @@ public class SignedMultiplier extends WeightedModule {
 		    bSuffix = "B1";
 		}
 		EdifCellInstance and = _parent.addXilinxInstance(andType+bSuffix, _name+"X"+xBit+"Y"+yBit);
-		tagWeight(and, xBit + yBit + _weightOffset);
+		
+		if (_diagonal) {
+    		// BHP: Modified weight tagging algorithm
+    		// Tag according to multiplier diagonal
+    		int row = xBit;
+    		int diag = yBit;
+    		int weight = (row < diag) ? row : diag;
+    		tagWeight(and, weight + _weightOffset);
+		}
+		else
+			// Original method: tag by column 
+			tagWeight(and, xBit + yBit + _weightOffset);
+		
 		addPort("X", xBit, and, "I1");
 		addPort("Y", yBit, and, "I0");
+		
 		return and;
 	}
 	
 	protected int _width;
+	
+	protected boolean _diagonal = false;
+	
 }
