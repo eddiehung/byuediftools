@@ -30,7 +30,6 @@ import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRUtilities.UtilizationFactor;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxDeviceUtilizationTracker;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex4DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtex5DeviceUtilizationTracker;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxVirtexDeviceUtilizationTracker;

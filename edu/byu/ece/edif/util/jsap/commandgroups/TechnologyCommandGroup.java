@@ -31,7 +31,6 @@ import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.Property;
 import edu.byu.ece.edif.tools.replicate.nmr.NMRArchitecture;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxNMRArchitecture;
-import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxPartValidator;
 
 /**
  * @author Derrick Gibelyou
