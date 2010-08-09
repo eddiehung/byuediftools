@@ -62,11 +62,7 @@ public class JEdifNMR extends EDIFMain {
 		parser.addCommands(new TechnologyCommandGroup());
 		
         // Flag for deciding whether .edif or .jedif is output
-        Switch edif_flag = new Switch(GENERATE_EDIF_FLAG);
-        edif_flag.setShortFlag(JSAP.NO_SHORTFLAG);
-        edif_flag.setLongFlag(GENERATE_EDIF_FLAG);
-        edif_flag.setDefault("false");
-        edif_flag.setHelp("Generate EDIF output instead of .jedif");
+        parser.addCommand(new Switch(GENERATE_EDIF_FLAG).setShortFlag(JSAP.NO_SHORTFLAG).setLongFlag(GENERATE_EDIF_FLAG).setDefault("false").setHelp("Generate EDIF output instead of .jedif"));
         
         // Flag for specifying that a domain report should be written
         FlaggedOption domain_report = new FlaggedOption(DOMAIN_REPORT);
@@ -87,7 +83,6 @@ public class JEdifNMR extends EDIFMain {
         rename_top_cell.setHelp("Use this option to specify a name for the design's top cell.");
                 
         try {
-			parser.registerParameter(edif_flag);
 			parser.registerParameter(domain_report);
 			parser.registerParameter(rename_top_cell);
 		} catch (JSAPException e1) {
