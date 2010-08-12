@@ -94,8 +94,8 @@ public class JEdifPropertyEditor extends EDIFMain {
         LineNumberReader lnr = new LineNumberReader(signalFile);
         
         // Parse properties
-        String propertyName = result.getString(PROPERTY_NAME).toLowerCase();
-        String valueName = result.getString(VALUE_NAME).toLowerCase();
+        String propertyName = result.getString(PROPERTY_NAME);
+        String valueName = result.getString(VALUE_NAME);
         
         // PROPERTY EDITING GOES HERE
         Map<String, List<String>> cellRegexMap = parseSignalFile(lnr);
@@ -159,7 +159,7 @@ public class JEdifPropertyEditor extends EDIFMain {
     			}
  
     			for (EdifCellInstance eci : instances) {
-    				if (DEBUG) System.out.println("\tFound instance "+eci.getName());
+    				if (DEBUG) System.out.println("\tFound instance "+eci.getName()+" of type "+eci.getCellType());
     				eci.addProperty(property, v);
     			}
     		}
