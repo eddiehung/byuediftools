@@ -24,6 +24,7 @@ package edu.byu.ece.edif.tools.replicate.nmr;
 
 import java.util.List;
 
+import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.tools.replicate.wiring.NetManager;
@@ -56,9 +57,9 @@ public interface NMRArchitecture {
     
     public Organ getDefaultRestoringOrganForReplicationType(Class<? extends ReplicationType> c);
     
-    public boolean isAFlipFlop(String cellType);
+    public boolean isAFlipFlop(EdifCell cellType);
 
-    public boolean isBRAM(String cellType);
+    public boolean isBRAM(EdifCell cellType);
     
     public List<PortConnection> prepareForDetectionOutput(List<? extends PortConnection> unpreparedOutput, boolean registerDetection, boolean addObuf, String clockNetName, NetManager netManager);
 

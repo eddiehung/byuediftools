@@ -26,10 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.byu.ece.edif.core.BasicEdifBusNamingPolicy;
 import edu.byu.ece.edif.core.EdifCell;
@@ -39,6 +41,7 @@ import edu.byu.ece.edif.core.EdifPort;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.core.EdifSingleBitPort;
 import edu.byu.ece.edif.tools.replicate.nmr.xilinx.XilinxResourceMapper;
+import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
 
 public class XilinxTools {
 
@@ -127,21 +130,18 @@ public class XilinxTools {
      * @return
      */
     public static boolean hasClockPort(EdifCell cell) {
-        boolean retval = false;
-
         Collection<EdifPort> ports = cell.getInputPorts();
         for (EdifPort port : ports) {
-            String nodeName = BasicEdifBusNamingPolicy.getBusBaseNameStatic(port.getName()).toUpperCase();
-
-            if (clkPortsList.contains(nodeName)) {
-                retval = true;
-                break;
+            for (EdifSingleBitPort sbp : port.getSingleBitPortList()) {
+                if(isClockPort(sbp)) {
+                    return true;
+                }
             }
         }
 
-        return retval;
+        return false;
     }
-
+    
     /**
      * Finds out if the given EdifNet is used as a clock net anywhere. TODO:
      * Tighten up the definition of a Clock Net. This method would currently
@@ -152,7 +152,7 @@ public class XilinxTools {
      * @param net
      * @return
      */
-    public static boolean isClockNet(EdifNet net) {
+    public static boolean drivesClockPorts(EdifNet net) {
         boolean retval = false;
 
         Collection<EdifPortRef> sinkEPRs = net.getSinkPortRefs(true, true);
@@ -167,10 +167,10 @@ public class XilinxTools {
 
         return retval;
     }
-
+    
     public static boolean isPossibleClockNet(EdifNet net) {
         // Check sinks for clock port-like names
-        boolean retval = isClockNet(net);
+        boolean retval = drivesClockPorts(net);
 
         // Check for BUFG driver
         Collection<EdifPortRef> sourceEPRs = net.getSourcePortRefs(true, true);
@@ -217,7 +217,7 @@ public class XilinxTools {
 
             if (epr.getSingleBitPort().getParent().isOutput()) {
                 EdifNet net = epr.getNet();
-                if (isClockNet(net)) {
+                if (drivesClockPorts(net)) {
                     retval = true;
                     break;
                 }
@@ -262,6 +262,65 @@ public class XilinxTools {
 
         return retval;
     }
+    
+    /**
+     * Return true if the EdifCell ec is sequential (has a clock port).
+     * 
+     * @param cell The name of the cell to check
+     * @return True if this cell is sequential
+     */
+    public static boolean isSequential(EdifCell cell) {
+        String str = cell.getName().toLowerCase();
+        return XilinxTools.isRegisterCell(cell) ||
+                str.contains("clkdll")          ||
+                str.contains("dcm");        
+        /*if (str.startsWith("fd"))
+            return true;
+        if (str.startsWith("ram"))
+            return true;
+        if (str.startsWith("clkdll"))
+            return true;
+        if (str.startsWith("dcm"))
+            return true;
+        if (str.startsWith("sr"))
+            return true;
+        return false; */
+    }
+    
+    /**
+     * Determines if the given EdifCell is a block RAM.
+     * 
+     * @param cell
+     * @return
+     */
+    public static boolean isBRAM(EdifCell cell) {
+        boolean result;
+        if (cell.getName().toLowerCase().contains("ramb"))
+            result = true;
+        else
+            result = false;
+        return result;
+    } 
+    
+    /**
+     * Determines if the given EdifCell is a flip-flop
+     * (meaning a register, not SRL, FIFO, BRAM...)
+     * 
+     * @param cell
+     * @return
+     */
+    public static boolean isAFlipFlop(EdifCell cell) {
+        boolean retval = false;
+
+        String cellname = cell.getName().toUpperCase();
+        if (registerList.contains(cellname) && !specialRegisterList.contains(cellname)) {
+            retval = true;
+        } else {
+            retval = hasClockPort(cell);
+        }
+
+        return retval;
+    }
 
     public static boolean isRestrictedPair(EdifCellInstance src, EdifCellInstance sink) {
         boolean retval = false;
@@ -282,7 +341,7 @@ public class XilinxTools {
         }
         return retval;
     }
-
+    
     /**
      * An array of all the Xilinx primitives that act as a register
      */
@@ -324,7 +383,8 @@ public class XilinxTools {
             "SR8RE", "SR16RE", "SR4RLE", "SR8RLE", "SR16RLE", "SRL16", "SR2RLED", "SR8RLED", "SR16RLED", "SRD4CE",
             "SRD8CE", "SRD16CE", "SRD3CLE", "SRD8CLE", "SRD16CLE", "SRD4CLED", "SRD8CLED", "SRD16CLED", "SRD4RE",
             "SRD8RE", "SRD16RE", "SRD4RLE", "SRD8RLE", "SRD16RLE", "SRD4RLED", "SRD8RLED", "SRD16RLED", "SRL16_1",
-            "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1" };
+            "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1",
+            "FIFO16", "FIFO18", "FIFO18_36", "FIFO36", "FIFO36_72" };
 
     public static List<String> registerList = Arrays.asList(registers);
 
@@ -351,7 +411,8 @@ public class XilinxTools {
             "SR8RE", "SR16RE", "SR4RLE", "SR8RLE", "SR16RLE", "SRL16", "SR2RLED", "SR8RLED", "SR16RLED", "SRD4CE",
             "SRD8CE", "SRD16CE", "SRD3CLE", "SRD8CLE", "SRD16CLE", "SRD4CLED", "SRD8CLED", "SRD16CLED", "SRD4RE",
             "SRD8RE", "SRD16RE", "SRD4RLE", "SRD8RLE", "SRD16RLE", "SRD4RLED", "SRD8RLED", "SRD16RLED", "SRL16_1",
-            "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1" };
+            "SRL16E", "SRL16E_1", "SRLC16", "SRLC16_1", "SRLC16E", "SRLC16E_1",
+            "FIFO16", "FIFO18", "FIFO18_36", "FIFO36", "FIFO36_72"};
 
     public static List<String> specialRegisterList = Arrays.asList(specialRegisters);
 
@@ -387,7 +448,7 @@ public class XilinxTools {
     public static String[] clkPorts = { "C", "C0", "C1", "WCLK", "CLK", "CLKA", "CLKB" };
 
     public static List<String> clkPortsList = Arrays.asList(clkPorts);
-
+    
     /**
      * A list of the constant source EdifCells
      */

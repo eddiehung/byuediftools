@@ -61,21 +61,12 @@ public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         _init();
     }
 
-    public boolean isAFlipFlop(String cellType) {
-        for (int i = 0; i < XILINX_FLIP_FLOPS.length; i++) {
-            if (cellType.compareToIgnoreCase(XILINX_FLIP_FLOPS[i]) == 0)
-                return true;
-        }
-        return false;
+    public boolean isAFlipFlop(EdifCell cellType) {
+        return XilinxTools.isAFlipFlop(cellType);
     }
 
-    public boolean isBRAM(String cellType) {
-        boolean result;
-        if (cellType.toLowerCase().matches("ramb"))
-            result = true;
-        else
-            result = false;
-        return result;
+    public boolean isBRAM(EdifCell cellType) {
+        return XilinxTools.isBRAM(cellType);
     }
 
     /**
@@ -141,19 +132,11 @@ public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
      * @return true if the given EdifNet is a clock net, false otherwise
      */
     public boolean isClockNet(EdifNet net) {
-        return XilinxTools.isClockNet(net);
+        return XilinxTools.drivesClockPorts(net);
     }
 
     /** The EdifCell object that implements the majority voting. */
     protected EdifCell _voterCell;
-
-    /**
-     * List of all flip-flop primitives in the Xilinx library.
-     */
-    protected final String XILINX_FLIP_FLOPS[] = { "FDC", "FDC_1", "FD", "FD_1", "FDCE", "FDCE_1", "FDCP", "FDCP_1",
-            "FDCPE", "FDCPE_1", "FDCPX1", "FDCPX1_1", "FDDRCPE", "FDDRRSE", "FDE", "FDE_1", "FDP", "FDP_1", "FDPE",
-            "FDPE_1", "FDR", "FDR_1", "FDRE", "FDRE_1", "FDRS", "FDRS_1", "FDRSE", "FDRSE_1", "FDS", "FDS_1", "FDSE",
-            "FDSE_1" };
 
 	public Organ getDefaultRestoringOrganForReplicationType(Class<? extends ReplicationType> c) {
 		Organ result = null;

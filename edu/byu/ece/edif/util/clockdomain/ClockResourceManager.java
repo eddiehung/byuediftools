@@ -23,21 +23,27 @@
 package edu.byu.ece.edif.util.clockdomain;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import edu.byu.ece.edif.arch.xilinx.XilinxClockingArchitecture;
 import edu.byu.ece.edif.core.EdifCellInstance;
+import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifException;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPortRef;
 import edu.byu.ece.edif.tools.flatten.FlattenedEdifCell;
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraph;
+import edu.byu.ece.edif.util.jsap.ClockDomainCommandParser;
 import edu.byu.ece.edif.util.parse.ParseException;
 
 public class ClockResourceManager {
 
     ClockDomainParser _cdp;
-
+    FlattenedEdifCell _ec;
+    EdifCellInstanceGraph _graph;
+    
     Set<EdifNet> _clockSet;
 
     Set<ClockResource> _clockResourceSet;
@@ -46,20 +52,29 @@ public class ClockResourceManager {
             FileNotFoundException {
         String[] d = new String[1];
         d[0] = "..";
-        _cdp = new ClockDomainParser(fileName, d, files);
+        EdifEnvironment edif_file = edu.byu.ece.edif.util.merge.EdifMergeParser.parseAndMergeEdif(
+               fileName,
+               Arrays.asList(d),
+               Arrays.asList(files),
+               edu.byu.ece.edif.arch.xilinx.XilinxLibrary.library);
+        _ec = new FlattenedEdifCell(edif_file.getTopCell());
+        _graph = new EdifCellInstanceGraph(_ec, true);
+        _cdp = new ClockDomainParser(new XilinxClockingArchitecture());
         _clockResourceSet = new LinkedHashSet<ClockResource>();
         identifyClocks();
     }
 
     public ClockResourceManager(FlattenedEdifCell flatCell, EdifCellInstanceGraph ecic) throws EdifException,
             ParseException, FileNotFoundException {
-        _cdp = new ClockDomainParser(flatCell, ecic);
+        _ec = flatCell;
+        _graph = ecic;
+        _cdp = new ClockDomainParser(new XilinxClockingArchitecture());
         _clockResourceSet = new LinkedHashSet<ClockResource>();
         identifyClocks();
     }
 
     protected void identifyClocks() {
-        _clockSet = _cdp.classifyNets().keySet();
+        _clockSet = _cdp.classifyNets(_ec, _graph).getClkToNetMap().keySet();
     }
 
     protected Set<ClockResource> getClockResources() {

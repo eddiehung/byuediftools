@@ -4,6 +4,7 @@ import java.io.PrintStream;
 
 import com.martiansoftware.jsap.JSAPResult;
 
+import edu.byu.ece.edif.arch.xilinx.XilinxClockingArchitecture;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifNameConflictException;
 import edu.byu.ece.edif.core.InvalidEdifNameException;
@@ -53,10 +54,8 @@ public class JEdifClockDomain extends EDIFMain {
                 ec = (FlattenedEdifCell) top.getTopCell();
             else
                 ec = new FlattenedEdifCell(top.getTopCell());
-            cdp = new ClockDomainParser(ec);
-            cdp.setOutput(out);
-            cdp.parseCommandlineOptions(result);
-            cdp.exec(LogFile.out());
+            cdp = new ClockDomainParser(new XilinxClockingArchitecture());
+            cdp.exec(LogFile.out(), result, ec);
         } catch (InvalidEdifNameException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
