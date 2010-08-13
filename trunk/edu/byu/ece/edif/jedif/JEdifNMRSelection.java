@@ -12,6 +12,7 @@ import java.util.Set;
 
 import com.martiansoftware.jsap.JSAPResult;
 
+import edu.byu.ece.edif.arch.xilinx.XilinxClockingArchitecture;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
@@ -372,14 +373,9 @@ public class JEdifNMRSelection extends EDIFMain {
 	        Collection<String> excludeClockDomains = Arrays.asList(JEdifNMRSelectionCommandGroup
 	                .getNoNMRclk(result));
 	
-	        ClockDomainParser domainParser = null;
-	        try {
-	        	domainParser = new ClockDomainParser( (FlattenedEdifCell) topCell );
-	        } catch (InvalidEdifNameException e) {
-	        	System.err.println(e);
-	        	System.exit(1);
-	        }
-	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.getECIMap();
+	        //TODO: pass in clocking architecture rather than passing it in here
+	        ClockDomainParser domainParser = new ClockDomainParser(new XilinxClockingArchitecture());;
+	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.classifyECIs(topCell).getClkToECIMap();
 	        Set<EdifNet> clocks = clockDomainMap.keySet();
 	
 	        for (String netName : excludeClockDomains) {
@@ -509,15 +505,8 @@ public class JEdifNMRSelection extends EDIFMain {
 	    if (JEdifNMRSelectionCommandGroup.nmrClk(result)) {
 	        Collection<String> forceClockDomains = Arrays.asList(JEdifNMRSelectionCommandGroup.getNMRclk(result));
 	
-	        ClockDomainParser domainParser = null;
-	        try {
-	        	domainParser = new ClockDomainParser( (FlattenedEdifCell) topCell );
-	        } catch (InvalidEdifNameException e) {
-	        	System.err.println(e);
-	        	System.exit(1);
-	        }
-	
-	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.getECIMap();
+	        ClockDomainParser domainParser = new ClockDomainParser(new XilinxClockingArchitecture());	
+	        Map<EdifNet, Set<EdifCellInstance>> clockDomainMap = domainParser.classifyECIs(topCell).getClkToECIMap();
 	        Set<EdifNet> clocks = clockDomainMap.keySet();
 	
 	        for (String netName : forceClockDomains) {

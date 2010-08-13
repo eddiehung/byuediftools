@@ -17,13 +17,13 @@ import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Switch;
 
+import edu.byu.ece.edif.arch.xilinx.XilinxTools;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifEnvironment;
 import edu.byu.ece.edif.core.EdifTypedValue;
 import edu.byu.ece.edif.core.StringTypedValue;
 import edu.byu.ece.edif.tools.LogFile;
-import edu.byu.ece.edif.util.clockdomain.ClockDomainParser;
 import edu.byu.ece.edif.util.jsap.EdifCommandParser;
 import edu.byu.ece.edif.util.jsap.commandgroups.ConfigFileCommandGroup;
 import edu.byu.ece.edif.util.jsap.commandgroups.InputFileCommandGroup;
@@ -181,7 +181,7 @@ public class JEdifPropertyEditor extends EDIFMain {
     				p.matcher(oldName).matches() ||
     				p.matcher(newName).matches() ) {
     			// Matches a string. Is it a sequential element?
-    			if (ClockDomainParser.isSequential(eci.getCellType()))
+    			if (XilinxTools.isSequential(eci.getCellType()))
     				matchingInstances.add(eci);
     			//if (DEBUG) System.out.println("\t\tMatch!");
     		} else {
