@@ -35,7 +35,7 @@ import edu.byu.ece.edif.util.jsap.commandgroups.TechnologyCommandGroup;
 public class JEdifPropertyEditor extends EDIFMain {
 
 	public static String GENERATE_EDIF_FLAG = "edif";
-	public static String SIGNAL_FILE = "signals";
+	public static String SIGNAL_FILE = "signal_file";
 	public static String PROPERTY_NAME = "property";
 	public static String VALUE_NAME = "value";
 	
@@ -146,20 +146,20 @@ public class JEdifPropertyEditor extends EDIFMain {
     	for (String cellType : cellRegexMap.keySet()) {
     		EdifCell cell = env.getLibraryManager().getCell(cellType);
     		if (cell == null) {
-    			System.err.println("Warning: No cell found - "+cellType);
+    			System.out.println("Warning: No cell found - "+cellType);
     			continue;
     		}
     		if (DEBUG) System.out.println("Working on cell "+cellType);
     		List<String> regexes = cellRegexMap.get(cellType);
     		for (String regex : regexes) {
-    			if (DEBUG) System.out.println("\t"+regex);
+    			if (DEBUG) System.out.println("  regex:"+regex);
     			Collection<EdifCellInstance> instances = getMatchingInstance(cell, regex);
        			if (instances.size() == 0) {
-    				System.err.println("Warning: no instances of "+regex+" in "+cell.getName());
+    				System.out.println("    Warning: no instances of "+regex+" in "+cell.getName());
     			}
  
     			for (EdifCellInstance eci : instances) {
-    				if (DEBUG) System.out.println("\tFound instance "+eci.getName()+" of type "+eci.getCellType());
+    				if (DEBUG) System.out.println("    Found instance "+eci.getName()+" of type "+eci.getCellType());
     				eci.addProperty(property, v);
     			}
     		}
@@ -234,7 +234,7 @@ public class JEdifPropertyEditor extends EDIFMain {
     				stringMap.put(cellType,strings);
     			}
 				strings.add(regex);
-				if (DEBUG) System.out.println("Adding "+cellType+":"+regex);
+				if (DEBUG) System.out.println("\tAdding Rule - "+cellType+":"+regex);
     		}
     	} while (readLine != null);
 
