@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import edu.byu.ece.edif.util.graph.EdifCellInstanceGraphFanOutComparator;
-import edu.byu.ece.edif.util.graph.EdifNetFanOutComparator;
-import edu.byu.ece.edif.util.graph.GraphNodeSizeComparator;
 import edu.byu.ece.graph.BasicGraph;
 import edu.byu.ece.graph.DirectedGraph;
 import edu.byu.ece.graph.Edge;
@@ -25,6 +23,30 @@ public class NearestNeighbors {
 	public static boolean DEBUG = false;
 	
 	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance) {
+
+		/*
+		ArrayList sortedNodeList = new ArrayList(graph.getNodes());
+		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
+		Collections.reverse(sortedNodeList);
+
+		ArrayList<Set<Object>> sortedNodeSetList = new ArrayList<Set<Object>>(graph.getNodes().size());
+		for (Object o : sortedNodeList) {
+			HashSet<Object> nodeSet = new HashSet<Object>(1);
+			nodeSet.add(o);
+			sortedNodeSetList.add(nodeSet);
+		}
+		return nearestNeighborDecomposition(graph, maxDistance, sortedNodeSetList);
+		*/
+		return nearestNeighborDecomposition(graph, maxDistance, null);
+	}
+	
+	/**
+	 * groupings is a prioritized list of node sets. The decomposition approach will look at the sets in
+	 * order.
+	 */
+	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance, List<Set<Object>> groupings) {
+		
+		if (DEBUG1) System.out.println("Starting Sort");
 		
 		// Copy the original graph - this graph will be changed throughout the algorithm.
 		// Note that the node objects and edge objects in this new graph are the same objects
@@ -36,11 +58,10 @@ public class NearestNeighbors {
 		ArrayList<Edge> edgesToSave = new ArrayList<Edge>();
 		
 		// Create a sorted list of nodes
-		if (DEBUG1) System.out.println("Starting Sort");
 		ArrayList sortedNodeList = new ArrayList(workingGraph.getNodes());
 		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
 		Collections.reverse(sortedNodeList);
-
+		
 		if (DEBUG1) System.out.println("Starting Decomposition");
 		
 		do {
