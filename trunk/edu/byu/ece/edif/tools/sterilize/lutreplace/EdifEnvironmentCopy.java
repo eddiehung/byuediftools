@@ -42,7 +42,8 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
  * objects in the old EdifEnvironment and the objects in the new
  * EdifEnvironment. This class does NOT extend EdifEnvironment but is a container
  * that keeps a copy of the old and new environment as well as all the mapping
- * between the envirionments.
+ * between the environments. If the association between the two copies is not needed,
+ * this object can be ignored after the copy takes place.
  * <p>
  * This class was intended to be extended by overriding some of the methods.
  * Custom "copy" classes can be created that actually copy and modify.
