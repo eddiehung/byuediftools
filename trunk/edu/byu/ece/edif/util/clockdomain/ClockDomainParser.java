@@ -45,6 +45,7 @@ import com.martiansoftware.jsap.JSAPResult;
 
 import edu.byu.ece.edif.arch.ClockingArchitecture;
 import edu.byu.ece.edif.arch.xilinx.XilinxClockingArchitecture;
+import edu.byu.ece.edif.arch.xilinx.XilinxTools;
 import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifDesign;
@@ -91,6 +92,126 @@ public class ClockDomainParser {
      */
     public ClockDomainParser(ClockingArchitecture clockingArch) {
         _clockingArch = clockingArch;
+    }
+    
+    /**
+     * Iterate through the design and classify nets into a clock domain. First,
+     * clock domains are identified as those nets that drive clock ports of
+     * sequential cells. Once clock domains have been identified, sequential
+     * cells and their children (up to another sequential cell) are added to
+     * that domain.
+     * 
+     * This contains architecture-specific code and should be deprecated
+     * or removed. Eventually classifyNets should provide the same 
+     * functionality as is provided here.
+     * 
+     * @return A map whose key is the EdifNet of the clock domain and whose
+     * value is a set of EdifNets that belong to that domain. The sets of
+     * EdifNets are not necessarily mutually exclusive.
+     */    
+    public static Map<EdifNet, Set<EdifNet>> oldClassifyNets(EdifCell cell, Set<EdifNet> clockNets) {
+
+        LinkedHashMap<EdifNet, Set<EdifNet>> clkToNetMap = new LinkedHashMap<EdifNet, Set<EdifNet>>();
+        
+        EdifCellInstanceGraph graph = new EdifCellInstanceGraph(cell);
+        
+        // Iterate over all clock nets and find the ports they connect to. Specifically,
+        // find the clock ports that they connect to. Once a clock port has been found, identify
+        // the instance associated with this clock port. Identify the outputs associated with
+        // the instance and "classify" them as associated with the given clock domain.
+        for (EdifNet clockNet : clockNets) {
+            clkToNetMap.put(clockNet, new LinkedHashSet<EdifNet>());
+            for (EdifPortRef clockInputEPR : clockNet.getInputPortRefs()) {
+                // Only continue if this epr corresponds to a clock port
+                if (XilinxTools.isClockPort(clockInputEPR.getSingleBitPort())) {
+                    EdifCellInstance clockedECI = clockInputEPR.getCellInstance();
+                    Queue<EdifNet> q = new ConcurrentLinkedQueue<EdifNet>();
+                    Set<EdifNet> classifiedNets = new LinkedHashSet<EdifNet>();
+                    // Special Handling for dual-port BRAMs
+                    if (clockedECI != null && clockedECI.getType().toLowerCase().contains(RAM_PREFIX)) {
+                        for (EdifPortRef myEpr : graph.getEPRsWhichReferenceInputPortsOfECI(clockedECI)) {
+                            if (myEpr.getPort().getName().toLowerCase().contains("clk")) {
+                                if (myEpr.getNet().equals(clockNet)) {
+                                    String portName = "a";
+                                    if (myEpr.getPort().getName().toLowerCase().contains("b"))
+                                        portName = "b";
+                                    for (EdifPortRef outRefs : graph.getEPRsWhichReferenceOutputPortsOfECI(clockedECI)) {
+                                        if (outRefs.getPort().getName().toLowerCase().contains(portName)
+                                                && !classifiedNets.contains(outRefs.getNet())) {
+                                            q.add(outRefs.getNet());
+                                            classifiedNets.add(outRefs.getNet());
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        // Non BlockRAM instance. Iterate over all "output" nets of the clocked instance and
+                        // add them to the Set of classified nets.
+                        for (EdifPortRef myEpr : graph.getEPRsWhichReferenceOutputPortsOfECI(clockedECI)) {
+                            if (!classifiedNets.contains(myEpr.getNet())) {
+                                q.add(myEpr.getNet());
+                                classifiedNets.add(myEpr.getNet());
+                            }
+                        }
+                    }
+                    // Perform a breadth first search on classified nets. The idea is to propagate a clock domain tag
+                    // from sequential elements through to the combinational elements. Search stops when it reaches another
+                    // sequential element.
+                    while (!q.isEmpty()) {
+                        EdifNet myNet = q.poll();
+                        classifiedNets.add(myNet);
+                        // Iterate over all of the "sinks" of the given net (note that the net has been classified as
+                        // part of the clock domain).
+                        for (EdifPortRef sinkEPRofClassifiedNet : myNet.getInputPortRefs()) {
+                            EdifCellInstance sinkECIofClassifiedNet = sinkEPRofClassifiedNet.getCellInstance();
+                            // Iterate over all outputs of the sink ECI
+                            for (EdifPortRef sourceEPRofSinkECI : graph.getEPRsWhichReferenceOutputPortsOfECI(sinkECIofClassifiedNet)) {
+                                // Check the output EPR of the sinkECI to see if it:
+                                // 1. Hasn't been classified yet
+                                // 2. Isn't sequential
+                                // If it meets both criteria, it is classified as associated with the current clock domain
+                                //
+                                // NOTE: 
+                                //  - already have ECI - access of instance in second test is not necessary
+                                //  - second test is common for all EPRs of this instance. This check could be moved outside of this loop
+                                if (!classifiedNets.contains(sourceEPRofSinkECI.getNet())
+                                        && !isSequential(sourceEPRofSinkECI.getCellInstance().getCellType())) {
+                                    q.add(sourceEPRofSinkECI.getNet());
+                                    classifiedNets.add(sourceEPRofSinkECI.getNet());
+                                }
+                            }
+                        }
+                    }
+                    clkToNetMap.get(clockNet).addAll(classifiedNets);
+                }
+            }
+        }
+        return clkToNetMap;
+    }
+    
+    /**
+     * Return true if the EdifCell ec is sequential (has a clock port).
+     * 
+     * This is architecture-specific code and should be deprecated or removed.
+     * 
+     * @param cell The name of the cell to check
+     * @return True if this cell is sequential
+     */
+    public static boolean isSequential(EdifCell cell) {
+        String str = cell.getName().toLowerCase();
+        if (str.startsWith("fd"))
+            return true;
+        if (str.startsWith("ram"))
+            return true;
+        if (str.startsWith("clkdll"))
+            return true;
+        if (str.startsWith("dcm"))
+            return true;
+        if (str.startsWith("sr"))
+            return true;
+        return false;
     }
     
     /**
@@ -189,7 +310,7 @@ public class ClockDomainParser {
         }
         return new ClockDomainEdifNetClassification(noClockNets, clockNets, clkToNetMap);
     }
-    
+      
     public ClockDomainEdifNetClassification classifyNets(EdifCell cell) {
         EdifCellInstanceGraph graph = new EdifCellInstanceGraph(cell, true);
         return classifyNets(cell, graph);
