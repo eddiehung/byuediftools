@@ -74,8 +74,8 @@ public class NearestNeighbors {
 				}
 				if (DEBUG1)
 					if (nodesRemoved > 0) System.out.println("SCC: "+ nodesRemoved + " nodes removed from "+sccs.size()+" sccs (" + 
-							(nodesRemoved / sccs.size())+" nodes/scc) "
-							+ edgesSaved+" edges saved ("+(edgesSaved/sccs.size())+" edges/scc) ("+
+							divisionWithDecimal(nodesRemoved, sccs.size())+" nodes/scc) "
+							+ edgesSaved+" edges saved ("+divisionWithDecimal(edgesSaved,nodesRemoved)+" edges/node) ("+
 							neighbors.size()+" neighbors)");
 			} else {
 				workingGraph.removeNode(root);
@@ -102,6 +102,14 @@ public class NearestNeighbors {
 	}
 
 
+	protected static String divisionWithDecimal(int numerator, int denominator) {
+		int div = (numerator * 10) / denominator;
+		String str = Integer.toString(div / 10);
+		str+=".";
+		str += Integer.toString(div % 10);
+		return str;
+	}
+	
 	public static Set<Object> nearestNeighbors(DirectedGraph graph, Collection<Object> nodes, int maxDistance) {
 
 		// Create a stack to manage the depth first search instead of using recursion
