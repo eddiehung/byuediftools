@@ -84,7 +84,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     public EdifEnvironment replicate() throws EdifNameConflictException {
     	// Call the super.createEdifEnvironment
     	createEdifEnvironment();       
-       return _newEnv;
+    	return _newEnv;
     }
 
     /**
