@@ -95,15 +95,14 @@ public class ClockDomainParser {
     }
     
     /**
+     * @deprecated This contains architecture-specific code. 
+     * classifyNets should provide the same functionality as is provided here.
+     * 
      * Iterate through the design and classify nets into a clock domain. First,
      * clock domains are identified as those nets that drive clock ports of
      * sequential cells. Once clock domains have been identified, sequential
      * cells and their children (up to another sequential cell) are added to
      * that domain.
-     * 
-     * This contains architecture-specific code and should be deprecated
-     * or removed. Eventually classifyNets should provide the same 
-     * functionality as is provided here.
      * 
      * @return A map whose key is the EdifNet of the clock domain and whose
      * value is a set of EdifNets that belong to that domain. The sets of
@@ -192,9 +191,11 @@ public class ClockDomainParser {
     }
     
     /**
-     * Return true if the EdifCell ec is sequential (has a clock port).
+     * @deprecated This is architecture-specific code. The same code is located
+     * in arch.xilinx.XilinxTools; the method is still here for
+     * oldClassifyNets to use.
      * 
-     * This is architecture-specific code and should be deprecated or removed.
+     * Return true if the EdifCell ec is sequential (has a clock port).
      * 
      * @param cell The name of the cell to check
      * @return True if this cell is sequential
