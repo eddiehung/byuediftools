@@ -271,10 +271,7 @@ public class XilinxTools {
      */
     public static boolean isSequential(EdifCell cell) {
         String str = cell.getName().toLowerCase();
-        return XilinxTools.isRegisterCell(cell) ||
-                str.contains("clkdll")          ||
-                str.contains("dcm");        
-        /*if (str.startsWith("fd"))
+        if (str.startsWith("fd"))
             return true;
         if (str.startsWith("ram"))
             return true;
@@ -284,7 +281,7 @@ public class XilinxTools {
             return true;
         if (str.startsWith("sr"))
             return true;
-        return false; */
+        return false;
     }
     
     /**
