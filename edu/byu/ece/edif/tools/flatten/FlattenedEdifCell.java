@@ -724,6 +724,10 @@ public class FlattenedEdifCell extends EdifCell {
      */
     protected Map<HierarchicalInstance, FlattenedEdifCellInstance> _nodesToFlatInstances = new LinkedHashMap<HierarchicalInstance, FlattenedEdifCellInstance>();
 
+    /**
+     * A mapping from an "old" HierarchicalNet in the original cell to the new flattened
+     * EdifNet object that the new net represents.
+     */
     protected Map<HierarchicalNet, EdifNet> _hierarchyNetsToFlatNets = new LinkedHashMap<HierarchicalNet, EdifNet>();
     
     /**
