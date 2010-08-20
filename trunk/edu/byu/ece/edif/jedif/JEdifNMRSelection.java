@@ -154,7 +154,7 @@ public class JEdifNMRSelection extends EDIFMain {
         }      
         if (rDesc == null)
         	// This is the first time call of ReplicationDescription. Create a new, empty object
-            rDesc = new ReplicationDescription();
+            rDesc = new ReplicationDescription(topCell);
 
         /*
          * Any cell in the environment may have "port group" properties on its ports. This information

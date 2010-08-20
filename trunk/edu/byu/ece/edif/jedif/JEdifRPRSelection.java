@@ -108,7 +108,7 @@ public class JEdifRPRSelection extends EDIFMain {
         ReplicationType replicationType = ReplicationTypeCommandGroup.getReplicationType(result, arch);
         CircuitDescription cDesc = CircuitDescriptionCommandGroup.getCircuitDescription(result, env, out);
         
-        ReplicationDescription rDesc = new ReplicationDescription();
+        ReplicationDescription rDesc = new ReplicationDescription(topCell);
         
         // Make sure port group information has been added to the ReplicationDescription
         // This will be needed for JEdifVoterSelectoin, JEdifDetectionSelection, and JEdifNMR
