@@ -62,15 +62,18 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         this(oldEnvironment, desc, arch, null);
     }
     
-    public EdifEnvironmentReplicate(EdifEnvironment oldEnvironment, ReplicationDescription desc, NMRArchitecture arch, EdifNameable topCellName) throws EdifNameConflictException {
+    public EdifEnvironmentReplicate(EdifEnvironment oldEnvironment, ReplicationDescription desc, NMRArchitecture arch, EdifNameable newCellName) throws EdifNameConflictException {
         super(oldEnvironment);
-        _origTopCell = oldEnvironment.getTopCell();
+        //_origTopCell = oldEnvironment.getTopCell();
+        _origCellToReplicate = desc.getCellToReplicate();
         _desc = desc;
         _instanceMap = new LinkedHashMap<EdifCellInstance, List<EdifCellInstance>>();
         _netMap = new LinkedHashMap<EdifNet, List<EdifNet>>();
         _replicatedPortMap = new LinkedHashMap<EdifPort, List<EdifPort>>();
         _arch = arch;
-        _topCellName = topCellName;
+        _newCellName = newCellName;
+        //_topCellName = topCellName;
+        _netManager = null; // intialize manager to null
     }
     
     /**
@@ -88,26 +91,53 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     }
 
     /**
+     * Copy an EdifCell object. The call tree for this method is as follows:
+     * 
+     * this.copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name)
+     *  super.addChildEdifCellInstances(EdifCell origCell, EdifCell newCell)
+     *   super.addChildEdifCellInstance(EdifCell origCell, EdifCell newCell, EdifCellInstance oldChildInstance)
+     *    super.copyEdifCell(EdifCell origCell)
+     *     super.copyEdifCell(EdifCell origCell, EdifLibrary destLibrary)
+     *      this.copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name)
+     *     
+     *  Or
+     *  
+     *  super.createEdifEnvironment()
+     *   super.createEdifEnvironment(EdifNameable name)
+     *    super.createTopDesign
+     *     super.createTopCell
+     *      super.copyEdifCell(EdifCell origCell)
+     *       super.copyEdifCell(EdifCell origCell, EdifLibrary destLibrary)
+     *        this.copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name)
+     *    
 	 * Do the same things as the super (EdifEnvironmentCopy) method but also maintain a replicated
 	 * port
 	 * mapping of old to new ports. Create the NetManager that will be used in the wiring
 	 * algorithm if this is the top cell. Also, call the addOrgans method if operating
 	 * on the top cell.
 	 */
-	public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable name) throws EdifNameConflictException {
+	public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable newName) throws EdifNameConflictException {
 	    
-	    EdifNameable topCellName = name;
-	    if (origCell == _origTopCell && _topCellName != null) {
-	        topCellName = _topCellName;
+		// Find name for new cell
+		EdifNameable newCellName = newName;
+	    if (origCell == _origCellToReplicate && _newCellName != null) {
+	        newCellName = _newCellName;
 	    }
-	    EdifCell newCell = new EdifCell(destLibrary, topCellName);
+	    
+	    // Create new cell and place in the cell map
+	    EdifCell newCell = new EdifCell(destLibrary, newCellName);	    
 	    _cellMap.put(origCell, newCell);
+	    
 	    // copy properties
 	    newCell.copyProperties(origCell);
+
 	    // copy primitive status
 	    if (origCell.isPrimitive())
 	        newCell.setPrimitive();
-	    if (origCell == _origTopCell) {
+
+	    // If the original cell is the top cell in the original design, set the new cell
+	    // as the top instance and copy the properties
+	    if (origCell == _origEnv.getTopCell() /*_origTopCell*/ ) {
 	        EdifDesign oldDesign = _origEnv.getTopDesign();
 	        EdifCellInstance newTopInstance = new EdifCellInstance(newCell.getEdifNameable(), null, newCell);
 	        EdifDesign newDesign = new EdifDesign(newCell.getEdifNameable());
@@ -117,11 +147,11 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 	        _newEnv.setTopDesign(newDesign);
 	    }
 	    
-	    // Call the local version of addEdifPorts
+	    // Call the local (not super) version of addEdifPorts
 	    addEdifPorts(origCell, newCell);
 	
 	    // maintain port mapping form old environment to new environment/new copies
-	    if (origCell != _origTopCell) {
+	    if (origCell != _origCellToReplicate) {
 	    	for (EdifPort oldPort : origCell.getPortList()) {
 	    		List<EdifPort> newPorts = new ArrayList<EdifPort>();
 	    		PreMitigatedPortGroup portGroup = _desc.getPortGroup(oldPort);
@@ -147,14 +177,15 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 	    }
 	
 	    // This method is part of the super class. It calls addChildEdifCellInstance which is overloaded.
+	    // This call may result in additional cells that need to be copied.
 	    addChildEdifCellInstances(origCell, newCell);
 	
-	    if (origCell == _origTopCell) {
+	    if (origCell == _origCellToReplicate) {
 	        _netManager = new NetManager(newCell);
 	        addOrgans(newCell);
 	    }
 	    addNets(origCell, newCell);
-	    if (origCell == _origTopCell) {
+	    if (origCell == _origCellToReplicate) {
 	        // at this point everything else should be done and we can start wiring up any detector nets
 	        addDetectionWiring(newCell);
 	    }
@@ -168,7 +199,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         if (_desc.shouldIgnoreInstance(oldInstance))
         	// Some instances should not be copied. This will not copy instances that have been tagged as ignore
             return;
-        if (origCell != _origTopCell)
+        if (origCell != _origCellToReplicate)
         	// if it is not the top cell, call super
             super.addChildEdifCellInstance(origCell, newCell, oldInstance);
         else {
@@ -195,7 +226,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
      * ports over exactly.
      */
     protected void addEdifPorts(EdifCell origCell, EdifCell newCell) throws EdifNameConflictException {
-        if (origCell != _origTopCell) {
+        if (origCell != _origCellToReplicate) {
         	// If it is not the top cell, use the default port adding code (i.e., super).
             super.addEdifPorts(origCell, newCell);
         }
@@ -241,7 +272,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
     	if (_desc.shouldIgnoreNet(oldNet))
     		// Net has been tagged as ignore. Do not copy (for example, the net between a GND and a pretriplicated port)
     		return null;
-        if (origCell != _origTopCell)
+        if (origCell != _origCellToReplicate)
         	// If this is not the top cell, call the super.addNet
             return super.addNet(origCell, newCell, oldNet);
         else {
@@ -522,7 +553,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
      * @param newTopCell
      */
     protected void addOrgans(EdifCell newTopCell) {
-        for (EdifNet net : _origTopCell.getNetList()) {
+        for (EdifNet net : _origCellToReplicate.getNetList()) {
             Collection<OrganSpecification> organSpecifications = _desc.getOrganSpecifications(net);
             if (organSpecifications != null) {
                 for (OrganSpecification organSpec : organSpecifications) {
@@ -573,12 +604,15 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 
     protected NMRArchitecture _arch;
     protected ReplicationDescription _desc;
-    protected EdifCell _origTopCell;
+    //protected EdifCell _origTopCell;
+    protected EdifCell _origCellToReplicate;
     protected Map<EdifCellInstance, List<EdifCellInstance>> _instanceMap;
     protected Map<EdifNet, List<EdifNet>> _netMap;
 
     /** Map between original EdifPort and a List of replicated EdifPort objects. **/
     protected Map<EdifPort, List<EdifPort>> _replicatedPortMap;
     protected NetManager _netManager;
-    protected EdifNameable _topCellName;
+    //protected EdifNameable _topCellName;
+    protected EdifNameable _newCellName;
+    
 }
