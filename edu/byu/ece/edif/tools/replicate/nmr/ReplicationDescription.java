@@ -1,8 +1,10 @@
 package edu.byu.ece.edif.tools.replicate.nmr;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -10,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.byu.ece.edif.core.EdifCell;
 import edu.byu.ece.edif.core.EdifCellInstance;
 import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifPort;
@@ -36,8 +39,10 @@ public class ReplicationDescription implements Serializable {
     /**
      * Create an empty ReplicationDescription.
      */
-    public ReplicationDescription() {
+    public ReplicationDescription(EdifCell cellToReplicate) {
 
+    	_cellToReplicate = cellToReplicate;
+    	
         _instancesToReplicate = new LinkedHashMap<EdifCellInstance, ReplicationType>();
 
         _portsToReplicate = new LinkedHashMap<EdifPort, ReplicationType>();
@@ -75,7 +80,9 @@ public class ReplicationDescription implements Serializable {
      * @param replicationType
      */
     public void addInstance(EdifCellInstance instance, ReplicationType replicationType) {
-       _instancesToReplicate.put(instance, replicationType); 
+    	if (!_cellToReplicate.contains(instance))
+    		throw new EdifRuntimeException("Error: Trying to replicate instance "+instance+" which is not contained by cell "+_cellToReplicate);
+    	_instancesToReplicate.put(instance, replicationType); 
     }
 
     /**
@@ -100,7 +107,9 @@ public class ReplicationDescription implements Serializable {
      * @param organSpec
      */
     public void addOrganSpecification(EdifNet net, OrganSpecification organSpec) {
-        Set<OrganSpecification> specList = _organsToInsert.get(net);
+    	if (!_cellToReplicate.contains(net))
+    		throw new EdifRuntimeException("Error: net not contained in cell being replicated");
+    	Set<OrganSpecification> specList = _organsToInsert.get(net);
         if (specList == null) {
             specList = new LinkedHashSet<OrganSpecification>();
             _organsToInsert.put(net, specList);
@@ -109,6 +118,8 @@ public class ReplicationDescription implements Serializable {
     }
     
     public void addOrganSpecifications(EdifNet net, Collection<OrganSpecification> organSpecs) {
+    	if (!_cellToReplicate.contains(net))
+    		throw new EdifRuntimeException("Error: net not contained in cell being replicated");
     	if (organSpecs == null)
     		return;
     	Set<OrganSpecification> specList = _organsToInsert.get(net);
@@ -128,7 +139,9 @@ public class ReplicationDescription implements Serializable {
      * @param replicationType
      */
     public void addPort(EdifPort port, ReplicationType replicationType) {
-        _portsToReplicate.put(port, replicationType);
+    	if (!_cellToReplicate.contains(port))
+    		throw new EdifRuntimeException("Error port not contained in cell being replicated");
+    	_portsToReplicate.put(port, replicationType);
     }
 
     /**
@@ -161,6 +174,11 @@ public class ReplicationDescription implements Serializable {
     
     public void setInstanceReplicationMap(Map<EdifCellInstance, ReplicationType> instancesToReplicate) {
     	_instancesToReplicate = new LinkedHashMap<EdifCellInstance, ReplicationType>(instancesToReplicate);
+    }
+    
+    
+    public EdifCell getCellToReplicate() {
+    	return _cellToReplicate;
     }
     
     /**
@@ -407,6 +425,50 @@ public class ReplicationDescription implements Serializable {
     	return _cutsetReference;
     }
     
+    public void toPrintWriter(PrintWriter out) {
+
+    	// Instances to Triplicate
+    	Map<ReplicationType, Set<EdifCellInstance>> replicationInstanceMap = new HashMap<ReplicationType, Set<EdifCellInstance>>();
+    	// create map from replication type to instances
+    	for (EdifCellInstance eci : _instancesToReplicate.keySet()) {
+    		ReplicationType rtype = _instancesToReplicate.get(eci);
+    		Set<EdifCellInstance> typeInstances = replicationInstanceMap.get(rtype);
+    		if (typeInstances == null) {
+    			typeInstances = new HashSet<EdifCellInstance>();
+    			replicationInstanceMap.put(rtype,typeInstances);
+    		}
+			typeInstances.add(eci);
+    	}
+    	for (ReplicationType rtype : replicationInstanceMap.keySet()) {
+        	out.println("Instances replicated using: " + rtype);
+        	for (EdifCellInstance eci : replicationInstanceMap.get(rtype)) {
+        		out.println("\t"+eci);
+        	}
+    	}
+
+    	// Ports to replicate
+    	if (_portsToReplicate == null || _portsToReplicate.size() == 0) {
+    		out.println("No ports replicated");
+    	} else {
+    		out.println("Ports to Replicate");
+    		for (EdifPort port : _portsToReplicate.keySet()) {
+    			out.println("\t"+port);
+    		}
+    	}
+    	
+    	// Organs to insert
+    	if (_organsToInsert == null || _organsToInsert.size() == 0) {
+    		out.println("No Organs to insert");
+    	} else {
+    		out.println("Organs to insert");
+    		for (EdifNet net : _organsToInsert.keySet()) {
+    			out.print("\t"+net);
+    			//Set<OrganSpecification> specs = _organsToInsert.get(net);
+    		}
+    	}
+
+    }
+    
     /**
      * Indicates the instances in the design to be replicated. Only one type of replication is allowed
      * for each instance. Not all instances need to be in this map. This member is usually filled in by
@@ -487,4 +549,9 @@ public class ReplicationDescription implements Serializable {
      */
     protected Collection<EdifPortRef> _cutsetReference;
 
+    /**
+     * The cell that is being replicated.
+     */
+    protected EdifCell _cellToReplicate;
+    
 }
