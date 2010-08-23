@@ -19,7 +19,7 @@ import edu.byu.ece.graph.dfs.SCCDepthFirstSearch;
 
 public class NearestNeighbors {
 
-	public static boolean DEBUG1 = true;
+	public static boolean DEBUG1 = false;
 	public static boolean DEBUG = false;
 	
 	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance) {
@@ -109,6 +109,7 @@ public class NearestNeighbors {
 		
 		// We now have a list of edges that need to be saved. Create a new graph that is a copy of
 		// the original graph but remove the edges that are not to be saved
+		if (DEBUG1) System.out.println("Ending decomposigion. Cloning Graph");
 		workingGraph = (BasicGraph) graph.clone();
 		if (DEBUG1) System.out.println(edgesToSave.size() + " edges saved out of "+graph.getEdges().size());
 		for (Edge e : workingGraph.getEdges()) {
