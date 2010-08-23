@@ -118,7 +118,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 	 */
 	public EdifCell copyEdifCell(EdifCell origCell, EdifLibrary destLibrary, EdifNameable newName) throws EdifNameConflictException {
 	    
-		// Find name for new cell
+		// Find name for the new cell
 		EdifNameable newCellName = newName;
 	    if (origCell == _origCellToReplicate && _newCellName != null) {
 	        newCellName = _newCellName;
@@ -146,7 +146,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 	        newDesign.copyProperties(oldDesign);
 	        _newEnv.setTopDesign(newDesign);
 	    }
-	    
+	    // 1 7/8" hitch 962n 400 w cedar city
 	    // Call the local (not super) version of addEdifPorts
 	    addEdifPorts(origCell, newCell);
 	
@@ -227,11 +227,11 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
      */
     protected void addEdifPorts(EdifCell origCell, EdifCell newCell) throws EdifNameConflictException {
         if (origCell != _origCellToReplicate) {
-        	// If it is not the top cell, use the default port adding code (i.e., super).
+        	// If it is not the cell that is to be replicated, use the default port adding code (i.e., super).
             super.addEdifPorts(origCell, newCell);
         }
         else {
-        	// Custom port replication for the top cell
+        	// Custom port replication for the cell to replicate
             for (EdifPort oldPort : origCell.getPortList()) {
                 List<EdifPort> newPorts = null;
                 ReplicationType portRepType = _desc.getReplicationType(oldPort);
@@ -278,6 +278,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         else {
 
         	//////////////// wiring algorithm ////////////////
+            List<EdifNet> newNets = new ArrayList<EdifNet>();
             
             // separate portRefs into drivers (including INOUT) and sinks
             Collection<EdifPortRef> origDrivers = oldNet.getSourcePortRefs(true, true);
@@ -319,7 +320,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                                 
                 if (instance == null || EdifReplicationPropertyReader.isPreMitigatedInstance(instance)) { // either a top-level or a pre-mitigated instance
                 	// If the instance associated with the driver of this net is null, it is a top-level port. This means
-                	// that there are no instances to iterate over (i.e. there is only one instance. Instead, you need to iterate
+                	// that there are no instances to iterate over (i.e. there is only one instance). Instead, you need to iterate
                 	// over the replicated ports.
                 	//
                 	// If the instance is premitigated, again, you don't iterate over instance. Instead, like a top-level instance,
@@ -365,7 +366,9 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                     Organ organType = organSpecification.getOrganType();
                     // The organs have already been created and PortConnection objects for their outputs have been created.
                     // Wire the inputs to the organ from the driver connections. The wires are actually created here.
-                    organType.wireInputs(organSpecification, oldNet, driverConnections, _netManager, replicationType);
+                    List<EdifNet> organNets = null;
+                    organNets = organType.wireInputs(organSpecification, oldNet, driverConnections, _netManager, replicationType);
+                    newNets.addAll(organNets);
                     
                     List<PortConnection> organOutputs = organType.getOutputs(organSpecification);
                     List<EdifPortRef> sinksGettingOrganOutputs = organSpecification.getSinksGettingOrganOutputs();
@@ -379,6 +382,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 }
                 
             }
+            
             // This loop will iterate over all sinks of the given driver and make the connections.
             for (EdifPortRef origSink : origSinks) {
 
@@ -413,7 +417,9 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 if (wiringPolicy == null)
                 	wiringPolicy = ModuloIterationWiringPolicy.getInstance();
                 // Do the actual wiring
-                wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
+                List<EdifNet> nets;
+                nets = wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
+                newNets.addAll(nets);
             }
             
             // When the net is composed only of drivers, they need to be wired together
@@ -426,7 +432,10 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                     // are the multiple drivers for each domain).
                     _netManager.getNet(driverConnection);
                 }
-            }            
+            }
+            
+            // Update net map
+            _netMap.put(oldNet, newNets);
         }
 
         return null; // this works because EdifEnvironmentCopy never uses the return value
