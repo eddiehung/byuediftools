@@ -30,9 +30,10 @@ public class NetManager {
      * @param source
      * @param sink
      */
-    public void wirePortConnections(PortConnection source, PortConnection sink) {
+    public EdifNet wirePortConnections(PortConnection source, PortConnection sink) {
         EdifNet net = getNet(source);
         sink.connectToNet(net);
+        return net;
     }
     
     /**
