@@ -4,6 +4,7 @@ import java.io.ObjectStreamException;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.byu.ece.edif.core.EdifNet;
 import edu.byu.ece.edif.core.EdifRuntimeException;
 
 /**
@@ -26,21 +27,23 @@ public class ModuloIterationWiringPolicy implements WiringPolicy {
      * iterated simultaneously. If the sources run out before the sinks, the iteration of sources cycles back
      * to the beginning of the list.
      */
-    public void connectSourcesToSinks(List<PortConnection> sources, List<? extends PortConnection> sinks, NetManager netManager) {
+    public List<EdifNet> connectSourcesToSinks(List<PortConnection> sources, List<? extends PortConnection> sinks, NetManager netManager) {
     	if (sources.size() < 1 || sinks.size() < 1)
             throw new EdifRuntimeException("Unexpected while in ModuloIterationWiringPolicy.connectSourcesToSinks: sources.size() = " + sources.size() + ", sinks.size() = " + sinks.size() + ".");
         
         Iterator<PortConnection> sourceIt = sources.iterator();
         Iterator<? extends PortConnection> sinkIt = sinks.iterator();
-        
+        List<EdifNet> nets = null;
         while (sinkIt.hasNext()) {
             PortConnection source = null;
             if (!sourceIt.hasNext())
                 sourceIt = sources.iterator();
             source = sourceIt.next();
             PortConnection sink = sinkIt.next();
-            netManager.wirePortConnections(source, sink);            
+            EdifNet n = netManager.wirePortConnections(source, sink);            
+            nets.add(n);
         }
+        return nets;
     }
     
     /**
