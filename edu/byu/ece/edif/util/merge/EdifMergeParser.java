@@ -1456,7 +1456,7 @@ public class EdifMergeParser {
             ret = "Found";
             break;
         case NO_MATCHING_INSTANCE_NAME:
-            ret = "ERROR: No matching instance name found";
+            ret = "Warning: No matching instance name found";
             failed = true;
             break;
         case NO_MATCHING_INTERFACE:
