@@ -20,7 +20,7 @@ public interface Organ extends Serializable {
     
     void createOrgan(OrganSpecification organSpec, EdifNet origNet, EdifCell newCell);
     
-    void wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType);
+    List<EdifNet> wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType);
     
     //List<PortConnection> getOutputs(EdifNet origNet);
     

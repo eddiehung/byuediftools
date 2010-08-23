@@ -88,9 +88,10 @@ public abstract class AbstractOrgan implements Organ {
      * @param netManager
      * @param organInputNames
      */
-    protected void wireInputs(OrganSpecification os, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, String[] organInputNames) {
+    protected List<EdifNet> wireInputs(OrganSpecification os, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, String[] organInputNames) {
         int numOrganInputs = organInputNames.length;
-
+        List<EdifNet> nets = new ArrayList<EdifNet>();
+        
         // initialize voter input MultiPortConnections
         List<PortConnection> organInputs = new ArrayList<PortConnection>(numOrganInputs);
         for (int i = 0; i < numOrganInputs; i++) {
@@ -114,8 +115,10 @@ public abstract class AbstractOrgan implements Organ {
         while (driverIt.hasNext() && organInputIt.hasNext()) {
             PortConnection driver = driverIt.next();
             PortConnection organInput = organInputIt.next();
-            netManager.wirePortConnections(driver, organInput);
+            EdifNet wc = netManager.wirePortConnections(driver, organInput);
+            nets.add(wc);
         }
+        return nets;
     }
 
     /**
