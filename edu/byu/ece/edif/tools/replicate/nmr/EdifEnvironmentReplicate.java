@@ -586,6 +586,14 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
        return newCell;
     }
     
+    public Map<EdifCellInstance, List<EdifCellInstance>> getInstanceMap() {
+    	return _instanceMap;
+    }
+
+    public Map<EdifNet, List<EdifNet>> getNetMap() {
+    	return _netMap;
+    }
+    
     public void printDomainReport(String fileName) throws FileNotFoundException {
         PrintWriter pw = new PrintWriter(new FileOutputStream(fileName));
         for (EdifCellInstance origInstance : _instanceMap.keySet()) {
