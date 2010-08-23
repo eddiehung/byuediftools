@@ -2,6 +2,8 @@ package edu.byu.ece.edif.tools.replicate.wiring;
 
 import java.util.List;
 
+import edu.byu.ece.edif.core.EdifNet;
+
 /**
  * An interface to specify the wiring policy between sources/sinks when the replication type differs.
  * 
@@ -9,6 +11,6 @@ import java.util.List;
  */
 public interface WiringPolicy {
     
-    public void connectSourcesToSinks(List<PortConnection> sources, List<? extends PortConnection> sinks, NetManager netManager);
+    public List<EdifNet> connectSourcesToSinks(List<PortConnection> sources, List<? extends PortConnection> sinks, NetManager netManager);
     
 }
