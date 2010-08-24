@@ -59,13 +59,13 @@ public class XilinxTMRVoter extends AbstractOrgan {
      * Wire the voter's inputs to the given driver connections using the given net manager. Also,
      * verify that this kind of voter can be used with the given replication type.
      */
-    public void wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
+    public List<EdifNet> wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
         
         // error checking
         if (_organCell == null)
             throw new EdifRuntimeException("Error: trying to wire voter inputs before creating a voter");
 
-        wireInputs(organSpecification, origNet, driverConnections, netManager, VOTER_INPUT_NAMES);
+        return wireInputs(organSpecification, origNet, driverConnections, netManager, VOTER_INPUT_NAMES);
     }
     
     /**
