@@ -1,6 +1,7 @@
 package edu.byu.ece.edif.tools.replicate.wiring;
 
 import java.io.ObjectStreamException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ModuloIterationWiringPolicy implements WiringPolicy {
         
         Iterator<PortConnection> sourceIt = sources.iterator();
         Iterator<? extends PortConnection> sinkIt = sinks.iterator();
-        List<EdifNet> nets = null;
+        List<EdifNet> nets = new ArrayList<EdifNet>();
         while (sinkIt.hasNext()) {
             PortConnection source = null;
             if (!sourceIt.hasNext())
@@ -41,7 +42,8 @@ public class ModuloIterationWiringPolicy implements WiringPolicy {
             source = sourceIt.next();
             PortConnection sink = sinkIt.next();
             EdifNet n = netManager.wirePortConnections(source, sink);            
-            nets.add(n);
+            if (n != null)
+            	nets.add(n);
         }
         return nets;
     }
