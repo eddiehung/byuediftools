@@ -39,13 +39,13 @@ public class XilinxDWCComparator extends AbstractOrgan {
 		createOrgan(organSpec, comparator, numOrgans, origNet, newCell, "O", null);		
 	}
 
-	public void wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
+	public List<EdifNet> wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
 		
 		// error checking
         if (_organCell == null)
             throw new EdifRuntimeException("Error: trying to wire voter inputs before creating a voter");
 
-        wireInputs(organSpecification, origNet, driverConnections, netManager, COMPARATOR_INPUT_NAMES);		
+        return wireInputs(organSpecification, origNet, driverConnections, netManager, COMPARATOR_INPUT_NAMES);		
 	}
 	
 	protected EdifCell getXOR2ComparatorCell(EdifCell parent) {
