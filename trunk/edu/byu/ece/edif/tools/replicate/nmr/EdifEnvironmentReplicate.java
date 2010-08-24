@@ -419,7 +419,8 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 // Do the actual wiring
                 List<EdifNet> nets;
                 nets = wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
-                newNets.addAll(nets);
+                //if (nets != null)
+                //	newNets.addAll(nets);
             }
             
             // When the net is composed only of drivers, they need to be wired together
