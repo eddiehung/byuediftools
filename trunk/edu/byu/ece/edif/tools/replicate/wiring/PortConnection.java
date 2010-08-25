@@ -11,12 +11,9 @@ import edu.byu.ece.edif.core.EdifNet;
 @SuppressWarnings("serial")
 public abstract class PortConnection implements Serializable {
 
-    public PortConnection() {
-        this(null);
-    }
-    
-    public PortConnection(EdifNameable name) {
+    public PortConnection(EdifNameable name, EdifNet origNet) {
         _name = name;
+        _oldNet = origNet;
     }
     
     /**
@@ -35,6 +32,10 @@ public abstract class PortConnection implements Serializable {
         return _name;
     }
     
+    public EdifNet getOldNet() {
+    	return _oldNet;
+    }
+    
     /**
      * Associate a name with the PortConnection.
      * 
@@ -44,6 +45,8 @@ public abstract class PortConnection implements Serializable {
         _name = name;
     }
     
-    protected EdifNameable _name;
+    protected EdifNameable _name = null;
+    
+    protected EdifNet _oldNet = null;
     
 }
