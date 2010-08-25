@@ -146,7 +146,6 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
 	        newDesign.copyProperties(oldDesign);
 	        _newEnv.setTopDesign(newDesign);
 	    }
-	    // 1 7/8" hitch 962n 400 w cedar city
 	    // Call the local (not super) version of addEdifPorts
 	    addEdifPorts(origCell, newCell);
 	
@@ -275,10 +274,12 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
         if (origCell != _origCellToReplicate)
         	// If this is not the top cell, call the super.addNet
             return super.addNet(origCell, newCell, oldNet);
-        else {
 
+        
+        else {
+        	// We are working on the cell to replicate. Apply the custom wiring approach
+        	
         	//////////////// wiring algorithm ////////////////
-            List<EdifNet> newNets = new ArrayList<EdifNet>();
             
             // separate portRefs into drivers (including INOUT) and sinks
             Collection<EdifPortRef> origDrivers = oldNet.getSourcePortRefs(true, true);
@@ -310,7 +311,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
             for (int i = 0; i < replicationType.getReplicationFactor(); i++) {
                 // create MultiPortConnections and give them net names derived from the replication type and domain
             	// At this point, we don't have a net. We just have an empty list of connections for each domain of the new net.
-                driverConnections.add(new MultiPortConnection(replicationType.getReplicationNetNameable(oldNet.getEdifNameable(), i)));
+                driverConnections.add(new MultiPortConnection(replicationType.getReplicationNetNameable(oldNet.getEdifNameable(), i), oldNet));
             }
             
             // setup driver connections. We will fill in the PortConnections for the list created above.
@@ -366,9 +367,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                     Organ organType = organSpecification.getOrganType();
                     // The organs have already been created and PortConnection objects for their outputs have been created.
                     // Wire the inputs to the organ from the driver connections. The wires are actually created here.
-                    List<EdifNet> organNets = null;
-                    organNets = organType.wireInputs(organSpecification, oldNet, driverConnections, _netManager, replicationType);
-                    newNets.addAll(organNets);
+                    organType.wireInputs(organSpecification, oldNet, driverConnections, _netManager, replicationType);
                     
                     List<PortConnection> organOutputs = organType.getOutputs(organSpecification);
                     List<EdifPortRef> sinksGettingOrganOutputs = organSpecification.getSinksGettingOrganOutputs();
@@ -396,7 +395,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 	// For top-level ports or pre-mitiaged instances, iterate over replicated ports.
                 	EdifCellInstance newInstance = (instance == null) ? null : _instanceMap.get(instance).get(0);
                     for (EdifPort newPort : _replicatedPortMap.get(port)) {
-                        PortConnection sinkConnectionSink = new SinglePortConnection(newPort.getSingleBitPort(origSink.getBusMember()), newInstance);
+                        PortConnection sinkConnectionSink = new SinglePortConnection(newPort.getSingleBitPort(origSink.getBusMember()), newInstance, oldNet);
                         sinkConnectionSinks.add(sinkConnectionSink);
                     }
                 }
@@ -407,7 +406,7 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                     	throw new EdifRuntimeException("Unexpected: nothing in _portMap for " + port);
                     EdifPort newPort = newPortList.get(0);
                     for (EdifCellInstance newInstance : _instanceMap.get(instance)) {
-                        PortConnection sinkConnectionSink = new SinglePortConnection(newPort.getSingleBitPort(origSink.getBusMember()), newInstance);
+                        PortConnection sinkConnectionSink = new SinglePortConnection(newPort.getSingleBitPort(origSink.getBusMember()), newInstance, oldNet);
                         sinkConnectionSinks.add(sinkConnectionSink);
                     }
                 }
@@ -419,8 +418,6 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 // Do the actual wiring
                 List<EdifNet> nets;
                 nets = wiringPolicy.connectSourcesToSinks(sinkConnectionSources.get(origSink), sinkConnectionSinks, _netManager);
-                //if (nets != null)
-                //	newNets.addAll(nets);
             }
             
             // When the net is composed only of drivers, they need to be wired together
@@ -435,13 +432,13 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 }
             }
             
-            // Update net map
-            _netMap.put(oldNet, newNets);
         }
 
         return null; // this works because EdifEnvironmentCopy never uses the return value
     }
 
+    public NetManager getNetManager() { return _netManager; }
+    
     /**
      * Add the circuitry for merging the detection signals into the specified output(s). 
      */
