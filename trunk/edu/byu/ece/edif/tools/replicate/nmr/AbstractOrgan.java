@@ -64,7 +64,7 @@ public abstract class AbstractOrgan implements Organ {
             if (instanceProperty != null)
                 organ.addProperty(instanceProperty);
             if (organOutputName != null) {
-                SinglePortConnection organOutput = new SinglePortConnection(organCell.getPort(organOutputName).getSingleBitPort(0), organ);
+                SinglePortConnection organOutput = new SinglePortConnection(organCell.getPort(organOutputName).getSingleBitPort(0), organ, origNet);
                 organOutput.setName(organName);
                 _organOutputs.put(organ, organOutput);
             }
@@ -88,14 +88,25 @@ public abstract class AbstractOrgan implements Organ {
      * @param netManager
      * @param organInputNames
      */
-    protected List<EdifNet> wireInputs(OrganSpecification os, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, String[] organInputNames) {
+    protected void wireInputs(OrganSpecification os, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, String[] organInputNames) {
         int numOrganInputs = organInputNames.length;
-        List<EdifNet> nets = new ArrayList<EdifNet>();
+
+        /*
+        List<PortConnection> organInputs = new ArrayList<PortConnection>(numOrganInputs);
+        for (int i = 0; i < numOrganInputs; i++) {
+        	EdifNameable name = NamedObject.createValidEdifNameable(origNet.getEdifNameable()+"_VOTER_"+i);
+        	MultiPortConnection organInput = new MultiPortConnection(name, origNet);
+        	organInputs.add(organInput);
+        	for (EdifCellInstance organInstance : _createdOrgans.get(os)) {
+                organInput.addConnection(organInstance, _organCell.getPort(organInputNames[i]).getSingleBitPort(0));
+            }
+        }
+        */
         
         // initialize voter input MultiPortConnections
         List<PortConnection> organInputs = new ArrayList<PortConnection>(numOrganInputs);
         for (int i = 0; i < numOrganInputs; i++) {
-            organInputs.add(new MultiPortConnection());
+            organInputs.add(new MultiPortConnection(origNet));
         }
 
         for (EdifCellInstance organInstance : _createdOrgans.get(os)) {
@@ -108,17 +119,15 @@ public abstract class AbstractOrgan implements Organ {
                 i++;
             }
         }
-
+        
         // wire connections
         Iterator<PortConnection> driverIt = driverConnections.iterator();
         Iterator<PortConnection> organInputIt = organInputs.iterator();
         while (driverIt.hasNext() && organInputIt.hasNext()) {
             PortConnection driver = driverIt.next();
             PortConnection organInput = organInputIt.next();
-            EdifNet wc = netManager.wirePortConnections(driver, organInput);
-            nets.add(wc);
+            netManager.wirePortConnections(driver, organInput);
         }
-        return nets;
     }
 
     /**
