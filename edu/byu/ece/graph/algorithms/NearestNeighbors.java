@@ -22,9 +22,9 @@ public class NearestNeighbors {
 	public static boolean DEBUG1 = false;
 	public static boolean DEBUG = false;
 	
+	/*
 	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance) {
 
-		/*
 		ArrayList sortedNodeList = new ArrayList(graph.getNodes());
 		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
 		Collections.reverse(sortedNodeList);
@@ -36,15 +36,15 @@ public class NearestNeighbors {
 			sortedNodeSetList.add(nodeSet);
 		}
 		return nearestNeighborDecomposition(graph, maxDistance, sortedNodeSetList);
-		*/
 		return nearestNeighborDecomposition(graph, maxDistance, null);
 	}
+		*/
+	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance) {
+		NearestNeighborSeed nns = new BasicNearestNeighborSeed(graph);
+		return nearestNeighborDecomposition(graph, maxDistance, nns);
+	}
 	
-	/**
-	 * groupings is a prioritized list of node sets. The decomposition approach will look at the sets in
-	 * order.
-	 */
-	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance, List<Set<Object>> groupings) {
+	public static SCCDepthFirstSearch nearestNeighborDecomposition(BasicGraph graph, int maxDistance, NearestNeighborSeed seed) {
 		
 		if (DEBUG1) System.out.println("Starting Sort");
 		
@@ -58,20 +58,28 @@ public class NearestNeighbors {
 		ArrayList<Edge> edgesToSave = new ArrayList<Edge>();
 		
 		// Create a sorted list of nodes
+		/*
 		ArrayList sortedNodeList = new ArrayList(workingGraph.getNodes());
 		Collections.sort(sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
 		Collections.reverse(sortedNodeList);
+		*/
 		
 		if (DEBUG1) System.out.println("Starting Decomposition");
 		
 		do {
 			// Pick a node that hasn't been visited yet (it doesn't matter which one)
 			// Object root = workingGraph.getNodes().iterator().next();
+			/*
 			Object root = sortedNodeList.get(0);
-				
-			// Find its nearest n neigbhors of the root node
+			*/
+			
+			// Find its nearest n neighbors of the root node
+			/*
 			ArrayList roots = new ArrayList(1);
 			roots.add(root);
+			*/
+			Set roots = seed.getSeed(workingGraph);
+			
 			Set<Object> neighbors = nearestNeighbors(workingGraph, roots, maxDistance);
 			// Create a sub graph of this graph (use the small sub graph call since it
 			// it is likely that the graph is much smaller than the original graph).
@@ -82,7 +90,8 @@ public class NearestNeighbors {
 			List<DepthFirstTree> sccs = sccDFS.getTopologicallySortedTreeList();
 			// For each SCC:
 			//  - Remove the nodes in the working graph
-			//  - Save the edges of teh SCC
+			//  - Save the edges of the SCC
+			Set<Object> nodesToRemove = new HashSet<Object>();
 			int nodesRemoved = 0; int edgesSaved = 0;
 			if (sccs.size() > 0) {
 				for (DepthFirstTree t : sccs) {
@@ -91,7 +100,8 @@ public class NearestNeighbors {
 					edgesSaved += tree.getAllEdges().size();
 					edgesToSave.addAll(tree.getEdges()); // Note that this does not get the "cross" edges between trees
 					workingGraph.removeNodes(tree.getNodes());				
-					sortedNodeList.removeAll(tree.getNodes());
+					/* sortedNodeList.removeAll(tree.getNodes()); */
+					nodesToRemove.addAll(tree.getNodes());
 				}
 				if (DEBUG1)
 					if (nodesRemoved > 0) System.out.println("SCC: "+ nodesRemoved + " nodes removed from "+sccs.size()+" sccs (" + 
@@ -99,13 +109,19 @@ public class NearestNeighbors {
 							+ edgesSaved+" edges saved ("+divisionWithDecimal(edgesSaved,nodesRemoved)+" edges/node) ("+
 							neighbors.size()+" neighbors)");
 			} else {
+				/*
 				workingGraph.removeNode(root);
 				sortedNodeList.remove(root);
+				*/
+				workingGraph.removeNodes(roots);
+				nodesToRemove.addAll(roots);
 				if (DEBUG)
 					System.out.println("NO SCCs found - root node removed (graph size="+workingGraph.getNodes().size()+")");
 			}
+
+			seed.removeNodes(nodesToRemove);
 			
-		} while (sortedNodeList.size() > 0);
+		} while (workingGraph.getNodes().size() > 0);
 		
 		// We now have a list of edges that need to be saved. Create a new graph that is a copy of
 		// the original graph but remove the edges that are not to be saved
@@ -132,6 +148,11 @@ public class NearestNeighbors {
 		return str;
 	}
 	
+	/**
+	 * Identify a set of nodes within the directed graph that are "neighbors" to the given
+	 * seed nodes. A neighbor is defined as a node that is reachable within a given
+	 * fixed distance.
+	 */
 	public static Set<Object> nearestNeighbors(DirectedGraph graph, Collection<Object> nodes, int maxDistance) {
 
 		// Create a stack to manage the depth first search instead of using recursion
@@ -192,4 +213,35 @@ public class NearestNeighbors {
         return visited;
 	}
 
+}
+
+interface NearestNeighborSeed {
+
+	public Set<Object> getSeed(DirectedGraph graph);
+	public void removeNodes(Set<Object> nodes);
+	
+}
+
+class BasicNearestNeighborSeed implements NearestNeighborSeed {
+
+	public BasicNearestNeighborSeed(DirectedGraph graph) {
+		// Create a sorted list of nodes
+		_sortedNodeList = new ArrayList(graph.getNodes());
+		Collections.sort(_sortedNodeList, new EdifCellInstanceGraphFanOutComparator(graph));
+		Collections.reverse(_sortedNodeList);
+		
+	}
+
+	public Set<Object> getSeed(DirectedGraph graph) {
+		HashSet roots = new HashSet(1);
+		Object root = _sortedNodeList.get(0);
+		roots.add(root);
+		return roots;		
+	}
+	
+	public void removeNodes(Set<Object> nodes) {
+		_sortedNodeList.removeAll(nodes);
+	}
+	
+	ArrayList _sortedNodeList = null;
 }
