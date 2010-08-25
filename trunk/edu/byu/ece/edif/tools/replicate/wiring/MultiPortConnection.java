@@ -1,7 +1,6 @@
 package edu.byu.ece.edif.tools.replicate.wiring;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,16 +21,18 @@ import edu.byu.ece.edif.core.EdifSingleBitPort;
 @SuppressWarnings("serial")
 public class MultiPortConnection extends PortConnection {
 
-    public MultiPortConnection() {
-        this((EdifNameable) null);
+	public MultiPortConnection(EdifNet oldNet) {
+        this(null, oldNet);
     }
-    
-    public MultiPortConnection(EdifNameable name) {
-        super(name);
+	
+    public MultiPortConnection(EdifNameable name, EdifNet oldNet) {
+        super(name, oldNet);
         _singleBitPorts = new ArrayList<EdifSingleBitPort>();
         _instances = new ArrayList<EdifCellInstance>();
     }
-    
+
+    /* These constructors don't seem to be called. Commenting them out.
+     
     public MultiPortConnection(Collection<SinglePortConnection> connections, EdifNameable name) {
         this(name);
         for (SinglePortConnection spc : connections) {
@@ -43,6 +44,7 @@ public class MultiPortConnection extends PortConnection {
     public MultiPortConnection(Collection<SinglePortConnection> connections) {
         this(connections, null);
     }
+    */
     
     public void addConnection(EdifCellInstance instance, EdifSingleBitPort singleBitPort) {
         _singleBitPorts.add(singleBitPort);
