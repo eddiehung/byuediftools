@@ -24,10 +24,9 @@ public class PassThroughOrgan implements Organ {
     	// No need to do anything here for this class
     }
     
-    public List<EdifNet> wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
+    public void wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
     	// Save out relevant items
     	_driverConnectionsMap.put(organSpecification, new ArrayList<PortConnection>(driverConnections));
-    	return null;
     }
     
     //List<PortConnection> getOutputs(EdifNet origNet);
