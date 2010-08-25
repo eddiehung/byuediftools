@@ -42,14 +42,14 @@ public class XilinxTMRComparator extends AbstractOrgan {
      * Wire the inputs of a previously created dual-rail TMR comparator.
      * 
      */
-    public List<EdifNet> wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
+    public void wireInputs(OrganSpecification organSpecification, EdifNet origNet, List<PortConnection> driverConnections, NetManager netManager, ReplicationType replicationType) {
         // error checking
         if (_organCell == null)
             throw new EdifRuntimeException("Error: trying to wire comparator inputs before creating a comparator");
         if (!(replicationType instanceof TMRReplicationType))
             throw new EdifRuntimeException("Error: trying to use a TMR comparator with an incompatible replication type");
 
-        return wireInputs(organSpecification, origNet, driverConnections, netManager, COMPARATOR_INPUT_NAMES);
+        wireInputs(organSpecification, origNet, driverConnections, netManager, COMPARATOR_INPUT_NAMES);
     }
 
     /**
