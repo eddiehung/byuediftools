@@ -19,7 +19,7 @@ import edu.byu.ece.edif.core.NamedObject;
 public class NetManager {
     
     public NetManager(EdifCell topCell) {
-        _topCell = topCell;
+        _cell = topCell;
         _connectionNets = new LinkedHashMap<PortConnection, EdifNet>();
     }
     
@@ -49,10 +49,10 @@ public class NetManager {
     		EdifNameable name = source.getName();
     		if (name == null)
     			name = NamedObject.createValidEdifNameable("net");
-    		EdifNameable uniqueName = _topCell.getUniqueNetNameable(name);
+    		EdifNameable uniqueName = _cell.getUniqueNetNameable(name);
     		net = new EdifNet(uniqueName);
     		try {
-    			_topCell.addNet(net);
+    			_cell.addNet(net);
     		} catch (EdifNameConflictException e) {
     			// can't get here because of the call to getUniqueNetNameable
     			e.toRuntime();
@@ -64,13 +64,17 @@ public class NetManager {
     }
     
     public EdifCell getTopCell() {
-    	return _topCell;
+    	return _cell;
     }
 
+    public Map<PortConnection, EdifNet> getConnectionMap() {
+    	return _connectionNets;
+    }
+    
     /**
      * The EdifCell where the nets are being created
      */
-    EdifCell _topCell;    
+    EdifCell _cell;    
     
     /**
      * Keep track of which source PortConnections already have nets
