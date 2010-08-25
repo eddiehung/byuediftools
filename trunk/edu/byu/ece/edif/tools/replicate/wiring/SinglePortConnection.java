@@ -18,16 +18,17 @@ public class SinglePortConnection extends PortConnection {
 	/**
 	 * Atomic class. All elements set at construction.
 	 */
-    public SinglePortConnection(EdifSingleBitPort esbp, EdifCellInstance instance, EdifNameable name) {
-        super(name);
+    public SinglePortConnection(EdifSingleBitPort esbp, EdifCellInstance instance) {
+    	this(esbp,instance,null);
+    }
+
+    public SinglePortConnection(EdifSingleBitPort esbp, EdifCellInstance instance, EdifNet oldNet) {
+    	super(null, oldNet);
         _singleBitPort = esbp;
         _instance = instance;
     }
     
-    public SinglePortConnection(EdifSingleBitPort esbp, EdifCellInstance instance) {
-        this(esbp, instance, null);
-    }
-    
+    /*
     public SinglePortConnection(EdifPortRef epr, EdifNameable name) {
         this(epr.getSingleBitPort(), epr.getCellInstance(), name);
     }
@@ -35,6 +36,7 @@ public class SinglePortConnection extends PortConnection {
     public SinglePortConnection(EdifPortRef epr) {
         this(epr, null);
     }
+    */
     
     /**
      * Uses the information in this class to actually make the connection. This is done
