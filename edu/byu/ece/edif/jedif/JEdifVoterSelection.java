@@ -93,12 +93,16 @@ public class JEdifVoterSelection extends EDIFMain {
 		 * of the driver is. It checks to see if there are any properties (Do not restore : ie do
 		 * not stick a voter here). Then it checks for a force restore property. 
 		 * 
-		 * This is setting intial, forced conditions.
+		 * This is setting initial, forced conditions.
 		 */
 		for (EdifNet net : topCell.getNetList()) {
 		    if (rDesc.shouldIgnoreNet(net) || (arch.isClockNet(net) && skipClockNets))
 		        continue;
 			Collection<EdifPortRef> drivers = net.getSourcePortRefs(true, true);
+			if (drivers.size() == 0) {
+				System.out.println("Warning: skipping net with no drivers: " + net);
+				continue;
+			}
 			ReplicationType replicationType = null;
             for (EdifPortRef driver : drivers) {
                 ReplicationType driverType = rDesc.getReplicationType(driver);
