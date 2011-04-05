@@ -90,6 +90,12 @@ public class BasicEdifBusNetNamingPolicy implements EdifBusNetNamingPolicy {
     public static final String PARAN_BITPOS_PARAN_REGEX = "^(.+)\\((\\d+)\\)$";
 
     /**
+     * This regular expression will match against a net name that ends in "[<#>]"
+     * where <#> is a decimal number. Note that this is not a valid EDIF name.
+     */
+    public static final String BRACKET_BITPOS_BRACKET_REGEX = "^(.+)\\[(\\d+)\\]$";
+    
+    /**
      * This regular expression will match against a net name that end in "<<#>>"
      * where <#> is a decimal number. Note that this is not a valid EDIF name
      * and is used for the "oldname" value. Example: test<5>
