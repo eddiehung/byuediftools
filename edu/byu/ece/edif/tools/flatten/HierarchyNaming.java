@@ -56,6 +56,15 @@ public interface HierarchyNaming extends Serializable {
     public String getHierarchicalInstanceName(HierarchicalInstance node);
 
     /**
+     * Given a HierarchicalInstance node, get it's complete hierarchical name.
+     * 
+     * @param node the HierarchicalInstance node whose name is desired
+     * @param oldName if True, return the oldName instead of the newName
+     * @return the complete hierarchical name of the HierarchicalInstance node
+     */
+    public String getHierarchicalInstanceName(HierarchicalInstance node, boolean oldName);
+
+    /**
      * Given the head node of a HierarchicalInstance hierachy and a complete
      * hierarchical net name, get the corresponding HierarchicalNet.
      * 
