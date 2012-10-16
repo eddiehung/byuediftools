@@ -66,6 +66,7 @@ public class InstanceNode implements HierarchicalInstance {
         _parent = parent;
         _isLeafNode = instance.getCellType().isLeafCell();
         _origInstanceName = instance.getName();
+        _origInstanceOldName = instance.getOldName();
         _origCellTypeName = instance.getCellType().getName();
     }
 
@@ -77,6 +78,7 @@ public class InstanceNode implements HierarchicalInstance {
         _parent = parent;
         _isLeafNode = instance.isLeafCell();
         _origInstanceName = null; // not instanced, so has no name
+        _origInstanceOldName = null;
         _origCellTypeName = instance.getName();
     }
 
@@ -89,6 +91,7 @@ public class InstanceNode implements HierarchicalInstance {
         _parent = instanceNode._parent;
         _origInstanceName = instanceNode._origInstanceName;
         _origCellTypeName = instanceNode._origCellTypeName;
+        _origInstanceOldName = instanceNode._origInstanceOldName;
         _children = new ArrayList<HierarchicalInstance>(instanceNode._children);
         _netList = new ArrayList<HierarchicalNet>(instanceNode._netList);
         _isLeafNode = instanceNode._isLeafNode;
@@ -147,6 +150,10 @@ public class InstanceNode implements HierarchicalInstance {
         return _origInstanceName;
     }
 
+    public String getInstanceOldName() {
+    	return _origInstanceOldName;
+    }
+    
     /**
      * @return a reference to this node's parent HierarchicalInstance
      */
@@ -211,6 +218,11 @@ public class InstanceNode implements HierarchicalInstance {
      * The name of the original EdifCellInstance
      */
     private String _origInstanceName;
+    
+    /**
+     * The old name of the EdifCellInstance
+     */
+    private String _origInstanceOldName;
     
     /**
      * The name of the cell type of the original EdifCellInstance
