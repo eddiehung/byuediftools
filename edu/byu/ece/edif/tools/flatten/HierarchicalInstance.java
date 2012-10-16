@@ -62,6 +62,11 @@ public interface HierarchicalInstance extends Serializable {
      * @return the name of the original EdifCellInstance associated with this node
      */
     public String getInstanceName();
+
+    /**
+     * @return the *old* name of the original EdifCellInstance associated with this node
+     */
+    public String getInstanceOldName();
     
     /**
      * @return this node's parent HierarchicalInstance
