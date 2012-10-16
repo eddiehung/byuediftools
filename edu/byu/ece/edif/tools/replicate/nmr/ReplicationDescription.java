@@ -236,9 +236,12 @@ public class ReplicationDescription implements Serializable {
         EdifCellInstance eci = epr.getCellInstance();
         EdifPort port = epr.getPort();
         PreMitigatedPortGroup portGroup = _portGroups.get(port);
-        if (eci == null) {
+        if (eci == null) {  // Top-level port
             if (portGroup != null) {
                 result = portGroup.getReplicationType();
+                if (result == null) {
+                	System.out.println("Warning: top-level port has null replication type");
+                }
             }
             else {
                 result = getReplicationType(port);
@@ -247,11 +250,15 @@ public class ReplicationDescription implements Serializable {
             }
         }
         else {
+        	// internal connection
             if (EdifReplicationPropertyReader.isPreMitigatedInstance(eci)) {
                 if (portGroup == null)
                     result = UnityReplicationType.getInstance();
                 else {
                 	result = portGroup.getReplicationType();
+                    if (result == null) {
+                    	System.out.println("Warning: non port gropu with null replication type");
+                    }
                 }
             }
             else {
@@ -259,6 +266,9 @@ public class ReplicationDescription implements Serializable {
                 if (result == null)
                 	result = UnityReplicationType.getInstance();
             }
+        }
+        if (result == null) {
+        	System.out.println(" ** * Warning: null replication type type");        	
         }
         return result;
     }
@@ -384,6 +394,10 @@ public class ReplicationDescription implements Serializable {
         _netsToIgnore.addAll(nets);
     }
     
+    public void markNetToIgnore(EdifNet net) {
+        _netsToIgnore.add(net);
+    }
+
     public void markPortRefsToIgnore(Map<EdifNet, Set<EdifPortRef>> portRefs) {
         _portRefsToIgnore.putAll(portRefs);
     }
