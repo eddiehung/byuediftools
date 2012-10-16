@@ -82,13 +82,26 @@ public class BasicHierarchyNaming implements HierarchyNaming {
         return currentNode;
     }
 
-    // javadoc inherited from interface
     public String getHierarchicalInstanceName(HierarchicalInstance node) {
+    	return getHierarchicalInstanceName(node,false);
+    }
+
+    /**
+     * Get the Hierarchical name of an instance. Boolean parameter indicates whenter
+     * to use the oldName or the newName
+     */
+    public String getHierarchicalInstanceName(HierarchicalInstance node, boolean useOldName) {
         LinkedList<String> instanceNames = new LinkedList<String>();
         while (node != null) {
             HierarchicalInstance nextHigherNode = node.getParent();
-            if (!(!_includeRootName && nextHigherNode == null))
-                instanceNames.add(node.getInstanceName());
+            if (!(!_includeRootName && nextHigherNode == null)) {
+            	String instName = null;
+            	if (useOldName)
+            		instName = node.getInstanceOldName();
+            	else
+            		instName = node.getInstanceName();
+            	instanceNames.add(instName);
+            }
             node = nextHigherNode;
         }
 
