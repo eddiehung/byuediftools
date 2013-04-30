@@ -117,7 +117,11 @@ public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         //DSP ports in V4 and greater
         _badCutConnections.addBadCutConnection("DSP48", "PCOUT", "DSP48", "PCIN");
         _badCutConnections.addBadCutConnection("DSP48", "BCOUT", "DSP48", "BCIN");
-
+        
+        //DSP ports in V7
+        _badCutConnections.addBadCutConnection("DSP48E1", "PCOUT", "DSP48E1", "PCIN");
+        _badCutConnections.addBadCutConnection("DSP48E1", "BCOUT", "DSP48E1", "BCIN");
+        
         _badCutConnections.addBadCutConnection("*", "*", "IDELAYCTL", "REFCLK");
         _badCutConnections.addBadCutConnection("*", "*", "IDELAYCTL", "RST");
         _badCutConnections.addBadCutConnection("BUFG", "O", "IDELAYCTL", "REFCLK");
