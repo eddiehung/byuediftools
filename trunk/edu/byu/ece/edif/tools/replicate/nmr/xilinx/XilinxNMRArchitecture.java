@@ -85,6 +85,7 @@ public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         // call all cuts in the carry chain "bad"
         _badCutConnections.addBadCutConnection("MUXCY", "O", "MUXCY", "CI");
         _badCutConnections.addBadCutConnection("MUXCY", "LO", "MUXCY", "CI");
+    
         // Not necessary?
         // An XORCY output *can* exit the slice and drive another flip-flop
         //   Maybe the LO output cannot, though...
@@ -129,6 +130,10 @@ public class XilinxNMRArchitecture extends AbstractNMRArchitecture {
         _badCutConnections.addBadCutConnection("DCM", "PSEN", "*", "*");
 
         _badCutConnections.addBadCutConnection("*", "*", "DCM", "CLKFB");
+        
+        //V7 CARRY4
+        _badCutConnections.addBadCutConnection("CARRY4", "CO", "CARRY4", "CI");
+        _badCutConnections.addBadCutConnection("CARRY4", "O", "CARRY4", "CI");
 
     }
 
