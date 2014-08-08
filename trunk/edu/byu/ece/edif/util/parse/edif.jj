@@ -45,6 +45,12 @@ import java.util.*;
  * <li> ignore rename objects (significantly reduce memory requirements)
  * </ul>
  * <p>
+ *
+ *
+ * Completing the JavaCC build process:
+ * 
+ * java -classpath {location of javacc.jar} javacc
+ * 
  * TODO:
  * <ul>
  * <li> Save user comments: comment()
@@ -1101,18 +1107,19 @@ EdifPort port(EdifCellInterface iface) :
            throw new ParseException("Direction of port not specified");
 	EdifPort newPort = null;
 	if (port_name instanceof EdifNameable) {
-            // single bit port
+            // single bit port that has no array
         try {
-	    	newPort = iface.addPort( (EdifNameable) port_name, 1, direction);
+	    	newPort = iface.addPort( (EdifNameable) port_name, 1, direction, false);
 	    } catch(EdifNameConflictException e) {
 	    	throw new ParseException("Duplicate port name: " + port_name + " in cell " + iface.getEdifCell());
 	    }
 	} else { 
+	    // this is a "ArrayElement" object 
 	    ArrayElement ae = (ArrayElement) port_name;
 	    if (ae.getSize() != 1)
                 throw new ParseException("Multi-dimensional ports not supported");
 	    try {
-	    	newPort = iface.addPort( ae.getName(), ae.getFirstElement(), direction);
+	    	newPort = iface.addPort( ae.getName(), ae.getFirstElement(), direction, true);
         } catch(EdifNameConflictException e1) {
         	throw new ParseException("Duplicate port name: " + port_name + " in cell " + iface.getEdifCell());
       	}
@@ -1123,6 +1130,9 @@ EdifPort port(EdifCellInterface iface) :
     }	
 }
 
+// This will return either an EdifNameable object (when the defined
+// port is not represented as an array) or it will return
+// an ArrayElement object 
 Object portNameDef() :
 {
     EdifNameable name;
