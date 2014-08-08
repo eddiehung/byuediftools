@@ -193,7 +193,8 @@ public abstract class AbstractReplicationType implements ReplicationType {
             else
                 newPortName = oldPort.getEdifNameable();
             
-            EdifPort newPort =  newTopCell.addPort(newPortName, oldPort.getWidth(), oldPort.getDirection());
+            EdifPort newPort =  newTopCell.addPort(newPortName, oldPort.getWidth(), oldPort.getDirection(), 
+            		oldPort.isArray());
             
             newPort.copyProperties(oldPort);
             
