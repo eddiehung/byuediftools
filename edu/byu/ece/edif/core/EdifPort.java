@@ -76,11 +76,48 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
      * @param name The name of this Object
      * @param width The width of this EdifPort
      * @param direction The direction of this EdifPort
+     * @param isPortArray Indicates whether the port should be represented as an "array". If the port is
+     *  more than one bit, it will automatically be set as an "array port". If it is a single-bit port,
+     *  it will be represented as an array port if this parameter is true, otherwise it will be represented
+     *  as a single-bit port (i.e., no array).
+     * @throws InvalidEdifNameException
+     */
+    public EdifPort(EdifCellInterface parent, String name, int width, int direction, boolean isPortArray) throws InvalidEdifNameException {
+        super(name);
+        _init(parent, width, direction, isPortArray);
+    }
+
+	/**
+     * Construct an EdifPort according to the passed in name, width and
+     * direction.
+     * 
+     * @param parent The parent of this new EdifPort
+     * @param name The name of this Object
+     * @param width The width of this EdifPort
+     * @param direction The direction of this EdifPort
      * @throws InvalidEdifNameException
      */
     public EdifPort(EdifCellInterface parent, String name, int width, int direction) throws InvalidEdifNameException {
         super(name);
-        _init(parent, width, direction);
+        _init(parent, width, direction, false);
+    }
+
+    /**
+     * Construct an EdifPort according to the passed in name, width and
+     * direction.
+     * 
+     * @param parent The parent of this new EdifPort
+     * @param name The Object holding name information for this EdifPort Object
+     * @param width The width of this EdifPort
+     * @param direction The direction of this EdifPort
+     * @param isPortArray Indicates whether the port should be represented as an "array". If the port is
+     *  more than one bit, it will automatically be set as an "array port". If it is a single-bit port,
+     *  it will be represented as an array port if this parameter is true, otherwise it will be represented
+     *  as a single-bit port (i.e., no array).
+     */
+    public EdifPort(EdifCellInterface parent, EdifNameable name, int width, int direction, boolean isPortArray) {
+        super(name);
+        _init(parent, width, direction, isPortArray);
     }
 
     /**
@@ -94,7 +131,7 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
      */
     public EdifPort(EdifCellInterface parent, EdifNameable name, int width, int direction) {
         super(name);
-        _init(parent, width, direction);
+        _init(parent, width, direction, false);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -293,6 +330,21 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
     }
 
     /**
+     * Determine whether this port is represented as an array or not.
+     * For multi-bit ports, this will return true. For single bit ports,
+     * this will return true if the internal _arrayPort member. Single-bit
+     * ports have the option of being represented as an array or not an array.
+     */
+    public boolean isArray() {
+    	// Port must be represented as an array if it is a bus
+    	if (isBus())
+    		return true;
+    	// If it is not a bus, the _arrayPort member determines whether
+    	// the port is represented as an array or not
+    	return _arrayPort;
+    }
+    
+    /**
      * Write the EDIF representation of this EdifPort object to the
      * {@link EdifPrintWriter} passed as a parameter.
      * 
@@ -300,15 +352,21 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
      * will be written to
      */
     public void toEdif(EdifPrintWriter epw) {
-
-        if (_singleBitPorts.length > 1)
+    	
+    	boolean printPortArray;
+    	if (_singleBitPorts.length > 1 || _arrayPort)
+    		printPortArray = true;
+    	else
+    		printPortArray = false;
+    	
+        if (printPortArray)
             epw.printIndent("(port (array ");
         else
             epw.printIndent("(port ");
 
         getEdifNameable().toEdif(epw);
 
-        if (_singleBitPorts.length > 1)
+        if (printPortArray)
             epw.print(" " + _singleBitPorts.length + ")");
 
         epw.print(" (direction ");
@@ -441,7 +499,11 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
      * @param width The width of this EdifPort
      * @param direction The direction of this EdifPort
      */
-    private void _init(EdifCellInterface parent, int width, int direction) {
+    private void _init(EdifCellInterface parent, int width, int direction, boolean isPortArray) {
+        if (width > 1)
+        	_arrayPort = true;
+        else
+        	_arrayPort = isPortArray;
         _parentInterface = parent;
         _direction = direction;
         _singleBitPorts = new EdifSingleBitPort[width];
@@ -456,6 +518,15 @@ public class EdifPort extends NamedPropertyObject implements EdifOut {
      * The direction of this EdifPort
      */
     private int _direction = 0;
+
+    /**
+     * Indicates whether the port is in array form or not. When the port
+     * is more than one bit, it must be in array form. However, if the port
+     * is a single bit, the port may be in array form ([0:0]) or in
+     * non-array form. This private member indicates whether this object
+     * is in array form or not.
+     */
+    private boolean _arrayPort = false;
 
     /**
      * The EdifCellInterface to which the EdifPort belongs
