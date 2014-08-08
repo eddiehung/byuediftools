@@ -28,7 +28,9 @@ import java.io.Serializable;
 //// HierarchicalNet
 /**
  * A interface for representing a unique reference to an original EdifNet in an
- * instance hierarchy
+ * instance hierarchy. There is no unique object for a unique net in the Edif
+ * data structure (although it can be inferred). Objects implementing this
+ * interface represent a unique net within the hierarchy.
  */
 public interface HierarchicalNet extends Serializable {
 
@@ -39,6 +41,8 @@ public interface HierarchicalNet extends Serializable {
      * @return a reference to the original EdifNet
      */
     public String getOriginalNetName();
+
+    public String getOriginalOldNetName();
 
     /**
      * @return a reference to the parent HierarchicalInstance node
