@@ -5,7 +5,8 @@ import java.util.Comparator;
 import edu.byu.ece.graph.DirectedGraph;
 
 /**
- * A comparator that compares the fan out of EdifNet objects
+ * A comparator that compares the fan out of nodes in a graph. Nodes with a larger
+ * fan out are "greater" than Nodes with a smaller fan out. 
  */
 public class EdifCellInstanceGraphFanOutComparator implements Comparator {	
 	
