@@ -288,7 +288,7 @@ public class EdifEnvironmentCopy {
     protected void addEdifPorts(EdifCell origCell, EdifCell newCell) throws EdifNameConflictException {
         // copy cell interface
         for (EdifPort oldPort : origCell.getPortList()) {
-            EdifPort newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection());
+            EdifPort newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection(), oldPort.isArray());
             _portMap.put(oldPort, newPort);
             // copy port properties
             newPort.copyProperties(oldPort);
