@@ -783,11 +783,11 @@ public class EdifNet extends NamedPropertyObject implements EdifOut, Trimable {
                 EdifPort port = portRef.getPort();
                 epw.printIndent("(portRef ");
                 String portName = port.getName();
-                if (port.getWidth() < 2) {
+                if (!port.isArray()) {
                     epw.print(portName);
                 } else {
                     int busMember = portRef.getBusMember();
-                    epw.print("(member " + portName + " " + portRef.getBusMember() + ")");
+                    epw.print("(member " + portName + " " + busMember + ")");
                 }
 
                 if (portRef.getCellInstance() != null)
