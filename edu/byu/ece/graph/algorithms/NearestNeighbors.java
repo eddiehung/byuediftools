@@ -66,6 +66,9 @@ public class NearestNeighbors {
 		
 		if (DEBUG1) System.out.println("Starting Decomposition");
 		
+		/**
+		 * Continue until there are no nodes in the graph.
+		 */
 		do {
 			// Pick a node that hasn't been visited yet (it doesn't matter which one)
 			// Object root = workingGraph.getNodes().iterator().next();
@@ -78,16 +81,23 @@ public class NearestNeighbors {
 			ArrayList roots = new ArrayList(1);
 			roots.add(root);
 			*/
-			Set roots = seed.getSeed(workingGraph);
 			
+			// Get the highest priority nodes in the graph
+			Set roots = seed.getSeed(workingGraph);
+
+			// Find all of the neighers of the graph.
 			Set<Object> neighbors = nearestNeighbors(workingGraph, roots, maxDistance);
+			
 			// Create a sub graph of this graph (use the small sub graph call since it
 			// it is likely that the graph is much smaller than the original graph).
 			BasicGraph subgraph = workingGraph.getSmallSubGraph(neighbors);
+
 			// Compute the SCC on this sub graph
 			SCCDepthFirstSearch sccDFS = new SCCDepthFirstSearch(subgraph);
-			// Get the SCCs
+			
+			// Get the SCCs of this sub-graph
 			List<DepthFirstTree> sccs = sccDFS.getTopologicallySortedTreeList();
+			
 			// For each SCC:
 			//  - Remove the nodes in the working graph
 			//  - Save the edges of the SCC
@@ -224,6 +234,7 @@ interface NearestNeighborSeed {
 
 class BasicNearestNeighborSeed implements NearestNeighborSeed {
 
+	/** nodes in the graph are sorted based on their fan out. */
 	public BasicNearestNeighborSeed(DirectedGraph graph) {
 		// Create a sorted list of nodes
 		_sortedNodeList = new ArrayList(graph.getNodes());
