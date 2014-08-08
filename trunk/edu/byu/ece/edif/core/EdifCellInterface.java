@@ -62,7 +62,12 @@ public class EdifCellInterface implements EdifOut, Trimable, Serializable {
      * @throws EdifNameConflictException
      */
     public EdifPort addPort(EdifNameable name, int width, int direction) throws EdifNameConflictException {
-        EdifPort port = new EdifPort(this, name, width, direction);
+        EdifPort port = addPort(name,width,direction,false);
+        return port;
+    }
+
+    public EdifPort addPort(EdifNameable name, int width, int direction, boolean isArray) throws EdifNameConflictException {
+        EdifPort port = new EdifPort(this, name, width, direction, isArray);
         _portList.addElement(port);
         return port;
     }
