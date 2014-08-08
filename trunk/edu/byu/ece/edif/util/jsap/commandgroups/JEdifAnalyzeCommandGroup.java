@@ -35,6 +35,7 @@ public class JEdifAnalyzeCommandGroup extends AbstractCommandGroup {
 		this.addCommand(output_file_option);
 
 		// Additional command for indicating component cutting
+		/*
 		char LIST_DELIMITER = ',';
 		FlaggedOption cut_component_option = new FlaggedOption(CUT_CELL_STRING);
         cut_component_option.setStringParser(JSAP.STRING_PARSER);
@@ -46,9 +47,12 @@ public class JEdifAnalyzeCommandGroup extends AbstractCommandGroup {
         cut_component_option.setListSeparator(LIST_DELIMITER);
         cut_component_option.setUsageName("cell_type");
         cut_component_option.setHelp("Comma-separated list of cell types that will be cut in circuit graph analysis");
-        this.addCommand(cut_component_option);
+        */
+        this.addCommand(cutCellSwitch());
 
-		// Additional command for indicating instance cutting
+
+        // Additional command for indicating instance cutting
+        /*
         FlaggedOption cut_instance_option = new FlaggedOption(CUT_INSTANCE_STRING);
         cut_instance_option.setStringParser(JSAP.STRING_PARSER);
         cut_instance_option.setRequired(JSAP.NOT_REQUIRED);
@@ -60,9 +64,44 @@ public class JEdifAnalyzeCommandGroup extends AbstractCommandGroup {
         cut_instance_option.setUsageName("cell_instance");
         cut_instance_option.setHelp("Comma-separated list of cell instances that will be cut in circuit graph analysis");
         this.addCommand(cut_instance_option);
+        */
+        this.addCommand(cutInstanceSwitch());
 	
 	
 	}
+
+	public static FlaggedOption cutCellSwitch() {		
+		// Additional command for indicating component cutting
+		char LIST_DELIMITER = ',';
+		FlaggedOption cut_component_option = new FlaggedOption(CUT_CELL_STRING);
+        cut_component_option.setStringParser(JSAP.STRING_PARSER);
+        cut_component_option.setRequired(JSAP.NOT_REQUIRED);
+        cut_component_option.setShortFlag(JSAP.NO_SHORTFLAG);
+        cut_component_option.setLongFlag(CUT_CELL_STRING);
+        cut_component_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
+        cut_component_option.setList(JSAP.LIST);
+        cut_component_option.setListSeparator(LIST_DELIMITER);
+        cut_component_option.setUsageName("cell_type");
+        cut_component_option.setHelp("Comma-separated list of cell types that will be cut in circuit graph analysis");
+        return cut_component_option;
+	}
+	
+	public static FlaggedOption cutInstanceSwitch() {
+		char LIST_DELIMITER = ',';
+		// Additional command for indicating instance cutting
+		FlaggedOption cut_instance_option = new FlaggedOption(CUT_INSTANCE_STRING);
+		cut_instance_option.setStringParser(JSAP.STRING_PARSER);
+		cut_instance_option.setRequired(JSAP.NOT_REQUIRED);
+		cut_instance_option.setShortFlag(JSAP.NO_SHORTFLAG);
+		cut_instance_option.setLongFlag(CUT_INSTANCE_STRING);
+		cut_instance_option.setAllowMultipleDeclarations(JSAP.MULTIPLEDECLARATIONS);
+		cut_instance_option.setList(JSAP.LIST);
+		cut_instance_option.setListSeparator(LIST_DELIMITER);
+		cut_instance_option.setUsageName("cell_instance");
+		cut_instance_option.setHelp("Comma-separated list of cell instances that will be cut in circuit graph analysis");
+		return cut_instance_option;
+	}
+
 	
     public static boolean badCutConn(JSAPResult result) {
         return result.getBoolean(USE_BAD_CUT_CONN);
