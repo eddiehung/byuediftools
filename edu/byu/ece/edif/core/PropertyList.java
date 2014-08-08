@@ -60,6 +60,14 @@ public class PropertyList extends LinkedHashMap<String, Property> implements Edi
     }
 
     /**
+     * Remove a Property from the PropertyList; the String is the Property's name.
+     * 
+     */
+    public void removeProperty(String p) {
+    	this.remove(p);
+    }
+
+    /**
      * Add a list of properties to the PropertyList
      * 
      * @param list The PropertyList object that contains the list of properties
