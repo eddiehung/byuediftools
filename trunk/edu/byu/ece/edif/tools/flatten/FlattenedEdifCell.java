@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -295,6 +296,12 @@ public class FlattenedEdifCell extends EdifCell {
     }
 
     /**
+     * Return the set of HierarchicalNets corresponding to this net
+     */
+    public Set<HierarchicalNet> getHierarchicalNets(EdifNet net) {
+    	return _flatNetToHierarchyNets.get(net);
+    }
+    /**
      * @return the HierarchyNaming scheme used by this FlattenedEdifCell
      */
     public HierarchyNaming getHierarchyNaming() {
@@ -417,29 +424,35 @@ public class FlattenedEdifCell extends EdifCell {
     }
 
     /**
-     * Execute the flattening process. This method fills in this new cell with the
-     * flattened contents of the original cell.
+     * Execute the flattening process. This is the key method in this class for creating
+     * a new EdifCell (this object) with the
+     * flattened contents of the original cell (_originalCell).
      */
     protected void flatten() {
 
+    	///////////////////////////////////////////////////////////////////////////////////
+    	// Create the global data structures that will be used throughout the flattening
+    	// process
+    	///////////////////////////////////////////////////////////////////////////////////
+    	
 
-        // This manages the connectivity of the nets (this is a global data structure that
-        // manages all connectivity within the flattened cell)
+        // This object manages the connectivity of the nets. There is only one global
+    	// data structure used throughout the flattening process (i.e., this is not 
+    	// created at individual hierarchical levels - it is a global object).
         NetConnections connections = new NetConnections();
 
         // This list is for breadth first search traversal of the instance
-        // hierarchy
+        // hierarchy. Objects are added to this list during traversal and this method
+        // will continue visiting these nodes until it is empty.
         LinkedList<FlatteningNode> bfsTraversalList = new LinkedList<FlatteningNode>();
 
-    	// Check to see if it is the top-cell that is being flattened
-        // otherwise, the top HierarchicalInstance won't match up right to the
-        // instance of the cell being flattened.
+    	// Create a node for the top cell instance (it could be created from the
+        // top-level instance of the environment or as an isolated EdifCell).
         _topFlatteningNode = null;
         EdifCellInstance topInstance = _originalCell.getLibrary().getLibraryManager().getEdifEnvironment()
         	.getTopCellInstance();
         if (topInstance.getCellType() == _originalCell) {
-            _topFlatteningNode = new FlatteningNode(topInstance);
-        	
+            _topFlatteningNode = new FlatteningNode(topInstance);        	
         } else {
         	_topFlatteningNode = new FlatteningNode(_originalCell);
         }
@@ -449,66 +462,79 @@ public class FlattenedEdifCell extends EdifCell {
         // one new EdifNet.
         LinkedList<PseudoNet> newPseudoNets = new LinkedList<PseudoNet>();
 
-        // handle top level separately before starting breadth first search traversal
-        {
-            // The following two maps are inside this block because they are
-            // only valid for the contents of one instance at a time because
-            // one EdifCellInstance may correspond to multiple nodes in the
-            // InstanceNode hierarchy, but it will correspond to only one node
-            // within a particular node at a time. They are populated during
-            // instance traversal and used during net processing. For clarity,
-            // new versions of these maps are created for each subcell that is
-            // traversed.
-        	//
-        	// Map between the original EdifCellInstance and the FlatteningNode corresponding to this instance
-            Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode = new LinkedHashMap<EdifCellInstance, FlatteningNode>();
-        	// Map between the original EdifCellInstance and the new EdifCellInstance
-            Map<EdifCellInstance, EdifCellInstance> oldToNewInstances = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
+        // The following two maps are inside this block because they are
+        // only valid for the contents of one instance at a time because
+        // one EdifCellInstance may correspond to multiple nodes in the
+        // InstanceNode hierarchy, but it will correspond to only one node
+        // within a particular node at a time. They are populated during
+        // instance traversal and used during net processing. For clarity,
+        // new versions of these maps are created for each subcell that is
+        // traversed.
+        //
 
-            oldInstanceToFlatteningNode.put(topInstance, _topFlatteningNode);
-            // Iterate subCells; create flattened versions of leaf cells and
-            // add non-leaf cells to bfsTraversalList
-            bfsTraversalList.addAll(processSubCells(oldInstanceToFlatteningNode, oldToNewInstances, _topFlatteningNode));
+        // Map between the original EdifCellInstance and the FlatteningNode corresponding to this instance
+        Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode = new LinkedHashMap<EdifCellInstance, FlatteningNode>();
+        // Map between the original EdifCellInstance and the new EdifCellInstance
+        Map<EdifCellInstance, EdifCellInstance> oldToNewInstances = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
 
-            // Process the nets at the top level
-            // Create a new PseudoNet for each; add top level connections
-            // and any connections to leaf cells; for non-leaf cells, add
-            // map entries in the connection map corresponding to the
-            // correct InstanceNode for connections to EdifSingleBitPorts.
-            if (_originalCell.getNetList() != null) {
-                for (EdifNet net : _originalCell.getNetList()) {
-                	HierarchicalNet hierarchicalNet = _topFlatteningNode.getInstanceNode().addHierarchicalNet(net);
-                	
-                    PseudoNet newPseudoNet = new PseudoNet(_originalCell, net);
-                    newPseudoNet.addHierarchicalNet(hierarchicalNet);
-                    newPseudoNets.add(newPseudoNet);
-                    for (EdifPortRef epr : net.getConnectedPortRefs()) {
-                        if (epr.isTopLevelPortRef()) {
-                            int bitPosition = epr.getSingleBitPort().bitPosition();
-                            EdifPort matchingPort = getMatchingPort(epr.getSingleBitPort().getParent());
-                            EdifSingleBitPort matchingEsbp = matchingPort.getSingleBitPort(bitPosition);
-                            newPseudoNet.addTopLevelConnection(matchingEsbp);
-                        } else {
-                            if (epr.getCellInstance().getCellType().isLeafCell() || (_noFlatten != null && _noFlatten.contains(epr.getCellInstance().getCellType())))
-                                newPseudoNet.addConnection(oldToNewInstances.get(epr.getCellInstance()), epr
-                                        .getSingleBitPort());
-                            else
-                                connections.addConnection(newPseudoNet, oldInstanceToFlatteningNode.get(epr
-                                        .getCellInstance()).getInstanceNode(), epr.getSingleBitPort());
-                        }
-                    }
-                }
-            }
+        // Initialize the iterative process by performing the top-level processing
+        oldInstanceToFlatteningNode.put(topInstance, _topFlatteningNode);
+
+        // Iterate subCells in top-level. This will add new EdifCellInstance objects to the flattened cell that exist
+        // in this level of hierarchy and return a Collection of hierarchical nodes that need to be traversed.
+        Collection<FlatteningNode> hierarchicalNodesToProcess = 
+        	processSubCells(oldInstanceToFlatteningNode, oldToNewInstances, _topFlatteningNode);
+        bfsTraversalList.addAll(hierarchicalNodesToProcess);
+
+        // Process the nets at the top level
+        // Create a new PseudoNet for each; add top level connections
+        // and any connections to leaf cells; for non-leaf cells, add
+        // map entries in the connection map corresponding to the
+        // correct InstanceNode for connections to EdifSingleBitPorts.
+        if (_originalCell.getNetList() != null) {
+        	for (EdifNet net : _originalCell.getNetList()) {
+        		// Create a unique HierarchicalNet for each net at the top-level
+        		HierarchicalNet hierarchicalNet = _topFlatteningNode.getInstanceNode().addHierarchicalNet(net);
+        		// Crate a new PseudoNet for each top-level net (no "same" nets exist yet so a new Pseudo net must
+        		// be created)
+        		PseudoNet newPseudoNet = new PseudoNet(_originalCell, net);
+        		newPseudoNet.addHierarchicalNet(hierarchicalNet);
+        		newPseudoNets.add(newPseudoNet);
+        		// Iterate through EPR and connect
+        		for (EdifPortRef epr : net.getConnectedPortRefs()) {
+        			if (epr.isTopLevelPortRef()) {
+        				// If the EPR is a top-level connection, add a top-level conncetion to the pseudo-net
+        				int bitPosition = epr.getSingleBitPort().bitPosition();
+        				EdifPort matchingPort = getMatchingPort(epr.getSingleBitPort().getParent());
+        				EdifSingleBitPort matchingEsbp = matchingPort.getSingleBitPort(bitPosition);
+        				newPseudoNet.addTopLevelConnection(matchingEsbp);
+        			} else {
+        				// If the EPR is a connection to a leaf-cell or a cell that is not to be flattened,
+        				// add the connection to the new instance in the pseudo net
+        				if (epr.getCellInstance().getCellType().isLeafCell() || 
+        					(_noFlatten != null && _noFlatten.contains(epr.getCellInstance().getCellType()))) {
+        					EdifCellInstance newLeafInstance = oldToNewInstances.get(epr.getCellInstance());
+        					newPseudoNet.addConnection(newLeafInstance, epr.getSingleBitPort());
+        				} else {
+        					// Cache the connection information for later hooking up
+        					InstanceNode nodeToConnect = oldInstanceToFlatteningNode.get(epr.getCellInstance()).getInstanceNode();
+        					connections.addConnection(newPseudoNet, nodeToConnect, epr.getSingleBitPort());
+        				}
+        			}
+        		}
+        	}
         }
 
-        // Commence breadth first search traversal of instance hierarchy
+        // At this point, the leaf cells in the top level have been created and InstanceNode objects for hierarchical
+        // objects have been created. PseudoNets have been creatd for top-level nets as well. 
+        // Continue iterating over the hierarchial elements to process until empty.
         while (!bfsTraversalList.isEmpty()) {
             // The following two maps are valid only for the contents of one
             // instance at a time because one EdifCellInstance may correspond
             // to multiple nodes in the InstanceNode hierarchy, but it will
             // correspond to only one node within a particular node at a time.
-            Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode = new LinkedHashMap<EdifCellInstance, FlatteningNode>();
-            Map<EdifCellInstance, EdifCellInstance> oldToNewInstances = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
+            oldInstanceToFlatteningNode = new LinkedHashMap<EdifCellInstance, FlatteningNode>();
+            oldToNewInstances = new LinkedHashMap<EdifCellInstance, EdifCellInstance>();
 
             FlatteningNode currentNode = bfsTraversalList.poll();
             EdifCellInstance currentInstance = currentNode.getOrigInstance();
@@ -516,7 +542,8 @@ public class FlattenedEdifCell extends EdifCell {
 
             // Iterate subCells; create flattened versions of leaf cells and
             // add non-leaf cells to bfsTraversalList
-            bfsTraversalList.addAll(processSubCells(oldInstanceToFlatteningNode, oldToNewInstances, currentNode));
+            hierarchicalNodesToProcess = processSubCells(oldInstanceToFlatteningNode, oldToNewInstances, currentNode);
+            bfsTraversalList.addAll(hierarchicalNodesToProcess);
 
             // Process the nets in this cell
             // Create a new PseudoNet for each that does not connect to a
@@ -526,57 +553,83 @@ public class FlattenedEdifCell extends EdifCell {
             // correct InstanceNode for connections to EdifSingleBitPorts.
             if (currentCell.getNetList() != null) {
                 for (EdifNet net : currentCell.getNetList()) {
-                	// add nets into currentNode.getInstanceNode();
-                	// in each case below, add the hierarchical net reference into the matchingPseudoNet
+                	// Create a hierarchical net for this net in the hierarchy.
                 	HierarchicalNet hierarchicalNet = currentNode.getInstanceNode().addHierarchicalNet(net);
-                    Collection<EdifPortRef> nonTopLevelConnections = new ArrayList<EdifPortRef>();
-                    Collection<PseudoNet> higherLevelPseudoNets = new LinkedHashSet<PseudoNet>();
+
+                	// Iterate over all EPRs and classify them as top-level connections (in which
+                	// the corresponding PseudoNet is found) or as internal level in which different
+                	// processing takes place.
+                	
+                    // Connections that do not go to the top-level                	
+                	Collection<EdifPortRef> nonTopLevelConnections = new ArrayList<EdifPortRef>();
+                	// PseudoNets that already exist at a higher level
+                	Collection<PseudoNet> higherLevelPseudoNets = new LinkedHashSet<PseudoNet>();
                     for (EdifPortRef epr : net.getConnectedPortRefs()) {
                         PseudoNet higherLevelPseudoNet = null;
                         if (epr.isTopLevelPortRef()) {
-                            higherLevelPseudoNet = connections.query(currentNode.getInstanceNode(), epr.getSingleBitPort());
+                            // If the connection connects to a top-level port, it likely connects with a
+                        	// pseudonet at a higher level in hierarchy. Find this higerlevel pseudo net.
+                        	higherLevelPseudoNet = connections.query(currentNode.getInstanceNode(), epr.getSingleBitPort());
+                            if (higherLevelPseudoNet != null)
+                                higherLevelPseudoNets.add(higherLevelPseudoNet);
                         } else {
+                        	// Doesn't connect to a top-level. Keep track of it as an internal net
                             nonTopLevelConnections.add(epr);
                         }
-                        if (higherLevelPseudoNet != null)
-                            higherLevelPseudoNets.add(higherLevelPseudoNet);
                     }
 
-                    // There are three cases for how many higher level nets
-                    // each might be attached to - 0 means a new net must be
-                    // created, 1 is a normal case, and >1 means that the higher
-                    // level nets should be joined -- in any case, the current
-                    // level net's connections should be added to the net at
-                    // the higher level or the newly created net (in the case
-                    // where there is more than one, they only need to be added
-                    // to one) and the current level net should be added to the
-                    // higher level or newly created net's list of original
-                    // nets; also map entries should be added for connectivity
-                    // to lower levels from the matching higher level net(s).
+                    // The next step is to look at all of the top-level connections that this net makes.
+                    // The processing that takes place depends on how many top-level connections there are.
+                    // There are three different connections for this:
+                    // 
+                    // 0 top-level connections:
+                    //     This means that there is not a higher level pseudo net already created at a higher
+                    //     level for the net at this level trying to connect to the higher level. In this case,
+                    //     a new pseudo net must be created.
+                    // 1 top-level connection:
+                    //     This means that there is one higher level pseudo net that is connected to this port.
+                    //     This is the typical case and in this case this hierarchical net is attached to the
+                    //     existing psuedonet
+                    // >1 top-level connections:
+                    //     This means that this net at this level of hierarchy connects more than distinct 
+                    //     nets at a higher level. These higher level nets need to be joined.
+                    //
                     PseudoNet matchingPseudoNet = null;
                     switch (higherLevelPseudoNets.size()) {
                     case 0:
+                    	// Create new pseudo net
                         matchingPseudoNet = new PseudoNet(_originalCell, net);
                         matchingPseudoNet.addHierarchicalNet(hierarchicalNet);
+                        // Add the new pseudo net to the list
                         newPseudoNets.add(matchingPseudoNet);
                         break;
                     case 1:
+                    	// Get the corresponding pseudo net
                         matchingPseudoNet = higherLevelPseudoNets.iterator().next();
+                        // Add this hierarchical net to the psuedo net.
                         matchingPseudoNet.addHierarchicalNet(hierarchicalNet);
                         matchingPseudoNet.addOriginalNet(net);
                         break;
                     default:
                         matchingPseudoNet = higherLevelPseudoNets.iterator().next();
+                        // Add this hierarchy net to the first pseudo net in the list
                     	matchingPseudoNet.addHierarchicalNet(hierarchicalNet);
                         matchingPseudoNet.addOriginalNet(net);
+                        // perform a "join" annotation
                         connections.markToJoin(higherLevelPseudoNets);
                         break;
                     }
+
+                    
+                    // Process the non top-level connections
                     for (EdifPortRef epr : nonTopLevelConnections) {
-                        if (epr.getCellInstance().getCellType().isLeafCell() || (_noFlatten != null && _noFlatten.contains(epr.getCellInstance().getCellType())))
-                            matchingPseudoNet.addConnection(oldToNewInstances.get(epr.getCellInstance()), epr
+                        if (epr.getCellInstance().getCellType().isLeafCell() || 
+                        	(_noFlatten != null && _noFlatten.contains(epr.getCellInstance().getCellType())))
+                        	// Add connections to the pseudonet for connectoins to leaf cells at this level of hierarchy
+                        	matchingPseudoNet.addConnection(oldToNewInstances.get(epr.getCellInstance()), epr
                                     .getSingleBitPort());
                         else
+                        	// Mark connections that need to be made at lower levels of the hierarchy
                             connections.addConnection(matchingPseudoNet, oldInstanceToFlatteningNode.get(epr
                                     .getCellInstance()).getInstanceNode(), epr.getSingleBitPort());
                     }
@@ -584,13 +637,9 @@ public class FlattenedEdifCell extends EdifCell {
             }
         }
 
-        // Create new EdifNets based on the created PseudoNets and add them
-        // to the FlattenedEdifCell (this) -- only create one EdifNet for
-        // each set of joined PseudoNets -- add map entries from old nets
-        // to new nets
-        
-        // use hierarchical net sets from each pseudonet to generate the mapping from hierarchicalNet to new net
-        
+        // At this point, the FlattenedEdifCell contains all of the leaf cells. We have all the net information
+        // but none of the nets have been created. Use this information to create all of the nets.
+        // Only create one EdifNet for each set of joined PseudoNets.
         while (!newPseudoNets.isEmpty()) {
             PseudoNet pseudoNet = newPseudoNets.poll();
             EdifNet newNet = new EdifNet(getUniqueNetNameable(pseudoNet.getEdifNameable()), this);
@@ -598,11 +647,14 @@ public class FlattenedEdifCell extends EdifCell {
             for (HierarchicalNet hNet : pseudoNet.getHierarchicalNets()) {
             	_hierarchyNetsToFlatNets.put(hNet, newNet);
             }
+            // create copy of hierarchical nets (to be used with _flatNetToHierarchyNets)
+            Set<HierarchicalNet> hierarchicalNets = new HashSet<HierarchicalNet>(pseudoNet.getHierarchicalNets());
             Collection<PseudoNet> possibleJoinedNets = connections.getJoinedNetList(pseudoNet);
             if (possibleJoinedNets != null) {
             	for (PseudoNet joinedPseudoNet : possibleJoinedNets) {
             		if (joinedPseudoNet != pseudoNet) {
             			joinedPseudoNet.insertPortRefs(newNet);
+            			hierarchicalNets.addAll(joinedPseudoNet.getHierarchicalNets());
             			for (HierarchicalNet hNet : joinedPseudoNet.getHierarchicalNets()) {
             				_hierarchyNetsToFlatNets.put(hNet, newNet);
             			}
@@ -610,6 +662,7 @@ public class FlattenedEdifCell extends EdifCell {
             		}
                 }
             }
+            _flatNetToHierarchyNets.put(newNet,hierarchicalNets);
             try {
                 addNet(newNet);
             } catch (EdifNameConflictException e) {
@@ -659,7 +712,11 @@ public class FlattenedEdifCell extends EdifCell {
      * @param oldToNewInstances map for entries from old instances to new
      * instances
      * @param currentNode the node whose contents are being processed
-     * @return a Collection of InstanceNodes to be added to the traversal list
+     * @return a Collection of InstanceNodes to be added to the traversal list. The
+     * nodes that are returned are the hierarchical nodes that need to be traversed.
+     * 
+     * TODO: This method should probably be renamed something like:
+     *  - addInstanceLeafCells
      */
     protected Collection<FlatteningNode> processSubCells(Map<EdifCellInstance, FlatteningNode> oldInstanceToFlatteningNode,
             Map<EdifCellInstance, EdifCellInstance> oldToNewInstances, FlatteningNode currentNode) {
@@ -725,10 +782,18 @@ public class FlattenedEdifCell extends EdifCell {
     protected Map<HierarchicalInstance, FlattenedEdifCellInstance> _nodesToFlatInstances = new LinkedHashMap<HierarchicalInstance, FlattenedEdifCellInstance>();
 
     /**
-     * A mapping from an "old" HierarchicalNet in the original cell to the new flattened
+     * A mapping from the HierarchicalNet in the original hierarchical cell to the new flattened
      * EdifNet object that the new net represents.
      */
     protected Map<HierarchicalNet, EdifNet> _hierarchyNetsToFlatNets = new LinkedHashMap<HierarchicalNet, EdifNet>();
+    
+
+    /**
+     * A mapping from each flattened EdifNet to the set of HierarchicalNets that this EdifNet represents. The values
+     * of this map are a Set since one flattened EdifNet objects may correspond to more than one hierarchical net
+     * when the net crosses levels of hierarchy. This is the opposite mapping of the _hierarchyNetsToFlatNets
+     */
+    protected Map<EdifNet, Set<HierarchicalNet>> _flatNetToHierarchyNets = new LinkedHashMap<EdifNet, Set<HierarchicalNet>>();
     
     /**
      * The naming scheme to be used by this flattened cell
