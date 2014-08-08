@@ -33,11 +33,19 @@ import edu.byu.ece.edif.core.EdifNet;
 //////////////////////////////////////////////////////////////////////////
 //// InstanceNode
 /**
- * A basic implementation of the HierarchicalInstance interface. This
+ * A basic implementation of the HierarchicalInstance interface. 
+ * A detailed description of the purpose of this interface 
+ * (and thus this class) can be found
+ * in the documentation of the HierarchicalInstance interface. 
+ * 
+ * 
+ * This
  * implementation is meant to be used by the FlattenedEdifCell class -- for this
  * reason, nodes are not created recursively; rather, each node is created
  * individually by the breadth first search traversal in the flattening process.
  * This is done so that the hierarchy need only be traversed once.
+ * 
+ * TODO: This class should probably be renamed "DefaultHierarchicalInstance"
  */
 public class InstanceNode implements HierarchicalInstance {
 
@@ -199,7 +207,7 @@ public class InstanceNode implements HierarchicalInstance {
     ////                         private variables                 ////
 
     /**
-     * A Collection of child nodes
+     * A Collection of child instances
      */
     private Collection<HierarchicalInstance> _children;
 
