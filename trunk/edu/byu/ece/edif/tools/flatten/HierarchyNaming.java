@@ -78,6 +78,17 @@ public interface HierarchyNaming extends Serializable {
      * Given a HierarchicalNet, get it's complete hierarchical name.
      * 
      * @param hierarchicalNet the HierarchicalNet whose name is desired
+     * @param oldName If true, return net name based on "old name" instance names, else "new name" instance names
+     * @return the complete hierarchical name of the HierarchicalNet
+     */
+    public String getHierarchicalNetName(HierarchicalNet hierarchicalNet, boolean oldName);
+
+    /**
+     * For backward compatibility. Same as getHierarchicalNetName but with "original"
+     * netname rather than old name (i.e., oldName = false)
+     * 
+     * @param hierarchicalNet the HierarchicalNet whose name is desired
+     * @param oldName If true, return net name based on "old name" instance names, else "new name" instance names
      * @return the complete hierarchical name of the HierarchicalNet
      */
     public String getHierarchicalNetName(HierarchicalNet hierarchicalNet);

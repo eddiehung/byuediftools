@@ -142,15 +142,25 @@ public class BasicHierarchyNaming implements HierarchyNaming {
     }
 
     // javadoc inherited from interface
-    public String getHierarchicalNetName(HierarchicalNet hierarchicalNet) {
+    public String getHierarchicalNetName(HierarchicalNet hierarchicalNet, boolean oldName) {
         StringBuilder sb = new StringBuilder();
-        sb.append(getHierarchicalInstanceName(hierarchicalNet.getParent()));
+    	sb.append(getHierarchicalInstanceName(hierarchicalNet.getParent(),oldName));
         if (sb.length() != 0)
             sb.append(_separator);
-        sb.append(hierarchicalNet.getOriginalNetName());
+        if (oldName)
+        	sb.append(hierarchicalNet.getOriginalOldNetName());
+        else
+        	sb.append(hierarchicalNet.getOriginalNetName());        	
         return sb.toString();
     }
 
+    /** For backward compatibility. 
+     * @deprecated
+     */
+    public String getHierarchicalNetName(HierarchicalNet hierarchicalNet) {
+    	return getHierarchicalNetName(hierarchicalNet,false);
+    }
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
 
