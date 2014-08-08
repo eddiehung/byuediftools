@@ -41,8 +41,13 @@ import edu.byu.ece.edif.core.NamedPropertyObject;
  * process. Contains information about the net's very top level ports as well as
  * any other connections. This class' usefulness comes from that fact that many
  * of these nets may need to be joined in the flattening process. It is cleaner
- * and easier to join multiple PseudoNets into one EdifNet than to join multiple
- * EdifNets after they have already been created.
+ * and easier to join multiple PseudoNets during the flattening process than
+ * to create multiple EdifNet objects and then try to connect them.
+ * 
+ * TODO: This class should probably be renamed. Possible names include:
+ * - MultiHierarchicalNet
+ * - CrossHierarchyNet
+ * - FlattenedNet
  */
 public class PseudoNet extends NamedPropertyObject {
 
@@ -52,12 +57,6 @@ public class PseudoNet extends NamedPropertyObject {
      * @param parent the EdifCell to which this PseudoNet belongs
      * @param name an EdifNameable representing the net's name
      */
-    //    public PseudoNet(EdifCell parent, EdifNameable name) {
-    //        super(name);
-    //        _parent = parent;
-    //        _topLevelConnections = new LinkedHashSet<EdifSingleBitPort>();
-    //        _connections = new LinkedHashSet<Connection>();
-    //    }
     public PseudoNet(EdifCell parent, EdifNet originalNet) {
         super(originalNet.getEdifNameable());
         _parent = parent;
