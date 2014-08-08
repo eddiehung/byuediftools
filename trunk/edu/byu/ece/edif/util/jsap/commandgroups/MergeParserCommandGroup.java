@@ -54,7 +54,7 @@ public class MergeParserCommandGroup extends JEdifParserCommandGroup {
         this.addCommand(DIRECTORY_FLAG);
         // Forced file inclusion flag
         this.addCommand(INCLUDE_FLAG);
-        // Black boxes
+        // Black boxes (allow black boxes - ie., don't quit on error if an unmatched black box is found)
         this.addCommand(BLACK_BOX_SWITCH);
         
         // Flatten Flag
