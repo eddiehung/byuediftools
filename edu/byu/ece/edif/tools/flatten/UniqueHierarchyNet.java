@@ -28,6 +28,8 @@ import edu.byu.ece.edif.core.EdifNet;
 //// UniqueHierarchyNet
 /**
  * A basic implementation of the HierarchicalNet interface.
+ * 
+ * TODO: This should probably be renamed: DefaultHierarchyNet
  */
 public class UniqueHierarchyNet implements HierarchicalNet {
 
@@ -41,6 +43,7 @@ public class UniqueHierarchyNet implements HierarchicalNet {
     public UniqueHierarchyNet(HierarchicalInstance parent, EdifNet originalNet) {
         _parent = parent;
         _originalNetName = originalNet.getName();
+        _originalOldNetName = originalNet.getOldName();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -65,6 +68,10 @@ public class UniqueHierarchyNet implements HierarchicalNet {
         return _originalNetName;
     }
 
+    public String getOriginalOldNetName() {
+    	return _originalOldNetName;
+    }
+
     /**
      * @return a reference to the parent HierarchicalInstance
      */
@@ -80,8 +87,12 @@ public class UniqueHierarchyNet implements HierarchicalNet {
      */
     private String _originalNetName;
 
+    private String _originalOldNetName;
+
     /**
      * A reference to the parent HierarchicalInstance
      */
     private HierarchicalInstance _parent;
+
+
 }
