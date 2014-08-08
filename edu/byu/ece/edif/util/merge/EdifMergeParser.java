@@ -185,7 +185,7 @@ public class EdifMergeParser {
         for (EdifPort oldPort : cellToCopy.getPortList()) {
             EdifPort newPort = null;
             try {
-                newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection());
+                newPort = newCell.addPort(oldPort.getEdifNameable(), oldPort.getWidth(), oldPort.getDirection(), oldPort.isArray());
             } catch (EdifNameConflictException e) {
                 e.toRuntime();
             }
