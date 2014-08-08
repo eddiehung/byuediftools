@@ -251,7 +251,10 @@ public class EdifEnvironmentReplicate extends EdifEnvironmentCopy {
                 else { // if it's not to be replicated and isn't part of a pre-mitigated port group, just copy it over
                 	if (newPorts == null)
                 		newPorts = new ArrayList<EdifPort>(1);
-                	newPorts.add(UnityReplicationType.getInstance().replicate(oldPort, newCell).iterator().next());
+                	List<EdifPort> replicatedPort = UnityReplicationType.getInstance().replicate(oldPort, newCell);
+                	// There will only be one port in the list
+                	EdifPort newPort = replicatedPort.iterator().next();
+                	newPorts.add(newPort);
                 }
                 if (newPorts != null && newPorts.size() != 0) {
                     _replicatedPortMap.put(oldPort, newPorts);
