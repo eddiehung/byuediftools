@@ -215,9 +215,24 @@ public class EdifCell extends NamedPropertyObject implements EdifOut, Trimable {
      * @param width The width of the new port to add
      * @param direction The direction of the new port to add
      * @throws EdifNameConflictException
+     * @deprecated Use the addPort method with "isArray" parameter
      */
     public EdifPort addPort(EdifNameable name, int width, int direction) throws EdifNameConflictException {
         return _interface.addPort(name, width, direction);
+    }
+
+    /**
+     * Adds a new port to the EdifCellInterface.
+     * 
+     * @param name The name of the new port to add
+     * @param width The width of the new port to add
+     * @param direction The direction of the new port to add
+     * @param isArray Indicates whether this should be an "array" port or single port. Should be true
+     *   for multi-bit ports. Sinle bit ports have the option of being an array port or not.
+     * @throws EdifNameConflictException
+     */
+    public EdifPort addPort(EdifNameable name, int width, int direction, boolean isArray) throws EdifNameConflictException {
+        return _interface.addPort(name, width, direction, isArray);
     }
 
     /**
