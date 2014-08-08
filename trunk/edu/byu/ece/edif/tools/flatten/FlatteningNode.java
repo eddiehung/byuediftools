@@ -7,8 +7,15 @@ import edu.byu.ece.edif.core.EdifCellInstance;
 
 
 /**
- * Represents an EdifCellInstance during cell flattening.
- *
+ * Represents an EdifCellInstance during cell flattening. Note that while this
+ * usually represents an instance in the hierarchy (including the top-level instance),
+ * it can be created from an EdifCell. A FlatteningNode will only be created from an
+ * EdifCell when an EdifCell is to be flattened but there is no corresponding
+ * EdifCellInstance for the EdifCell (i.e., when you want to create a flattened
+ * cell from an EdifCell that is not the top-level EdifCellInstance).
+ * 
+ * TODO:
+ * - This class seems similar to InstanceNode class. Why is this needed instead? Seems redundant.
  */
 public class FlatteningNode implements Serializable {
 
