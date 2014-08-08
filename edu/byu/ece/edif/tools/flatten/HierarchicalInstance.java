@@ -32,6 +32,16 @@ import java.util.Collection;
  * is a simple tree data structure for retaining naming information of
  * a flattened circuit.
  * 
+ * Neither the EdifCell or EdifCellInterface data structures contain enough
+ * information to natively represent the hierarchical structure of an EdifCell
+ * (although the hierarchical information can be generated). The purpose of this
+ * interface is to provide a unique object for a specific instance within the
+ * multi-level hierarchy of a top-level EdifCell object. For example, although
+ * there is a unique EdifCellInstance object for a specific EdifCellInstance,
+ * there is not a unique object for the instance if the parent EdifCell is instanced
+ * more than once. This object is a unique instance no matter how many layers 
+ * are in the design. 
+ * 
  */
 public interface HierarchicalInstance extends Serializable {
 
