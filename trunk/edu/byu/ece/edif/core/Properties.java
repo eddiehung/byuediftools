@@ -42,6 +42,13 @@ public interface Properties {
     public void addProperty(Property p);
 
     /**
+     * Remove a property from the object.
+     * 
+     * @param p The property to remove
+     */
+    public void removeProperty(Property p);
+    
+    /**
      * Copy all the properties associated with the passed in Properties object
      * into this Properties object.
      * 

@@ -64,7 +64,7 @@ public class PropertyList extends LinkedHashMap<String, Property> implements Edi
      * 
      */
     public void removeProperty(String p) {
-    	this.remove(p);
+    	this.remove(p.toLowerCase());
     }
 
     /**

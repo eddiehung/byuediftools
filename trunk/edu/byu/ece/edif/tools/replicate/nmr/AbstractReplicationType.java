@@ -171,6 +171,10 @@ public abstract class AbstractReplicationType implements ReplicationType {
             
             newInstance.copyProperties(oldInstance);
             
+            // TODO: This code was added to prevent the Xilinx Mapper from trying to fit a triplicated module into
+            //       the same slice. Hard coding the removal of this property does not seem like a final solution.
+            newInstance.removeProperty("HBLKNM");
+            
             newTopCell.addSubCell(newInstance);
             
             newInstances.add(newInstance);            
