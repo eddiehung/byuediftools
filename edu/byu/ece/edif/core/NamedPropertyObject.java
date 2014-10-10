@@ -96,28 +96,6 @@ public abstract class NamedPropertyObject implements Properties, Serializable {
             _pl = new PropertyList();
         _pl.addProperty(p);
     }
-    
-    /**
-     * Remove a single property from this object.
-     * 
-     * @param p The Property name to remove from this objects list of properties.
-     */
-    public void removeProperty(String p) {
-        if (_pl != null) {
-            _pl.removeProperty(p);
-        }
-    }
-
-    /**
-     * Remove a single property from this object.
-     * 
-     * @param p The Property Object to remove from this objects list of properties.
-     */
-    public void removeProperty(Property p) {
-        if (_pl != null) {
-            _pl.removeProperty(p.getName().toLowerCase());
-        }
-    }
 
     /**
      * Add a list of properties to the object. This will append the current list
